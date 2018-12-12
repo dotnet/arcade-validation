@@ -23,7 +23,7 @@ parameters:
   condition: succeeded()             # optional -- condition for step to execute; defaults to succeeded()
   continueOnError: false             # optional -- determines whether to continue the build if the step errors; defaults to false
 
-steps:
+jobs:
   - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY\eng\common\helixpublish.proj /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
     displayName: Send job to Helix (Windows)
     env:
