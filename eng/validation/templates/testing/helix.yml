@@ -1,62 +1,43 @@
 parameters:
-  variables:
-    - group: Helix Anonymous
-    - name: Build.Repository.Clean
-      value: true
-    - name: _HelixType
-      value: build/product
-    - name: _HelixSource
-      value: dotnet/arcade-validation/$(Build.SourceBranch)
-    - name: _HelixTestType
-      value: test/product/
-    - name: _XUnitProject
-      value: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-    - name: _XUnitTargetFramework
-      value: netcoreapp2.0
-    - name: _XUnitRunnerVersion
-      value: 2.4.1
-    - name: _DotNetCliPackageType
-      value: sdk
-    - name: _DotNetCliVersion
-      value: 2.1.403
-    - name: _Creator
-      value: arcade-validation
-    - name: _ArtifactsBaseFolder
-      value: Helix
+  helixAccessToken: ''
+  helixSource: dotnet/arcade-validation/$(Build.SourceBranch)
+  helixTestType: test/product/
+  xUnitProject: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+  xUnitTargetFramework: netcoreapp2.0
+  xUnitRunnerVersion: 2.4.1
+  dotNetCliPackageType: sdk
+  dotNetCliVersion: 2.1.403
+  creator: arcade-validation
 jobs:
   - template: /eng/common/templates/steps/send-to-helix.yml
-      variables:
-        {{insert}} : ${{parameters.variables}}
       parameters:
-        HelixSource: $(_HelixSource)
-        HelixType: $(_HelixTestType)
+        HelixSource: ${{ parameters.helixSource }}
+        HelixType: ${{ parameters.helixTestType }}
         HelixTargetQueues: Windows.10.Amd64.Open;Windows.81.Amd64.Open;Windows.7.Amd64.Open
-        HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
-        XUnitProjects: $(_XUnitProject)
-        XUnitTargetFramework: $(_XUnitTargetFramework)
-        XUnitRunnerVersion: $(_XUnitRunnerVersion)
+        HelixAccessToken: ${{ parameters.helixAccessToken }}
+        XUnitProjects:  ${{ parameters.xUnitProject }}
+        XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
         IncludeDotNetCli: true
-        DotNetCliPackageType: $(_DotNetCliPackageType)
-        DotNetCliVersion: $(_DotNetCliVersion)
+        DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
         EnableXUnitReporter: true
         WaitForWorkItemCompletion: true
         IsExternal: true
-        Creator: $(_Creator)
+        Creator: ${{ parameters.crerator }}
   - template: /eng/common/templates/steps/send-to-helix.yml
-       variables:
-        {{insert}} : ${{parameters.variables}}
       parameters:
-        HelixSource: $(_HelixSource)
-        HelixType: $(_HelixTestType)
+        HelixSource: ${{ parameters.helixSource }}
+        HelixType: ${{ parameters.helixTestType }}
         HelixTargetQueues: Debian.9.Amd64.Open;Fedora.27.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
-        HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
-        XUnitProjects: $(_XUnitProject)
-        XUnitTargetFramework: $(_XUnitTargetFramework)
-        XUnitRunnerVersion: $(_XUnitRunnerVersion)
+        HelixAccessToken: ${{ parameters.helixAccessToken }}
+        XUnitProjects:  ${{ parameters.xUnitProject }}
+        XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
+        XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
         IncludeDotNetCli: true
-        DotNetCliPackageType: $(_DotNetCliPackageType)
-        DotNetCliVersion: $(_DotNetCliVersion)
+        DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
+        DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
         EnableXUnitReporter: true
         WaitForWorkItemCompletion: true
         IsExternal: true
-        Creator: $(_Creator)
+        Creator: ${{ parameters.crerator }}
