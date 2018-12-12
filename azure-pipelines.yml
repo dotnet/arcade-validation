@@ -110,4 +110,4 @@ jobs:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/validation/templates/testing/helix.yml
       parameters:
-       helixToken: $(_HelixAnonymousToken)
+       helixAccessToken: $(_HelixAnonymousToken)
