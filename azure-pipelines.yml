@@ -103,3 +103,6 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Unix Build / Publish
+# Define all validation legs here in template form
+- ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/validation/templates/testing/helix.yml
