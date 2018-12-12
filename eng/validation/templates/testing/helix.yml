@@ -4,7 +4,7 @@ variables:
   - name: _HelixType
     value: build/product
   - name: _HelixSource
-    value: pr/dotnet/arcade-minimalci-sample/$(Build.SourceBranch)
+    value: dotnet/arcade-validation/$(Build.SourceBranch)
   - name: _HelixTestType
     value: test/product/
   - name: _XUnitProject
