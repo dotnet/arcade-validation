@@ -10,34 +10,34 @@ parameters:
   creator: arcade-validation
 jobs:
   - template: /eng/common/templates/steps/send-to-helix.yml
-      parameters:
-        HelixSource: ${{ parameters.helixSource }}
-        HelixType: ${{ parameters.helixTestType }}
-        HelixTargetQueues: Windows.10.Amd64.Open;Windows.81.Amd64.Open;Windows.7.Amd64.Open
-        HelixAccessToken: ${{ parameters.helixAccessToken }}
-        XUnitProjects:  ${{ parameters.xUnitProject }}
-        XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
-        XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
-        IncludeDotNetCli: true
-        DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
-        DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
-        EnableXUnitReporter: true
-        WaitForWorkItemCompletion: true
-        IsExternal: true
-        Creator: ${{ parameters.crerator }}
+    parameters:
+      HelixSource: ${{ parameters.helixSource }}
+      HelixType: ${{ parameters.helixTestType }}
+      HelixTargetQueues: Windows.10.Amd64.Open;Windows.81.Amd64.Open;Windows.7.Amd64.Open
+      HelixAccessToken: ${{ parameters.helixAccessToken }}
+      XUnitProjects:  ${{ parameters.xUnitProject }}
+      XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
+      XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
+      IncludeDotNetCli: true
+      DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
+      DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
+      EnableXUnitReporter: true
+      WaitForWorkItemCompletion: true
+      IsExternal: true
+      Creator: ${{ parameters.crerator }}
   - template: /eng/common/templates/steps/send-to-helix.yml
-      parameters:
-        HelixSource: ${{ parameters.helixSource }}
-        HelixType: ${{ parameters.helixTestType }}
-        HelixTargetQueues: Debian.9.Amd64.Open;Fedora.27.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
-        HelixAccessToken: ${{ parameters.helixAccessToken }}
-        XUnitProjects:  ${{ parameters.xUnitProject }}
-        XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
-        XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
-        IncludeDotNetCli: true
-        DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
-        DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
-        EnableXUnitReporter: true
-        WaitForWorkItemCompletion: true
-        IsExternal: true
-        Creator: ${{ parameters.crerator }}
+    parameters:
+      HelixSource: ${{ parameters.helixSource }}
+      HelixType: ${{ parameters.helixTestType }}
+      HelixTargetQueues: Debian.9.Amd64.Open;Fedora.27.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
+      HelixAccessToken: ${{ parameters.helixAccessToken }}
+      XUnitProjects:  ${{ parameters.xUnitProject }}
+      XUnitTargetFramework:  ${{ parameters.xUnitTargetFramework }}
+      XUnitRunnerVersion: ${{ parameters.xUnitRunnerVersion }}
+      IncludeDotNetCli: true
+      DotNetCliPackageType: ${{ parameters.dotNetCliPackageType }}
+      DotNetCliVersion: ${{ parameters.dotNetCliVersion }}
+      EnableXUnitReporter: true
+      WaitForWorkItemCompletion: true
+      IsExternal: true
+      Creator: ${{ parameters.crerator }}
