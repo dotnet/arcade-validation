@@ -1,29 +1,29 @@
-variables:
-  - name: Build.Repository.Clean
-    value: true
-  - name: _HelixType
-    value: build/product
-  - name: _HelixSource
-    value: dotnet/arcade-validation/$(Build.SourceBranch)
-  - name: _HelixTestType
-    value: test/product/
-  - name: _XUnitProject
-    value: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-  - name: _XUnitTargetFramework
-    value: netcoreapp2.0
-  - name: _XUnitRunnerVersion
-    value: 2.4.1
-  - name: _DotNetCliPackageType
-    value: sdk
-  - name: _DotNetCliVersion
-    value: 2.1.403
-  - name: _Creator
-    value: arcade-validation
-  - name: _ArtifactsBaseFolder
-    value: Helix
-  - group: Helix Anonymous
 jobs:
   - template: /eng/common/templates/steps/send-to-helix.yml
+      variables:
+        - name: Build.Repository.Clean
+          value: true
+        - name: _HelixType
+          value: build/product
+        - name: _HelixSource
+          value: dotnet/arcade-validation/$(Build.SourceBranch)
+        - name: _HelixTestType
+          value: test/product/
+        - name: _XUnitProject
+          value: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+        - name: _XUnitTargetFramework
+          value: netcoreapp2.0
+        - name: _XUnitRunnerVersion
+          value: 2.4.1
+        - name: _DotNetCliPackageType
+          value: sdk
+        - name: _DotNetCliVersion
+          value: 2.1.403
+        - name: _Creator
+          value: arcade-validation
+        - name: _ArtifactsBaseFolder
+          value: Helix
+        - group: Helix Anonymous
       parameters:
         HelixSource: $(_HelixSource)
         HelixType: $(_HelixTestType)
@@ -40,6 +40,31 @@ jobs:
         IsExternal: true
         Creator: $(_Creator)
   - template: /eng/common/templates/steps/send-to-helix.yml
+      variables:
+        - name: Build.Repository.Clean
+          value: true
+        - name: _HelixType
+          value: build/product
+        - name: _HelixSource
+          value: dotnet/arcade-validation/$(Build.SourceBranch)
+        - name: _HelixTestType
+          value: test/product/
+        - name: _XUnitProject
+          value: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+        - name: _XUnitTargetFramework
+          value: netcoreapp2.0
+        - name: _XUnitRunnerVersion
+          value: 2.4.1
+        - name: _DotNetCliPackageType
+          value: sdk
+        - name: _DotNetCliVersion
+          value: 2.1.403
+        - name: _Creator
+          value: arcade-validation
+        - name: _ArtifactsBaseFolder
+          value: Helix
+        - group: Helix Anonymous
+
       parameters:
         HelixSource: $(_HelixSource)
         HelixType: $(_HelixTestType)
