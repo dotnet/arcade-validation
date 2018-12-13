@@ -1,4 +1,4 @@
-ariables:
+variables:
   - name: _TeamName
     value: DotNetCore
 resources:

@@ -4,15 +4,8 @@ jobs:
     variables: 
     - name: _BuildConfig
       value: Release
-    - name: _HelixBuildConfig
-      value: $(_BuildConfig)  
-    - group: Helix Anonymous
-    - name: Build.Repository.Clean
-      value: true
-    - name: _HelixType
-      value: build/product
     - name: _HelixSource
-      value: dotnet/arcade-validation/$(Build.SourceBranch)
+      value: pr/dotnet/arcade-validation/$(Build.SourceBranch)
     - name: _HelixTestType
       value: test/product/
     - name: _XUnitProject
@@ -25,12 +18,13 @@ jobs:
       value: sdk
     - name: _DotNetCliVersion
       value: 2.1.403
+    - group: Helix Anonymous
     steps:      
     - template: /eng/common/templates/steps/send-to-helix.yml
       parameters:
         HelixSource: $(_HelixSource)
         HelixType: $(_HelixTestType)
-        HelixTargetQueues: Windows.10.Amd64.Open;Windows.81.Amd64.Open;Windows.7.Amd64.Open
+        HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
         HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
         XUnitProjects: $(_XUnitProject)
         XUnitTargetFramework: $(_XUnitTargetFramework)
