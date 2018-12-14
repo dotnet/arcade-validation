@@ -1,6 +1,9 @@
 variables:
   - name: _TeamName
     value: DotNetCore
+  - group: Helix Anonymous
+  - name: _HelixAccessToken
+    value: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
 resources:
   containers:
   - container: LinuxContainer
@@ -105,3 +108,5 @@ jobs:
 # Define all validation legs here in template form
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/validation/templates/testing/helix.yml
+      parameters:
+         HelixAccessToken: $(_HelixAccessToken)

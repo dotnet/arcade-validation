@@ -1,41 +1,25 @@
+parameters:
+    HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+    HelixType: test/product/
+    HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
+    HelixAccessToken: ''
+    XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+    XUnitTargetFramework: netcoreapp2.0
+    XUnitRunnerVersion: 2.4.1
+    IncludeDotNetCli: true
+    DotNetCliPackageType: sdk
+    DotNetCliVersion: 2.1.403
+    EnableXUnitReporter: true
+    WaitForWorkItemCompletion: true
+    IsExternal: true
+    Creator: arcade-validation
 jobs:
   - job:
     displayName: Validate Helix
-    variables: 
-    - name: _BuildConfig
-      value: Release
-    - name: _HelixSource
-      value: pr/dotnet/arcade-validation/$(Build.SourceBranch)
-    - name: _HelixTestType
-      value: test/product/
-    - name: _XUnitProject
-      value: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-    - name: _XUnitTargetFramework
-      value: netcoreapp2.0
-    - name: _XUnitRunnerVersion
-      value: 2.4.1
-    - name: _DotNetCliPackageType
-      value: sdk
-    - name: _DotNetCliVersion
-      value: 2.1.403
-    - group: Helix Anonymous
     steps:      
     - template: /eng/common/templates/steps/send-to-helix.yml
       parameters:
-        HelixSource: $(_HelixSource)
-        HelixType: $(_HelixTestType)
-        HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
-        HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
-        XUnitProjects: $(_XUnitProject)
-        XUnitTargetFramework: $(_XUnitTargetFramework)
-        XUnitRunnerVersion: $(_XUnitRunnerVersion)
-        IncludeDotNetCli: true
-        DotNetCliPackageType: $(_DotNetCliPackageType)
-        DotNetCliVersion: $(_DotNetCliVersion)
-        EnableXUnitReporter: true
-        WaitForWorkItemCompletion: true
-        IsExternal: true
-        Creator: arcade-validation
+        ${{insert}} : ${{parameters}}
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
       inputs:
