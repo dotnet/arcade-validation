@@ -19,7 +19,9 @@ jobs:
     steps:      
     - template: /eng/common/templates/steps/send-to-helix.yml
       parameters:
-        ${{insert}} : ${{parameters}}
+        ${{ each parameter in parameters }}:
+          ${{ if ne(parameter.key, 'jobs') }}:
+            ${{ parameter.key }}: ${{ parameter.value }}
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
       inputs:
