@@ -1,13 +1,12 @@
-variables:
+variables:        
   - name: _TeamName
     value: DotNetCore
-  - group: Helix Anonymous
-  - name: _HelixAccessToken
-    value: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
+
 resources:
   containers:
   - container: LinuxContainer
     image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+
 jobs:
 - template: /eng/common/templates/jobs/jobs.yml
   parameters:
@@ -21,34 +20,32 @@ jobs:
         # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
         # Will eventually change this to two BYOC pools.
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-external-temp
+          name: NetCorePublic-Int-Pool
+          queue: Windows.10.Amd64.Open
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           name: dotnet-internal-temp
+          
       variables:
+      - _Script: eng\common\cibuild.cmd
+      - _ValidateSdkArgs: ''
+      - _InternalBuildArgs: ''
+
+
       # Only enable publishing in non-public, non PR scenarios.
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+        # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
         - group: DotNet-Blob-Feed
         - group: DotNet-Symbol-Server-Pats
-        - name: _PublishBlobFeedUrl
-          value: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
-        - name: _SignArgs
-          value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - name: _PublishArgs
-          value: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+        - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+        - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+            /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
             /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
             /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
             /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
             /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-        - name: _OfficialBuildIdArgs
-          value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-      # else
-      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-        - name: _PublishArgs
-          value: ''
-        - name: _OfficialBuildIdArgs
-          value: ''
-        - name: _SignArgs
-          value: ''
+            /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            
       strategy:
         matrix:
           Build_Debug:
@@ -108,5 +105,3 @@ jobs:
 # Define all validation legs here in template form
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/validation/templates/testing/helix.yml
-      parameters:
-         HelixAccessToken: $(_HelixAccessToken)

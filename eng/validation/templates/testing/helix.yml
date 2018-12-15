@@ -3,7 +3,6 @@ parameters:
     HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
     HelixType: test/product/
     HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
-    HelixAccessToken: ''
     XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
     XUnitTargetFramework: netcoreapp2.0
     XUnitRunnerVersion: 2.4.1
@@ -14,18 +13,21 @@ parameters:
     WaitForWorkItemCompletion: true
     IsExternal: true
     Creator: arcade-validation
+    pool: 'NetCorePublic-Int-Pool'
+    
 jobs:
   - job:
     displayName: Validate Helix
     variables:
+      - group: DotNet-HelixApi-Access
       - name: _BuildConfig
         value: ${{ parameters.BuildConfig }}
     steps:      
     - template: /eng/common/templates/steps/send-to-helix.yml
       parameters:
         ${{ each parameter in parameters }}:
-          ${{ if ne(parameter.key, 'jobs') }}:
             ${{ parameter.key }}: ${{ parameter.value }}
+        HelixAccessToken: $(HelixApiAccessToken)
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs to VSTS
       inputs:
