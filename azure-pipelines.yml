@@ -1,4 +1,4 @@
-variables:        
+variables:
   - name: _TeamName
     value: DotNetCore
 
@@ -20,8 +20,7 @@ jobs:
         # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
         # Will eventually change this to two BYOC pools.
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCorePublic-Int-Pool
-          queue: Windows.10.Amd64.Open
+          name: dotnet-external-temp
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           name: dotnet-internal-temp
           
@@ -37,7 +36,7 @@ jobs:
         # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
         - group: DotNet-Blob-Feed
         - group: DotNet-Symbol-Server-Pats
-        - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+        - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
             /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
             /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
@@ -71,9 +70,7 @@ jobs:
       - script: eng\common\cibuild.cmd
           -configuration $(_BuildConfig) 
           -prepareMachine
-          $(_PublishArgs)
-          $(_SignArgs)
-          $(_OfficialBuildIdArgs)
+          $(_InternalBuildArgs)
         displayName: Windows Build / Publish
 
     - job: Linux
