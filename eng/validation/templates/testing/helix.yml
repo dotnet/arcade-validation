@@ -1,0 +1,32 @@
+jobs:
+  - job:
+    displayName: Validate Helix
+    variables:
+      - group: DotNet-HelixApi-Access
+      - name: _BuildConfig
+        value: Release
+    steps:      
+    - template: /eng/common/templates/steps/send-to-helix.yml
+      parameters:
+        HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+        HelixType: test/product/
+        HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
+        XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+        XUnitTargetFramework: netcoreapp2.0
+        XUnitRunnerVersion: 2.4.1
+        IncludeDotNetCli: true
+        DotNetCliPackageType: sdk
+        DotNetCliVersion: 2.1.403
+        EnableXUnitReporter: true
+        WaitForWorkItemCompletion: true
+        IsExternal: true
+        Creator: arcade-validation
+        HelixAccessToken: $(HelixApiAccessToken)
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs to VSTS
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PublishLocation: Container
+        ArtifactName: Validate-Helix
+      continueOnError: true
+      condition: always()
