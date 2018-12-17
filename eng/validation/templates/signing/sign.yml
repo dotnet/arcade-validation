@@ -1,1 +1,36 @@
-# Define the signing leg here
+jobs:
+- template: /eng/common/templates/jobs/jobs.yml
+  parameters:
+    enableMicrobuild: true
+    enablePublishBuildArtifacts: true
+    jobs:
+    - job: Validate_signing
+      pool: 
+        name: dotnet-internal-temp
+      strategy:
+        matrix:
+           Test_Signing:
+            _BuildConfig: Debug
+            _SignType: test
+           Real_Signing:
+            _BuildConfig: Release
+            _SignType: real
+      steps:
+        - checkout: self
+          clean: true
+        - task: CopyFiles@2
+          displayName: Copy test packages to artifacts directory
+          inputs:
+            sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+            targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+        - powershell: eng\common\build.ps1
+            -configuration $(_BuildConfig)
+            -restore
+            -prepareMachine
+            -sign
+            -ci
+            /p:DotNetSignType=$(_SignType)
+            /p:TeamName=DotNetCore
+            /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          displayName: Sign packages
+
