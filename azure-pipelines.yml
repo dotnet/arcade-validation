@@ -12,6 +12,7 @@ jobs:
   parameters:
     enableMicrobuild: true
     enablePublishBuildArtifacts: true
+    enablePublishBuildAssets: true  # Publishing to BAR only depends on the build portion of the validation build
     enableTelemetry: true
     helixRepo: dotnet/arcade-validation
     jobs:
