@@ -105,6 +105,7 @@ jobs:
     - template: /eng/validation/templates/testing/helix.yml
     - template: /eng/validation/templates/signing/sign.yml
     - job: Push_to_latest_channel
+      displayName: Push Builds to 'Latest' channel
       variables:
       - group: Publish-Build-Assets
       dependsOn:
@@ -112,6 +113,7 @@ jobs:
       - Linux
       - Validate_Helix
       - Validate_Signing
+      - Asset_Registry_Publish
       steps:
       - checkout: self
         clean: true
