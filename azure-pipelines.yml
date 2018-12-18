@@ -104,3 +104,19 @@ jobs:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/validation/templates/testing/helix.yml
     - template: /eng/validation/templates/signing/sign.yml
+    - job: Push_to_latest_channel
+      displayName: Push Builds to 'Latest' channel
+      variables:
+      - group: Publish-Build-Assets
+      dependsOn:
+      - Windows_NT
+      - Linux
+      - Validate_Helix
+      - Validate_Signing
+      - Asset_Registry_Publish
+      steps:
+      - checkout: self
+        clean: true
+      - powershell: eng/validation/update-channel.ps1
+          -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+          -barToken $(MaestroAccessToken)

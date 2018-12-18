@@ -3,7 +3,7 @@ jobs:
     parameters:
       enablePublishBuildArtifacts: true
       jobs:
-        - job:
+        - job: Validate_Helix
           displayName: Validate Helix
           variables:
             - group: DotNet-HelixApi-Access
