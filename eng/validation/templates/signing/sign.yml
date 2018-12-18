@@ -4,7 +4,7 @@ jobs:
     enableMicrobuild: true
     enablePublishBuildArtifacts: true
     jobs:
-    - job: Validate_signing
+    - job: Validate_Signing
       pool: 
         name: dotnet-internal-temp
       strategy:

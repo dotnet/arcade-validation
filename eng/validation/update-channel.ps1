@@ -39,6 +39,7 @@ if ($assets) {
         catch {
             Write-Host $_
             Write-Host $_.ScriptStackTrace
+            exit 1
         }
     }
 } else {
