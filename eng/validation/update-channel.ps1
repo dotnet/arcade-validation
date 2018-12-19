@@ -1,6 +1,7 @@
 Param(
   [string] $maestroEndpoint,
   [string] $barToken,
+  [string] $apiVersion = "2018-07-16",
   [string] $targetChannelName = ".NET Tools - Latest"
 )
 
@@ -15,7 +16,7 @@ function Get-Headers([string]$accept, [string]$barToken) {
 
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
-$getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=2018-07-16"
+$getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
 $headers = Get-Headers 'text/plain' $barToken
 
 # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
@@ -26,9 +27,23 @@ if (!$assets) {
     exit 1
 }
 
-if ($assets.Count > 1) {
+if ($assets.Count -ne 1) {
     Write-Host "More than 1 asset matched the version '$arcadeSdkVersion' of Microsoft.DotNet.Arcade.Sdk. This is not normal. Stopping execution..."
     exit 1
+}
+
+$buildId = $assets[0].'buildId'
+
+# When we merge an internal change in arcade-validation an official build will be triggered. This won't come from Maestro. In this case the SDK version
+# was already validated and added to $targetChannelName. So we need to check if the build is already in $targetChannelName so we don't fail trying to
+# update the channel each time
+$getBuildApiEndpoint = "$maestroEndpoint/api/builds/$buildId/?api-version=$apiVersion"
+$build = Invoke-WebRequest -Uri $getBuildApiEndpoint -Headers $headers | ConvertFrom-Json
+$buildInChannel = $($build.channels | Where-Object -Property "name" -Value "${targetChannelName}" -EQ)
+
+if ($buildInChannel) {
+    Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
+    exit 0
 }
 
 $getChannelsEndpoint = "$maestroEndpoint/api/channels?api-version=2018-07-16"
@@ -43,8 +58,6 @@ if (!$matchedChannel) {
 $channelId = $matchedChannel.id
 
 try {
-    $buildId = $assets[0].'buildId'
-
     $postBuildIntoChannelApiEndpoint = "$maestroEndpoint/api/channels/$channelId/builds/$buildId/?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=2018-07-16"
     $headers = Get-Headers 'application/json' $barToken
         
