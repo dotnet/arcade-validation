@@ -11,9 +11,9 @@ jobs:
           steps:      
           - template: /eng/common/templates/steps/send-to-helix.yml
             parameters:
-              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
               HelixType: test/product/
-              HelixTargetQueues: Windows.81.Amd64.Open;Ubuntu.1604.Amd64.Open
+              HelixTargetQueues: Windows.81.Amd64;Ubuntu.1604.Amd64
               XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
               XUnitTargetFramework: netcoreapp2.0
               XUnitRunnerVersion: 2.4.1
@@ -22,6 +22,4 @@ jobs:
               DotNetCliVersion: 2.1.403
               EnableXUnitReporter: true
               WaitForWorkItemCompletion: true
-              IsExternal: true
-              Creator: arcade-validation
               HelixAccessToken: $(HelixApiAccessToken)
