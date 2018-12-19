@@ -120,3 +120,4 @@ jobs:
       - powershell: eng/validation/update-channel.ps1
           -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
           -barToken $(MaestroAccessToken)
+        displayName: Move build to 'Latest' channel 
