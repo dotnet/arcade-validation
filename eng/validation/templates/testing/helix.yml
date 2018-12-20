@@ -13,7 +13,7 @@ jobs:
             parameters:
               HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
               HelixType: test/product/
-              HelixTargetQueues: Windows.81.Amd64;Ubuntu.1604.Amd64
+              HelixTargetQueues: Windows.10.Amd64;Ubuntu.1604.Amd64
               XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
               XUnitTargetFramework: netcoreapp2.0
               XUnitRunnerVersion: 2.4.1
