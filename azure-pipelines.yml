@@ -100,9 +100,9 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Unix Build / Publish
+- template: /eng/validation/templates/testing/helix.yml
 # Define all validation legs here in template form
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/validation/templates/testing/helix.yml
     - template: /eng/validation/templates/signing/sign.yml
     - job: Push_to_latest_channel
       displayName: Push Builds to 'Latest' channel
