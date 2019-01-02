@@ -5,6 +5,7 @@
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
     <XUnitVersion>2.4.1-pre.build.4059</XUnitVersion>
     <XUnitVSRunnerVersion>2.4.1-pre.build.4059</XUnitVSRunnerVersion>
+    <NuGetVersion>4.4.0</NuGetVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RestoreSources>
