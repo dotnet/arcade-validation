@@ -162,17 +162,17 @@ jobs:
     - job: Push_to_latest_channel
       displayName: Push Builds to 'Latest' channel
       variables:
-      - group: Publish-Build-Assets
+        - group: Publish-Build-Assets
       dependsOn:
-      - Windows_NT
-      - Linux
-      - Validate_Helix
-      - Validate_Signing
-      - Asset_Registry_Publish
+        - Windows_NT
+        - Linux
+        - Validate_Helix
+        - Validate_Signing
+        - Asset_Registry_Publish
       steps:
-      - checkout: self
-        clean: true
-      - powershell: eng/validation/update-channel.ps1
-          -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-          -barToken $(MaestroAccessToken)
-        displayName: Move build to 'Latest' channel 
+        - checkout: self
+          clean: true
+        - powershell: eng/validation/update-channel.ps1
+            -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+            -barToken $(MaestroAccessToken)
+          displayName: Move build to 'Latest' channel 
