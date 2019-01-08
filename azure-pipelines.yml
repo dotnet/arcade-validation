@@ -29,8 +29,6 @@ jobs:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
         - group: DotNet-Blob-Feed
-        # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
-        - group: DotNet-Symbol-Server-Pats
         - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
             /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
