@@ -18,50 +18,37 @@ jobs:
     jobs:
     - job: Windows_NT
       pool:
-        # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
-        # Will eventually change this to two BYOC pools.
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
           name: dotnet-external-temp
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           name: dotnet-internal-temp
-          
       variables:
-      - _Script: eng\common\cibuild.cmd
-      - _ValidateSdkArgs: ''
       - _InternalBuildArgs: ''
-
 
       # Only enable publishing in non-public, non PR scenarios.
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-        # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
         - group: DotNet-Blob-Feed
-        - group: DotNet-Symbol-Server-Pats
         - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
             /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
             /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
             /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
             /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-            
+
       strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
-            _PublishType: none
             _SignType: test
             _DotNetPublishToBlobFeed : false
           Build_Release:
             _BuildConfig: Release
             # PRs or external builds are not signed.
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              _PublishType: none
               _SignType: test
               _DotNetPublishToBlobFeed : false
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _PublishType: blob
               _SignType: real
               _DotNetPublishToBlobFeed : true
       steps:
@@ -85,12 +72,10 @@ jobs:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
-            _PublishType: none
             _SignType: none
             _DotNetPublishToBlobFeed : false
           Build_Release:
             _BuildConfig: Release
-            _PublishType: none
             _SignType: none
             _DotNetPublishToBlobFeed : false
       steps:
@@ -100,24 +85,85 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Unix Build / Publish
-- template: /eng/validation/templates/testing/helix.yml
-# Define all validation legs here in template form
+
+    - job: Validate_Helix
+      variables:
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - group: DotNet-HelixApi-Access
+      - _BuildConfig: Release
+      steps:
+      - template: /eng/common/templates/steps/send-to-helix.yml
+        parameters:
+          HelixType: test/product/
+          XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+          XUnitTargetFramework: netcoreapp2.0
+          XUnitRunnerVersion: 2.4.1
+          IncludeDotNetCli: true
+          DotNetCliPackageType: sdk
+          DotNetCliVersion: 2.1.403
+          EnableXUnitReporter: true
+          WaitForWorkItemCompletion: true
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            HelixTargetQueues: Windows.10.Amd64.Open;Ubuntu.1604.Amd64.Open
+            HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+            IsExternal: true
+            creator: arcade-validation
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            HelixTargetQueues: Windows.10.Amd64;Ubuntu.1604.Amd64
+            HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
+            HelixAccessToken: $(HelixApiAccessToken)
+      displayName: Validate Helix
+
+# Jobs that should only run as part of internal builds.
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/validation/templates/signing/sign.yml
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        pool: 
+          name: dotnet-internal-temp
+        name: Validate_Signing
+        enableMicrobuild: true
+        enablePublishBuildArtifacts: true
+        strategy:
+          matrix:
+            Test_Signing:
+              _BuildConfig: Debug
+              _SignType: test
+            Real_Signing:
+              _BuildConfig: Release
+              _SignType: real
+        steps:
+          - checkout: self
+            clean: true
+          - task: CopyFiles@2
+            displayName: Copy test packages to artifacts directory
+            inputs:
+              sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+              targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+          - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -restore
+              -prepareMachine
+              -sign
+              -ci
+              /p:DotNetSignType=$(_SignType)
+              /p:TeamName=DotNetCore
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            displayName: Sign packages
+
     - job: Push_to_latest_channel
       displayName: Push Builds to 'Latest' channel
       variables:
-      - group: Publish-Build-Assets
+        - group: Publish-Build-Assets
       dependsOn:
-      - Windows_NT
-      - Linux
-      - Validate_Helix
-      - Validate_Signing
-      - Asset_Registry_Publish
+        - Windows_NT
+        - Linux
+        - Validate_Helix
+        - Validate_Signing
+        - Asset_Registry_Publish
       steps:
-      - checkout: self
-        clean: true
-      - powershell: eng/validation/update-channel.ps1
-          -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-          -barToken $(MaestroAccessToken)
-        displayName: Move build to 'Latest' channel 
+        - checkout: self
+          clean: true
+        - powershell: eng/validation/update-channel.ps1
+            -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+            -barToken $(MaestroAccessToken)
+          displayName: Move build to 'Latest' channel 
