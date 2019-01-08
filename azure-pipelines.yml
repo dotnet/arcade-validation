@@ -36,26 +36,21 @@ jobs:
             /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
             /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
             /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
             /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
       strategy:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
-            _PublishType: none
             _SignType: test
             _DotNetPublishToBlobFeed : false
           Build_Release:
             _BuildConfig: Release
             # PRs or external builds are not signed.
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              _PublishType: none
               _SignType: test
               _DotNetPublishToBlobFeed : false
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _PublishType: blob
               _SignType: real
               _DotNetPublishToBlobFeed : true
       steps:
@@ -79,12 +74,10 @@ jobs:
         matrix:
           Build_Debug:
             _BuildConfig: Debug
-            _PublishType: none
             _SignType: none
             _DotNetPublishToBlobFeed : false
           Build_Release:
             _BuildConfig: Release
-            _PublishType: none
             _SignType: none
             _DotNetPublishToBlobFeed : false
       steps:
