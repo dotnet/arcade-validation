@@ -108,7 +108,7 @@ jobs:
             HelixTargetQueues: Windows.10.Amd64.Open;Ubuntu.1604.Amd64.Open
             HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
             IsExternal: true
-            creator: arcade-validation
+            Creator: arcade-validation
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             HelixTargetQueues: Windows.10.Amd64;Ubuntu.1604.Amd64
             HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
