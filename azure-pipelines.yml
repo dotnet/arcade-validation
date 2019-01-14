@@ -88,6 +88,7 @@ jobs:
 
     - job: Validate_Helix
       variables:
+      - HelixApiAccessToken: ''
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - group: DotNet-HelixApi-Access
       - _BuildConfig: Release
