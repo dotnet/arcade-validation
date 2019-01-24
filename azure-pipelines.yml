@@ -151,6 +151,7 @@ jobs:
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
             displayName: Sign packages
 
+# Re-enable once we're ready to flow dependencies again after P2.
 #    - job: Push_to_latest_channel
 #      displayName: Push Builds to 'Latest' channel
 #      variables:
