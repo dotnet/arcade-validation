@@ -24,9 +24,11 @@ jobs:
     - job: Windows_NT
       pool:
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-external-temp
+          name: NetCorePublic-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017.Open
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-internal-temp
+          name: NetCoreInternal-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017
       variables:
       - _InternalBuildArgs: ''
 
@@ -72,9 +74,11 @@ jobs:
       container: LinuxContainer
       pool:
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dnceng-linux-external-temp
+          name: NetCorePublic-Int-Pool
+          queue: BuildPool.Ubuntu.1604.Amd64.Open
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dnceng-linux-internal-temp
+          name: NetCoreInternal-Int-Pool
+          queue: BuildPool.Ubuntu.1604.Amd64
       strategy:
         matrix:
           Build_Debug:
@@ -127,7 +131,8 @@ jobs:
     - template: /eng/common/templates/job/job.yml
       parameters:
         pool: 
-          name: dotnet-internal-temp
+          name: NetCoreInternal-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017
         name: Validate_Signing
         enableMicrobuild: true
         enablePublishBuildArtifacts: true
