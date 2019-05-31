@@ -162,6 +162,38 @@ jobs:
               /p:TeamName=DotNetCore
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
             displayName: Sign packages
+    - job: Run_SDL
+      displayName: Run SDL tool
+      steps:
+        - task: NuGetToolInstaller@1
+          displayName: 'Install NuGet.exe'
+        - task: NuGetCommand@2
+          displayName: 'Install Guardian'
+          inputs:
+            restoreSolution: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
+            feedsToUse: config
+            nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
+            externalFeedCredentials: GuardianConnect
+            restoreDirectory: $(Build.SourcesDirectory)\.packages
+        - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
+            -GuardianPackageName Microsoft.Guardian.Cli.0.3.2
+            -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
+            -Repository $(Build.Repository.Name)
+            -SourceDirectory $(Build.SourcesDirectory)
+            -ArtifactsDirectory $(Build.SourcesDirectory)\artifacts
+            -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
+            -SourceToolsList "policheck"
+            -ArtifactToolsList "binskim"
+            -TsaInstanceURL "https://devdiv.visualstudio.com/"
+            -TsaProjectName "DEVDIV"
+            -TsaNotificationEmail "subal@microsoft.com"
+            -TsaCodebaseAdmin "REDMOND\subal"
+            -TsaBugAreaPath "DevDiv\NET\NET Core "
+            -TsaIterationPath "DevDiv"
+            -TsaRepositoryName "Arcade"
+            -TsaCodebaseName "Arcade"
+            -TsaPublish $True
+          displayName: 'Execute SDL'
 
     - job: Push_to_latest_channel
       displayName: Push Builds to 'Latest' channel
