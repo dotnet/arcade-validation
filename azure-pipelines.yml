@@ -164,6 +164,8 @@ jobs:
             displayName: Sign packages
     - job: Run_SDL
       displayName: Run SDL tool
+      variables:
+        - group: SDL_Eng_KeyVault
       steps:
         - task: NuGetToolInstaller@1
           displayName: 'Install NuGet.exe'
