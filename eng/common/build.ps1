@@ -88,7 +88,6 @@ function Build {
     $msbuildArgs += "/p:Projects=$projects"
     $properties = $msbuildArgs
   }
-  Write-Host "This has a message!!!!!"
 
   MSBuild $toolsetBuildProj `
     $bl `
