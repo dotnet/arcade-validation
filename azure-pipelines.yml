@@ -182,10 +182,9 @@ jobs:
             -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
             -Repository $(Build.Repository.Name)
             -SourceDirectory $(Build.SourcesDirectory)
-            -ArtifactsDirectory $(Build.SourcesDirectory)\artifacts
+            -ArtifactsDirectory $(Build.SourcesDirectory)
             -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
-            -SourceToolsList "policheck"
-            -ArtifactToolsList "binskim"
+            -SourceToolsList @("policheck","credscan","apiscan","fxcop")
             -TsaInstanceURL "https://devdiv.visualstudio.com/"
             -TsaProjectName "DEVDIV"
             -TsaNotificationEmail "subal@microsoft.com"
