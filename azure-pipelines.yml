@@ -173,6 +173,15 @@ jobs:
         - Validate_Signing
         - Asset_Registry_Publish
       steps:
+        - checkout: self
+          clean: true
+        - powershell: eng\common\build.ps1
+          -configuration Release
+          -restore
+          -prepareMachine
+          -ci
+          /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          displayName: Windows Build / Publish
         - task: NuGetToolInstaller@1
           displayName: 'Install NuGet.exe'
         - task: NuGetCommand@2
