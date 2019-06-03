@@ -170,6 +170,8 @@ jobs:
         - Windows_NT
         - Linux
         - Validate_Helix
+        - Validate_Signing
+        - Asset_Registry_Publish
       steps:
         - task: NuGetToolInstaller@1
           displayName: 'Install NuGet.exe'
