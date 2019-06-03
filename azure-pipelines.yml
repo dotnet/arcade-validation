@@ -166,6 +166,10 @@ jobs:
       displayName: Run SDL tool
       variables:
         - group: SDL_Eng_KeyVault
+      dependsOn:
+        - Windows_NT
+        - Linux
+        - Validate_Helix
       steps:
         - task: NuGetToolInstaller@1
           displayName: 'Install NuGet.exe'
@@ -182,9 +186,10 @@ jobs:
             -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
             -Repository $(Build.Repository.Name)
             -SourceDirectory $(Build.SourcesDirectory)
-            -ArtifactsDirectory $(Build.SourcesDirectory)
+            -ArtifactsDirectory $(Build.SourcesDirectory)\artifacts
             -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
             -SourceToolsList @("policheck","credscan","apiscan","fxcop")
+            -ArtifactToolsList @("binskim")
             -TsaInstanceURL "https://devdiv.visualstudio.com/"
             -TsaProjectName "DEVDIV"
             -TsaNotificationEmail "subal@microsoft.com"
