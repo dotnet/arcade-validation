@@ -176,11 +176,11 @@ jobs:
         - checkout: self
           clean: true
         - powershell: eng\common\build.ps1
-          -configuration Release
-          -restore
-          -prepareMachine
-          -ci
-          /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            -configuration Release
+            -restore
+            -prepareMachine
+            -ci
+            /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           displayName: Windows Build / Publish
         - task: NuGetToolInstaller@1
           displayName: 'Install NuGet.exe'
