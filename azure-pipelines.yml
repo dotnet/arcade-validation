@@ -166,12 +166,6 @@ jobs:
       displayName: Run SDL tool
       variables:
         - group: SDL_Eng_KeyVault
-      dependsOn:
-        - Windows_NT
-        - Linux
-        - Validate_Helix
-        - Validate_Signing
-        - Asset_Registry_Publish
       steps:
         - checkout: self
           clean: true
