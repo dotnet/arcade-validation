@@ -203,6 +203,7 @@ jobs:
             -ArtifactToolsList @("binskim")
             -TsaInstanceURL "https://devdiv.visualstudio.com/"
             -TsaProjectName "DEVDIV"
+            # TsaNotificationEmail will be changed to dnceng@ to check what the noise level would be with a regular SDL runs
             -TsaNotificationEmail "subal@microsoft.com"
             -TsaCodebaseAdmin "REDMOND\subal"
             -TsaBugAreaPath "DevDiv\NET\NET Core "
