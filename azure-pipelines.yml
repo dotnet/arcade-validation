@@ -192,6 +192,7 @@ jobs:
             nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
             externalFeedCredentials: GuardianConnect
             restoreDirectory: $(Build.SourcesDirectory)\.packages
+        # Script to execute SDL tools. TsaNotificationEmail will be changed to dnceng@ to check what the noise level would be with a regular SDL runs.
         - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
             -GuardianPackageName Microsoft.Guardian.Cli.0.3.2
             -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
@@ -203,7 +204,6 @@ jobs:
             -ArtifactToolsList @("binskim")
             -TsaInstanceURL "https://devdiv.visualstudio.com/"
             -TsaProjectName "DEVDIV"
-            # TsaNotificationEmail will be changed to dnceng@ to check what the noise level would be with a regular SDL runs
             -TsaNotificationEmail "subal@microsoft.com"
             -TsaCodebaseAdmin "REDMOND\subal"
             -TsaBugAreaPath "DevDiv\NET\NET Core "
