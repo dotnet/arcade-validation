@@ -166,6 +166,13 @@ jobs:
         steps:
           - checkout: self
             clean: true
+          - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -restore
+              -prepareMachine
+              -ci
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            displayName: Windows Build / Publish
           - task: NuGetToolInstaller@1
             displayName: 'Install NuGet.exe'
           - task: NuGetCommand@2
@@ -184,7 +191,7 @@ jobs:
               -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
               -Repository $(Build.Repository.Name)
               -SourceDirectory $(Build.SourcesDirectory)
-              -ArtifactsDirectory $(Build.SourcesDirectory)
+              -ArtifactsDirectory $(Build.SourcesDirectory)\artifacts
               -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
               -SourceToolsList @("policheck","credscan","apiscan","fxcop")
               -TsaInstanceURL "https://devdiv.visualstudio.com/"
