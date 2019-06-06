@@ -166,6 +166,13 @@ jobs:
         steps:
           - checkout: self
             clean: true
+          - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -restore
+              -prepareMachine
+              -ci
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            displayName: Windows Build / Publish
           - task: NuGetToolInstaller@1
             displayName: 'Install NuGet.exe'
           - task: NuGetCommand@2
@@ -198,7 +205,7 @@ jobs:
               -TsaPublish $True
             displayName: 'Execute SDL'
 
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
   - template: /eng/common/templates/job/job.yml
     parameters:
       name: Push_to_latest_channel
