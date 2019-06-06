@@ -172,6 +172,7 @@ jobs:
               -prepareMachine
               -ci
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            displayName: Windows Build / Publish
           - task: NuGetToolInstaller@1
             displayName: 'Install NuGet.exe'
           - task: NuGetCommand@2
