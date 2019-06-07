@@ -193,7 +193,7 @@ jobs:
               -SourceDirectory $(Build.SourcesDirectory)
               -ArtifactsDirectory $(Build.SourcesDirectory)
               -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
-              -SourceToolsList @("policheck","credscan","apiscan","fxcop")
+              -SourceToolsList @("policheck","credscan")
               -TsaInstanceURL "https://devdiv.visualstudio.com/"
               -TsaProjectName "DEVDIV"
               -TsaNotificationEmail "subal@microsoft.com"
