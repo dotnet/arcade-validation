@@ -11,213 +11,226 @@ resources:
   - container: LinuxContainer
     image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
-jobs:
-- template: /eng/common/templates/jobs/jobs.yml
-  parameters:
-    enableMicrobuild: true
-    enablePublishBuildArtifacts: true
-    enablePublishBuildAssets: true
-    enablePublishUsingPipelines: $(_PublishUsingPipelines)
-    enableTelemetry: true
-    helixRepo: dotnet/arcade-validation
-    jobs:
-    - job: Windows_NT
-      pool:
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017.Open
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017
-      variables:
-      - _InternalBuildArgs: ''
-
-      # Only enable publishing in non-public, non PR scenarios.
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-        - group: DotNet-Blob-Feed
-        - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
-        - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-            /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-            /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-            /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-            /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-            /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-
-      strategy:
-        matrix:
-          Build_Debug:
-            _BuildConfig: Debug
-            _SignType: test
-            _DotNetPublishToBlobFeed : false
-          Build_Release:
-            _BuildConfig: Release
-            # PRs or external builds are not signed.
-            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              _SignType: test
-              _DotNetPublishToBlobFeed : false
-            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _SignType: real
-              _DotNetPublishToBlobFeed : true
-      steps:
-      - checkout: self
-        clean: true
-      # Use utility script to run script command dependent on agent OS.
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig) 
-          -prepareMachine
-          $(_InternalBuildArgs)
-        displayName: Windows Build / Publish
-
-    - job: Linux
-      container: LinuxContainer
-      pool:
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Ubuntu.1604.Amd64.Open
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Ubuntu.1604.Amd64
-      strategy:
-        matrix:
-          Build_Debug:
-            _BuildConfig: Debug
-            _SignType: none
-            _DotNetPublishToBlobFeed : false
-          Build_Release:
-            _BuildConfig: Release
-            _SignType: none
-            _DotNetPublishToBlobFeed : false
-      steps:
-      - checkout: self
-        clean: true
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        displayName: Unix Build / Publish
-
-    - job: Validate_Helix
-      variables:
-      - HelixApiAccessToken: ''
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - group: DotNet-HelixApi-Access
-      - _BuildConfig: Release
-      steps:
-      - template: /eng/common/templates/steps/send-to-helix.yml
-        parameters:
-          HelixType: test/product/
-          XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-          XUnitTargetFramework: netcoreapp2.0
-          XUnitRunnerVersion: 2.4.1
-          IncludeDotNetCli: true
-          DotNetCliPackageType: sdk
-          DotNetCliVersion: 2.1.403
-          EnableXUnitReporter: true
-          WaitForWorkItemCompletion: true
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enablePublishBuildArtifacts: true
+      enablePublishBuildAssets: true
+      enablePublishUsingPipelines: $(_PublishUsingPipelines)
+      enableTelemetry: true
+      helixRepo: dotnet/arcade-validation
+      jobs:
+      - job: Windows_NT
+        pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
-            HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
-            IsExternal: true
-            Creator: arcade-validation
+            name: NetCorePublic-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            HelixTargetQueues: Windows.10.Amd64;Debian.9.Amd64
-            HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
-            HelixAccessToken: $(HelixApiAccessToken)
-      displayName: Validate Helix
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2017
+        variables:
+        - _InternalBuildArgs: ''
 
-# Jobs that should only run as part of internal builds.
-    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - job: Validate_Signing
-        pool: 
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017
+        # Only enable publishing in non-public, non PR scenarios.
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+          - group: DotNet-Blob-Feed
+          - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
+          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+              /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+              /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
         strategy:
           matrix:
-            Test_Signing:
+            Build_Debug:
               _BuildConfig: Debug
               _SignType: test
-            Real_Signing:
+              _DotNetPublishToBlobFeed : false
+            Build_Release:
               _BuildConfig: Release
-              _SignType: real
+              # PRs or external builds are not signed.
+              ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: test
+                _DotNetPublishToBlobFeed : false
+              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: real
+                _DotNetPublishToBlobFeed : true
         steps:
-          - checkout: self
-            clean: true
-          - task: CopyFiles@2
-            displayName: Copy test packages to artifacts directory
-            inputs:
-              sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
-              targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
-          - powershell: eng\common\build.ps1
-              -configuration $(_BuildConfig)
-              -restore
-              -prepareMachine
-              -sign
-              -ci
-              /p:DotNetSignType=$(_SignType)
-              /p:TeamName=DotNetCore
-              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-            displayName: Sign packages
-      - job: Run_SDL
-        displayName: Run SDL tool
-        variables:
-          - group: SDL_Eng_KeyVault
-          - _BuildConfig: Release
-        steps:
-          - checkout: self
-            clean: true
-          - powershell: eng\common\build.ps1
-              -configuration $(_BuildConfig)
-              -restore
-              -prepareMachine
-              -ci
-              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-            displayName: Windows Build / Publish
-          - task: NuGetToolInstaller@1
-            displayName: 'Install NuGet.exe'
-          - task: NuGetCommand@2
-            displayName: 'Install Guardian'
-            inputs:
-              restoreSolution: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
-              feedsToUse: config
-              nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
-              externalFeedCredentials: GuardianConnect
-              restoreDirectory: $(Build.SourcesDirectory)\.packages
-          # Script to execute SDL tools.
-          # TsaNotificationEmail will be changed to dnceng@
-          # to check what the noise level would be with regular SDL runs.
-          - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
-              -GuardianPackageName Microsoft.Guardian.Cli.0.3.2
-              -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
-              -Repository $(Build.Repository.Name)
-              -SourceDirectory $(Build.SourcesDirectory)
-              -ArtifactsDirectory $(Build.SourcesDirectory)
-              -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
-              -SourceToolsList @("policheck","credscan")
-              -TsaInstanceURL "https://devdiv.visualstudio.com/"
-              -TsaProjectName "DEVDIV"
-              -TsaNotificationEmail "subal@microsoft.com"
-              -TsaCodebaseAdmin "REDMOND\subal"
-              -TsaBugAreaPath "DevDiv\NET\NET Core "
-              -TsaIterationPath "DevDiv"
-              -TsaRepositoryName "Arcade"
-              -TsaCodebaseName "Arcade"
-              -TsaPublish $True
-            displayName: 'Execute SDL'
-
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
-  - template: /eng/common/templates/job/job.yml
-    parameters:
-      name: Push_to_latest_channel
-      displayName: Push Builds to 'Latest' channel
-      variables:
-        - group: Publish-Build-Assets
-      dependsOn:
-        - Asset_Registry_Publish
-      steps:
         - checkout: self
           clean: true
-        - powershell: eng/validation/update-channel.ps1
-            -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-            -barToken $(MaestroAccessToken)
-          displayName: Move build to 'Latest' channel 
+        # Use utility script to run script command dependent on agent OS.
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig) 
+            -prepareMachine
+            $(_InternalBuildArgs)
+          displayName: Windows Build / Publish
+
+      - job: Linux
+        container: LinuxContainer
+        pool:
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: NetCorePublic-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64
+        strategy:
+          matrix:
+            Build_Debug:
+              _BuildConfig: Debug
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+            Build_Release:
+              _BuildConfig: Release
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+        steps:
+        - checkout: self
+          clean: true
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+          displayName: Unix Build / Publish
+
+      - job: Validate_Helix
+        variables:
+        - HelixApiAccessToken: ''
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - group: DotNet-HelixApi-Access
+        - _BuildConfig: Release
+        steps:
+        - template: /eng/common/templates/steps/send-to-helix.yml
+          parameters:
+            HelixType: test/product/
+            XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+            XUnitTargetFramework: netcoreapp2.0
+            XUnitRunnerVersion: 2.4.1
+            IncludeDotNetCli: true
+            DotNetCliPackageType: sdk
+            DotNetCliVersion: 2.1.403
+            EnableXUnitReporter: true
+            WaitForWorkItemCompletion: true
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
+              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+              IsExternal: true
+              Creator: arcade-validation
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64;Debian.9.Amd64
+              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
+              HelixAccessToken: $(HelixApiAccessToken)
+        displayName: Validate Helix
+
+  # Jobs that should only run as part of internal builds.
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - job: Validate_Signing
+          pool: 
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2017
+          strategy:
+            matrix:
+              Test_Signing:
+                _BuildConfig: Debug
+                _SignType: test
+              Real_Signing:
+                _BuildConfig: Release
+                _SignType: real
+          steps:
+            - checkout: self
+              clean: true
+            - task: CopyFiles@2
+              displayName: Copy test packages to artifacts directory
+              inputs:
+                sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+                targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+            - powershell: eng\common\build.ps1
+                -configuration $(_BuildConfig)
+                -restore
+                -prepareMachine
+                -sign
+                -ci
+                /p:DotNetSignType=$(_SignType)
+                /p:TeamName=DotNetCore
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+              displayName: Sign packages
+        - job: Run_SDL
+          displayName: Run SDL tool
+          variables:
+            - group: SDL_Eng_KeyVault
+            - _BuildConfig: Release
+          steps:
+            - checkout: self
+              clean: true
+            - powershell: eng\common\build.ps1
+                -configuration $(_BuildConfig)
+                -restore
+                -prepareMachine
+                -ci
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+              displayName: Windows Build / Publish
+            - task: NuGetToolInstaller@1
+              displayName: 'Install NuGet.exe'
+            - task: NuGetCommand@2
+              displayName: 'Install Guardian'
+              inputs:
+                restoreSolution: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
+                feedsToUse: config
+                nugetConfigPath: $(Build.SourcesDirectory)\eng\common\sdl\NuGet.config
+                externalFeedCredentials: GuardianConnect
+                restoreDirectory: $(Build.SourcesDirectory)\.packages
+            # Script to execute SDL tools.
+            # TsaNotificationEmail will be changed to dnceng@
+            # to check what the noise level would be with regular SDL runs.
+            - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
+                -GuardianPackageName Microsoft.Guardian.Cli.0.3.2
+                -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
+                -Repository $(Build.Repository.Name)
+                -SourceDirectory $(Build.SourcesDirectory)
+                -ArtifactsDirectory $(Build.SourcesDirectory)
+                -DncEngAccessToken $(dn-bot-dotnet-build-rw-code-rw)
+                -SourceToolsList @("policheck","credscan")
+                -TsaInstanceURL "https://devdiv.visualstudio.com/"
+                -TsaProjectName "DEVDIV"
+                -TsaNotificationEmail "subal@microsoft.com"
+                -TsaCodebaseAdmin "REDMOND\subal"
+                -TsaBugAreaPath "DevDiv\NET\NET Core "
+                -TsaIterationPath "DevDiv"
+                -TsaRepositoryName "Arcade"
+                -TsaCodebaseName "Arcade"
+                -TsaPublish $True
+              displayName: 'Execute SDL'
+
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Push_to_latest_channel
+        displayName: Push Builds to 'Latest' channel
+        variables:
+          - group: Publish-Build-Assets
+        dependsOn:
+          - Asset_Registry_Publish
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng/validation/update-channel.ps1
+              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+              -barToken $(MaestroAccessToken)
+            displayName: Move build to 'Latest' channel 
+
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: eng\common\templates\post-build\post-build.yml
+    parameters:
+      # Symbol validation isn't being very reliable lately. This should be enabled back
+      # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
+      enableSymbolValidation: false
+      # Sourcelink validation isn't passing for Arcade-validation. This should be
+      # enabled back once this issue is resolved: https://github.com/dotnet/arcade/issues/3069
+      enableSourceValidation: false
