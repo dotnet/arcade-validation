@@ -172,8 +172,8 @@ stages:
           -TsaCodebaseAdmin "REDMOND\\subal"
           -TsaBugAreaPath "DevDiv\\NET\\NET Core "
           -TsaIterationPath "DevDiv"
-          -TsaRepositoryName "Arcade"
-          -TsaCodebaseName "Arcade"
+          -TsaRepositoryName "Arcade-Validation"
+          -TsaCodebaseName "Arcade-Validation"
           -TsaPublish $True'
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
