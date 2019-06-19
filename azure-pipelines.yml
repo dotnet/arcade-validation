@@ -161,20 +161,20 @@ stages:
                 /p:TeamName=DotNetCore
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - template: /eng/common/templates/job/execute-sdl.yml
-          parameters:
-            additionalParameters: ' -ArtifactsDirectory $(Build.SourcesDirectory)
-              -SourceToolsList @("policheck","credscan")
-              -TsaInstanceURL "https://devdiv.visualstudio.com/"
-              -TsaProjectName "DEVDIV"
-              -TsaNotificationEmail "subal@microsoft.com"
-              -TsaCodebaseAdmin "REDMOND\\subal"
-              -TsaBugAreaPath "DevDiv\\NET\\NET Core "
-              -TsaIterationPath "DevDiv"
-              -TsaRepositoryName "Arcade"
-              -TsaCodebaseName "Arcade"
-              -TsaPublish $True'
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - template: /eng/common/templates/job/execute-sdl.yml
+      parameters:
+        additionalParameters: ' -ArtifactsDirectory $(Build.SourcesDirectory)
+          -SourceToolsList @("policheck","credscan")
+          -TsaInstanceURL "https://devdiv.visualstudio.com/"
+          -TsaProjectName "DEVDIV"
+          -TsaNotificationEmail "subal@microsoft.com"
+          -TsaCodebaseAdmin "REDMOND\\subal"
+          -TsaBugAreaPath "DevDiv\\NET\\NET Core "
+          -TsaIterationPath "DevDiv"
+          -TsaRepositoryName "Arcade"
+          -TsaCodebaseName "Arcade"
+          -TsaPublish $True'
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
     - template: /eng/common/templates/job/job.yml

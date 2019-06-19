@@ -4,7 +4,6 @@ parameters:
   continueOnError: false                                       # optional: determines whether to continue the build if the step errors;
   dependsOn: ''                                                # Optional: dependencies of the job
 
-jobs:
 - job: Run_SDL
   dependsOn: ${{ parameters.dependsOn }}
   displayName: Run SDL tool
