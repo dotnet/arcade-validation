@@ -161,20 +161,6 @@ stages:
                 /p:TeamName=DotNetCore
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/common/templates/job/execute-sdl.yml
-      parameters:
-        additionalParameters: ' -ArtifactsDirectory $(Build.SourcesDirectory)
-          -SourceToolsList @("policheck","credscan")
-          -TsaInstanceURL "https://devdiv.visualstudio.com/"
-          -TsaProjectName "DEVDIV"
-          -TsaNotificationEmail "subal@microsoft.com"
-          -TsaCodebaseAdmin "REDMOND\\subal"
-          -TsaBugAreaPath "DevDiv\\NET\\NET Core "
-          -TsaIterationPath "DevDiv"
-          -TsaRepositoryName "Arcade-Validation"
-          -TsaCodebaseName "Arcade-Validation"
-          -TsaPublish $True'
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
     - template: /eng/common/templates/job/job.yml
@@ -202,3 +188,16 @@ stages:
       # Sourcelink validation isn't passing for Arcade-validation. This should be
       # enabled back once this issue is resolved: https://github.com/dotnet/arcade/issues/3069
       enableSourceLinkValidation: false
+      # This is to enable SDL runs part of Post-Build Validation Stage
+      SDLValidationParameters:
+        enable: true
+        params: ' -SourceToolsList @("policheck","credscan")
+        -TsaInstanceURL "https://devdiv.visualstudio.com/"
+        -TsaProjectName "DEVDIV"
+        -TsaNotificationEmail "subal@microsoft.com"
+        -TsaCodebaseAdmin "REDMOND\\subal"
+        -TsaBugAreaPath "DevDiv\\NET\\NET Core "
+        -TsaIterationPath "DevDiv"
+        -TsaRepositoryName "Arcade"
+        -TsaCodebaseName "Arcade"
+        -TsaPublish $True'
