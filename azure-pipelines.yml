@@ -198,6 +198,6 @@ stages:
         -TsaCodebaseAdmin "REDMOND\\subal"
         -TsaBugAreaPath "DevDiv\\NET\\NET Core "
         -TsaIterationPath "DevDiv"
-        -TsaRepositoryName "Arcade"
-        -TsaCodebaseName "Arcade"
+        -TsaRepositoryName "Arcade-Validation"
+        -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
