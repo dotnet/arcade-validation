@@ -8,8 +8,7 @@
     }
   },
   "native-tools": {
-    "cmake": "3.11.1",
-    "python": "2.7.15"
+    "cmake": "3.11.1"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19374.2",
