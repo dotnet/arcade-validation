@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using Xunit;
 
 namespace Validation_Tests
@@ -66,6 +68,19 @@ namespace Validation_Tests
         public void Test10()
         {
             Assert.True(true);
+        }
+
+        [Fact]
+        public void UploadFileTest()
+        {
+            using (var fs = new FileStream(Path.Combine(Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER"), "fakedump.dmp"), FileMode.Create, FileAccess.ReadWrite))
+            {
+                TextWriter tw = new StreamWriter(fs);
+                tw.Write("blabla");
+                tw.Flush();
+            }
+
+            throw new Exception("blerg");
         }
     }
 }
