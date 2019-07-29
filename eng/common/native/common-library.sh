@@ -43,7 +43,7 @@ function ExpandZip {
   mkdir -p $output_directory
 
   echo "Extracting archive"
-  tar -xf $zip_path -C $output_directory
+  tar -xf $zip_path -C $output_directory --strip-components=1
   if [[ $? != 0 ]]; then
     echo "Unable to extract '$zip_path'" >&2
     return 1

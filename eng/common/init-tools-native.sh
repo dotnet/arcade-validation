@@ -67,10 +67,14 @@ done
 function ReadGlobalJsonNativeTools {
   # Get the native-tools section from the global.json.
   local native_tools_section=$(cat $global_json_file | awk '/"native-tools"/,/}/')
+  echo $native_tools_section
   # Only extract the contents of the object.
   local native_tools_list=$(echo $native_tools_section | awk -F"[{}]" '{print $2}')
+  echo $native_tools_list
   native_tools_list=${native_tools_list//[\" ]/}
+  echo $native_tools_list
   native_tools_list=$( echo "$native_tools_list" | sed 's/,//g' | sed 's/^\s//g' | sed 's/\r/\n/g' )
+  echo $native_tools_list
 
   local old_IFS=$IFS
   while read -r line; do
@@ -107,6 +111,7 @@ else
     installer_command+=" --baseuri $base_uri"
     installer_command+=" --installpath $install_bin"
     installer_command+=" --version $tool_version"
+    echo $installer_command
 
     if [[ $force = true ]]; then
       installer_command+=" --force"
