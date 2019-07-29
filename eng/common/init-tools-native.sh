@@ -73,7 +73,7 @@ function ReadGlobalJsonNativeTools {
   echo $native_tools_list
   native_tools_list=${native_tools_list//[\" ]/}
   echo $native_tools_list
-  native_tools_list=$( echo "$native_tools_list" | sed 's/,//g' | sed 's/^\s//g' | sed 's/\r/\n/g' )
+  native_tools_list=$( echo "$native_tools_list" | sed 's/,//g' | sed 's/^\s//g' | sed 's/[\r ]/\n/g' )
   echo $native_tools_list
 
   local old_IFS=$IFS
