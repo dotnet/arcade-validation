@@ -44,6 +44,9 @@ Param (
   [string] $GlobalJsonFile
 )
 
+Set-StrictMode -Version 2.0
+$ErrorActionPreference = "Stop"
+
 if (!$GlobalJsonFile) {
   $GlobalJsonFile = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "global.json"
 }
