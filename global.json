@@ -11,7 +11,7 @@
     "cmake": "3.11.1"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19379.29",
-    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19379.29"
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19380.1",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19380.1"
   }
 }
