@@ -51,9 +51,6 @@ if (!$GlobalJsonFile) {
   $GlobalJsonFile = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "global.json"
 }
 
-Set-StrictMode -version 2.0
-$ErrorActionPreference="Stop"
-
 Import-Module -Name (Join-Path $PSScriptRoot "native\CommonLibrary.psm1")
 
 try {
