@@ -44,12 +44,12 @@ Param (
   [string] $GlobalJsonFile
 )
 
-Set-StrictMode -Version 2.0
-$ErrorActionPreference = "Stop"
-
 if (!$GlobalJsonFile) {
   $GlobalJsonFile = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "global.json"
 }
+
+Set-StrictMode -version 2.0
+$ErrorActionPreference="Stop"
 
 Import-Module -Name (Join-Path $PSScriptRoot "native\CommonLibrary.psm1")
 
@@ -98,7 +98,7 @@ try {
       }
 
       Write-Verbose "Installing $ToolName version $ToolVersion"
-      Write-Verbose "Executing '$InstallerPath $($LocalInstallerArguments.Keys.ForEach({"-$_ '$($LocalInstallerArguments.$_)'"}) -join ' ')'"
+      Write-Verbose "Executing '$InstallerPath $LocalInstallerArguments'"
       & $InstallerPath @LocalInstallerArguments
       if ($LASTEXITCODE -Ne "0") {
         $errMsg = "$ToolName installation failed"
