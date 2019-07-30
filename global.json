@@ -8,7 +8,8 @@
     }
   },
   "native-tools": {
-    "cmake": "3.11.1"
+    "cmake": "3.11.1",
+    "cmake-test": "3.11.1"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19380.3",
