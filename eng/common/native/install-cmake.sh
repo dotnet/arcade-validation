@@ -67,10 +67,9 @@ tool_folder=$(echo $tool_os | awk '{print tolower($0)}')
 tool_arch="x86_64"
 tool_name_moniker="$tool_name-$version-$tool_os-$tool_arch"
 tool_install_directory="$install_path/$tool_name/$version"
-tool_extracted_directory="$tool_install_directory/$tool_name_moniker"
-tool_file_path="$tool_extracted_directory/bin/$tool_name"
+tool_file_path="$tool_install_directory/$tool_name_moniker/bin/$tool_name"
 shim_path="$install_path/$tool_name.sh"
-uri="${base_uri}/$tool_folder/cmake/$tool_name_moniker.tar.gz"
+uri="${base_uri}/$tool_folder/$tool_name/$tool_name_moniker.tar.gz"
 
 # Clean up tool and installers
 if [[ $clean = true ]]; then
@@ -99,7 +98,7 @@ if [[ -f $tool_file_path ]] && [[ $force = false ]]; then
   exit 0
 fi
 
-DownloadAndExtract $uri $tool_extracted_directory $force $download_retries $retry_wait_time_seconds
+DownloadAndExtract $uri $tool_install_directory $force $download_retries $retry_wait_time_seconds
 
 if [[ $? != 0 ]]; then
   echo "Installation failed" >&2
