@@ -8,6 +8,12 @@ variables:
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
 
+trigger:
+  batch: true
+  branches:
+    include:
+      - master
+
 resources:
   containers:
   - container: LinuxContainer
