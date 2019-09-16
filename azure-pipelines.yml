@@ -13,6 +13,7 @@ trigger:
   branches:
     include:
       - master
+      - release/3.x
 
 resources:
   containers:
