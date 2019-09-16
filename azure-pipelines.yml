@@ -174,8 +174,8 @@ stages:
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
     - template: /eng/common/templates/job/job.yml
       parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
+        name: Push_to_3x_channel
+        displayName: Push Builds to '.NET Tools 3' channel
         variables:
           - group: Publish-Build-Assets
         dependsOn:
@@ -186,7 +186,7 @@ stages:
           - powershell: eng/validation/update-channel.ps1
               -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
               -barToken $(MaestroAccessToken)
-            displayName: Move build to 'Latest' channel 
+            displayName: Move build to '.NET Tools 3' channel
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: eng\common\templates\post-build\post-build.yml
