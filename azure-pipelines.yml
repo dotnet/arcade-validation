@@ -171,23 +171,6 @@ stages:
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
 
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
-    - template: /eng/common/templates/job/job.yml
-      parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
-        variables:
-          - group: Publish-Build-Assets
-        dependsOn:
-          - Asset_Registry_Publish
-        steps:
-          - checkout: self
-            clean: true
-          - powershell: eng/validation/update-channel.ps1
-              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-              -barToken $(MaestroAccessToken)
-            displayName: Move build to 'Latest' channel 
-
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
@@ -210,3 +193,29 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
+
+  - stage: Push_to_latest_channel
+    displayName: Push build to 'Latest' channel
+    dependsOn:
+      # This will run only after all the publishing stages have run.
+      # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
+      - NetCore_Dev31_Publish
+      - NetCore_Dev5_Publish
+      - NetCore_Release30_Publish
+      - NetCore_Release31_Publish
+      - PVR_Publish
+      - NetCore_30_Internal_Servicing_Publishing
+    jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Push_to_latest_channel
+        displayName: Push Builds to 'Latest' channel
+        variables:
+          - group: Publish-Build-Assets
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng/validation/update-channel.ps1
+              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+              -barToken $(MaestroAccessToken)
+            displayName: Move build to 'Latest' channel 
