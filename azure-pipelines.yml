@@ -210,8 +210,6 @@ stages:
         displayName: Push Builds to 'Latest' channel
         variables:
           - group: Publish-Build-Assets
-        dependsOn:
-          - Asset_Registry_Publish
         steps:
           - checkout: self
             clean: true
