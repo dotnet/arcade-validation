@@ -195,6 +195,7 @@ stages:
         -TsaPublish $True'
 
   - stage: Push_to_latest_channel
+    displayName: Push build to 'Latest' channel
     dependsOn:
       # This will run only after all the publishing stages have run.
       # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
