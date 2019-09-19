@@ -203,6 +203,7 @@ stages:
       - NetCore_Release30_Publish
       - NetCore_Release31_Publish
       - PVR_Publish
+      - NetCore_30_Internal_Servicing_Publishing
     jobs:
     - template: /eng/common/templates/job/job.yml
       parameters:
