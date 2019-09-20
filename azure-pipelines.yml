@@ -199,6 +199,7 @@ stages:
       enableSourceLinkValidation: false
       # This is to enable SDL runs part of Post-Build Validation Stage
       SDLValidationParameters:
+        continueOnError: false
         enable: true
         params: ' -SourceToolsList @("policheck","credscan")
         -TsaInstanceURL "https://devdiv.visualstudio.com/"
