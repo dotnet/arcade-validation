@@ -195,7 +195,7 @@ stages:
         -TsaPublish $True'
 
   - stage: Push_to_latest_channel
-    displayName: Push Build to '.NET Tools 3' channel
+    displayName: Push Build to '.NET 3 Tools' channel
     variables:
       - group: Publish-Build-Assets
     dependsOn:
@@ -215,11 +215,11 @@ stages:
     - template: /eng/common/templates/job/job.yml
       parameters:
         name: Push_to_3x_channel
-        displayName: Push Builds to '.NET Tools 3' channel
+        displayName: Push Builds to '.NET 3 Tools' channel
         steps:
           - checkout: self
             clean: true
           - powershell: eng/validation/update-channel.ps1
               -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
               -barToken $(MaestroAccessToken)
-            displayName: Move build to '.NET Tools 3' channel
+            displayName: Move build to '.NET 3 Tools' channel
