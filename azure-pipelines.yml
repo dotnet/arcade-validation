@@ -7,6 +7,7 @@ variables:
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
+  - group: SDL_Settings
 
 trigger:
   batch: true
@@ -184,12 +185,12 @@ stages:
       SDLValidationParameters:
         enable: true
         params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL "https://devdiv.visualstudio.com/"
-        -TsaProjectName "DEVDIV"
-        -TsaNotificationEmail "dnceng@microsoft.com"
-        -TsaCodebaseAdmin "REDMOND\dn-bot"
-        -TsaBugAreaPath "DevDiv\NET Core "
-        -TsaIterationPath "DevDiv"
+        -TsaInstanceURL $_TsaInstanceURL
+        -TsaProjectName $_TsaProjectName
+        -TsaNotificationEmail $_TsaNotificationEmail
+        -TsaCodebaseAdmin $_TsaCodebaseAdmin
+        -TsaBugAreaPath $_TsaBugAreaPath
+        -TsaIterationPath $_TsaIterationPath
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
