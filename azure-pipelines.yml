@@ -188,7 +188,7 @@ stages:
         -TsaProjectName "DEVDIV"
         -TsaNotificationEmail "dnceng@microsoft.com"
         -TsaCodebaseAdmin "REDMOND\dn-bot"
-        -TsaBugAreaPath "DevDiv\NET\NET Core "
+        -TsaBugAreaPath "DevDiv\NET Core "
         -TsaIterationPath "DevDiv"
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
