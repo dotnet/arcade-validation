@@ -38,10 +38,10 @@ stages:
       - job: Windows_NT
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Int-Pool
+            name: NetCorePublic-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Int-Pool
+            name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
@@ -91,7 +91,7 @@ stages:
             name: NetCorePublic-Pool
             queue: BuildPool.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Int-Pool
+            name: NetCoreInternal-Pool
             queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
@@ -120,8 +120,8 @@ stages:
         steps:
         - template: /eng/common/templates/steps/send-to-helix.yml
           parameters:
-            HelixBaseUri: https://helix.int-dot.net/
             HelixType: test/product/
+            HelixBaseUri: https://helix.int-dot.net/
             XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
             XUnitTargetFramework: netcoreapp2.0
             XUnitRunnerVersion: 2.4.1
@@ -145,7 +145,7 @@ stages:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
           pool:
-            name: NetCoreInternal-Int-Pool
+            name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
           strategy:
             matrix:
