@@ -39,10 +39,10 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCorePublic-Int-Pool
-            queue: pr-windows.7.amd64.open-coreEng8243
+            queue: BuildPool.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCoreInternal-Int-Pool
-            queue: pr-windows.7.amd64-coreEng8243
+            queue: BuildPool.Windows.10.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
 
@@ -89,10 +89,10 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCorePublic-Int-Pool
-            queue: pr-centos.7.amd64.open-coreEng8243
+            queue: BuildPool.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCoreInternal-Int-Pool
-            queue: pr-centos.7.amd64-coreEng8243
+            queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
             Build_Debug:
@@ -131,7 +131,7 @@ stages:
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
+              HelixTargetQueues: pr-centos.7.amd64.open-coreEng8243;pr-windows.7.amd64.open-coreEng8243;pr-debian.8.amd64.open-coreEng8243
               HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
               IsExternal: true
               Creator: arcade-validation
