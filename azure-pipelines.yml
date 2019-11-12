@@ -9,6 +9,12 @@ variables:
     value: .NETCoreValidation
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: SDL_Settings
+  - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+    - value: NetCorePublic-Pool
+  - ${{ if and(eq(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+    - value: NetCoreInternal-Pool
 
 trigger:
   batch: true
