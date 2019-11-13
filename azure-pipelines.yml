@@ -9,6 +9,12 @@ variables:
     value: .NETCoreValidation
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: SDL_Settings
+  - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+      value: NetCorePublic-Pool
+  - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+      value: NetCoreInternal-Pool
 
 trigger:
   batch: true
@@ -37,11 +43,10 @@ stages:
       jobs:
       - job: Windows_NT
         pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
@@ -87,11 +92,10 @@ stages:
       - job: Linux
         container: LinuxContainer
         pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
             queue: BuildPool.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
             queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
@@ -144,7 +148,7 @@ stages:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
           pool: 
-            name: NetCoreInternal-Pool
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
           strategy:
             matrix:
