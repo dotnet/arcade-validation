@@ -205,12 +205,12 @@ stages:
     dependsOn:
       # This will run only after all the publishing stages have run.
       # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
-      - NetCore_Dev31_Publish
       - NetCore_Dev5_Publish
-      - NetCore_Release30_Publish
-      - NetCore_Release31_Publish
+      - NetCore_Tools_Latest_Publish
       - PVR_Publish
-      - NetCore_30_Internal_Servicing_Publishing
+      - General_Testing_Publish
+      - NETCore_Tooling_Dev_Publishing
+      - NETCore_Tooling_Release_Publishing
     jobs:
     - template: /eng/common/templates/job/job.yml
       parameters:
