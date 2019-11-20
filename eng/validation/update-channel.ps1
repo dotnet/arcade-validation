@@ -2,7 +2,7 @@ Param(
   [string] $maestroEndpoint,
   [string] $barToken,
   [string] $apiVersion = "2018-07-16",
-  [string] $targetChannelName = ".NET 3 Tools"
+  [string] $targetChannelName = ".NET 3 Eng"
 )
 
 . $PSScriptRoot\..\common\tools.ps1
