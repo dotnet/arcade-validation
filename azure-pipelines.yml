@@ -7,6 +7,20 @@ variables:
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: SDL_Settings
+  - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+      value: NetCorePublic-Pool
+  - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
+    - name: PoolProvider
+      value: NetCoreInternal-Pool
+  - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
+    - name: PoolProvider
+      value: NetCorePublicInt-Pool
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
+    - name: PoolProvider
+      value: NetCoreInternalInt-Pool
 
 trigger:
   batch: true
@@ -14,6 +28,14 @@ trigger:
     include:
       - master
       - release/3.x
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Once a day build using Staging pools (at midnight)
+  branches:
+    include:
+    - master
+  always: true
 
 resources:
   containers:
@@ -35,11 +57,10 @@ stages:
       jobs:
       - job: Windows_NT
         pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
@@ -85,11 +106,10 @@ stages:
       - job: Linux
         container: LinuxContainer
         pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
             queue: BuildPool.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
             queue: BuildPool.Ubuntu.1604.Amd64
         strategy:
           matrix:
@@ -142,7 +162,7 @@ stages:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
           pool: 
-            name: NetCoreInternal-Pool
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2017
           strategy:
             matrix:
@@ -171,23 +191,6 @@ stages:
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
 
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')) }}:
-    - template: /eng/common/templates/job/job.yml
-      parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
-        variables:
-          - group: Publish-Build-Assets
-        dependsOn:
-          - Asset_Registry_Publish
-        steps:
-          - checkout: self
-            clean: true
-          - powershell: eng/validation/update-channel.ps1
-              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-              -barToken $(MaestroAccessToken)
-            displayName: Move build to 'Latest' channel 
-
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
@@ -201,12 +204,38 @@ stages:
       SDLValidationParameters:
         enable: true
         params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL "https://devdiv.visualstudio.com/"
-        -TsaProjectName "DEVDIV"
-        -TsaNotificationEmail "dnceng@microsoft.com"
-        -TsaCodebaseAdmin "REDMOND\dn-bot"
-        -TsaBugAreaPath "DevDiv\NET\NET Core "
-        -TsaIterationPath "DevDiv"
+        -TsaInstanceURL $(_TsaInstanceURL)
+        -TsaProjectName $(_TsaProjectName)
+        -TsaNotificationEmail $(_TsaNotificationEmail)
+        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaIterationPath $(_TsaIterationPath)
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
+
+  - stage: Push_to_latest_channel
+    displayName: Push build to 'Latest' channel
+    dependsOn:
+      # This will run only after all the publishing stages have run.
+      # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
+      - NetCore_Dev5_Publish
+      - NetCore_Tools_Latest_Publish
+      - PVR_Publish
+      - General_Testing_Publish
+      - NETCore_Tooling_Dev_Publishing
+      - NETCore_Tooling_Release_Publishing
+    jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Push_to_latest_channel
+        displayName: Push Builds to 'Latest' channel
+        variables:
+          - group: Publish-Build-Assets
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng/validation/update-channel.ps1
+              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+              -barToken $(MaestroAccessToken)
+            displayName: Move build to 'Latest' channel 
