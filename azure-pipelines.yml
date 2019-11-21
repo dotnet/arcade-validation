@@ -220,8 +220,8 @@ stages:
       # This will run only after all the publishing stages have run.
       # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
       - NetCore_Dev5_Publish
-      - NetCore_Tools_Latest_Publish
-      - PVR_Publish
+      - Net_Eng_Latest_Publish
+      - Net_Eng_Validation_Publish
       - General_Testing_Publish
       - NETCore_Tooling_Dev_Publishing
       - NETCore_Tooling_Release_Publishing
