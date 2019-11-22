@@ -205,8 +205,8 @@ stages:
       # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
       - NetCore_Dev5_Publish
       - NetCore_Dev31_Publish
-      - NetCore_Tools_Latest_Publish
-      - PVR_Publish
+      - Net_Eng_Latest_Publish
+      - Net_Eng_Validation_Publish
       - NetCore_3_Tools_Validation_Publish
       - NetCore_3_Tools_Publish
       - NetCore_Release30_Publish
@@ -217,6 +217,12 @@ stages:
       - General_Testing_Publish
       - NETCore_Tooling_Dev_Publishing
       - NETCore_Tooling_Release_Publishing
+      - NETCore_SDK_301xx_Publishing
+      - NETCore_SDK_301xx_Internal_Publishing
+      - NETCore_SDK_311xx_Publishing
+      - NETCore_SDK_311xx_Internal_Publishing
+      - NETCore_SDK_312xx_Publishing
+      - NETCore_SDK_312xx_Internal_Publishing
     jobs:
     - template: /eng/common/templates/job/job.yml
       parameters:
