@@ -17,10 +17,10 @@ variables:
       value: NetCoreInternal-Pool
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
-      value: NetCorePublicInt-Pool
+      value: NetCorePublic-Int-Pool
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
-      value: NetCoreInternalInt-Pool
+      value: NetCoreInternal-Int-Pool
 
 trigger:
   batch: true
