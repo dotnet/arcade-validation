@@ -148,7 +148,7 @@ stages:
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
+              HelixTargetQueues: Centos.7.amd64.Open
               HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
               IsExternal: true
               Creator: arcade-validation
