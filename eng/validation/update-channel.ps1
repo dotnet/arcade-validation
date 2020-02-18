@@ -56,7 +56,7 @@ try {
 
     if ($DarcOutput -match "has already been assigned to") 
     {
-        Write-Host "Build has already been assigned to channel '${targetChannelName}'."
+        Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
     }
     else {
         $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
