@@ -54,8 +54,10 @@ try {
         exit 1
     }
 
-    if ($DarcOutput -match "has already been assigned to") 
-    {
+    # Consider re-working or removing the code below once this issue is closed:
+    # https://github.com/dotnet/arcade/issues/4863
+
+    if ($DarcOutput -match "has already been assigned to") {
         Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
     }
     else {
