@@ -52,35 +52,35 @@ try {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
         Write-Host $DarcOutput
         exit 1
-	}
+    }
 
     if ($DarcOutput -match "has already been assigned to") 
     {
         Write-Host "Build has already been assigned to channel '${targetChannelName}'."
-	}
+    }
     else {
-	    $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
+        $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
 
-	    $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
+        $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
         $waitIntervalsInSeconds = 60
         $build = $null
 
-	    do {
+        do {
             Write-Host "Waiting ${waitIntervalsInSeconds} seconds for promotion build to complete... https://dnceng.visualstudio.com/internal/_build/results?buildId=${azdoBuildId}"
 
             Start-Sleep -Seconds $waitIntervalsInSeconds
 
             $build = Get-AzDO-Build -token $azdoToken -azdoBuildId $azdoBuildId
-	    } while ($build.status -ne "completed")
+        } while ($build.status -ne "completed")
 
         if ($build.result -eq "succeeded") {
             Write-Host "The build was promoted with success."
-	    }
+        }
         else {
             Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
             exit 1
         }    
-	}
+    }
 }
 catch {
     Write-Host $_
