@@ -74,7 +74,7 @@ try {
         } while ($build.status -ne "completed")
 
         if ($build.result -eq "succeeded") {
-            Write-Host "The build was promoted with success."
+            Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
         }
         else {
             Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
