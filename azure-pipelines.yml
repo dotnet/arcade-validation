@@ -231,6 +231,7 @@ stages:
       parameters:
         name: Push_to_latest_channel
         displayName: Push Builds to 'Latest' channel
+        timeoutInMinutes: 180
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
