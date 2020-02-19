@@ -3,7 +3,8 @@ Param(
   [string] $barToken,
   [string] $apiVersion = "2018-07-16",
   [string] $targetChannelName = ".NET Eng - Latest",
-  [string] $azdoToken
+  [string] $azdoToken,
+  [string] $githubToken
 )
 
 . $PSScriptRoot\..\common\tools.ps1
@@ -46,7 +47,7 @@ try {
 
     . $PSScriptRoot\..\common\darc-init.ps1
 
-    $DarcOutput = darc add-build-to-channel --id $buildId --channel "$targetChannelName"
+    $DarcOutput = darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
     
     if ($LastExitCode -ne 0) {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."

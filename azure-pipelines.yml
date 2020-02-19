@@ -231,8 +231,10 @@ stages:
       parameters:
         name: Push_to_latest_channel
         displayName: Push Builds to 'Latest' channel
+        timeoutInMinutes: 180
         variables:
           - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
         steps:
           - checkout: self
             clean: true
@@ -240,4 +242,5 @@ stages:
               -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
               -barToken $(MaestroAccessToken)
               -azdoToken $(AzdoDncEngQueueBuildsToken)
+              -githubToken $(BotAccount-dotnet-bot-repo-PAT)
             displayName: Move build to 'Latest' channel 
