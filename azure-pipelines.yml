@@ -241,6 +241,6 @@ stages:
           - powershell: eng/validation/update-channel.ps1
               -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
               -barToken $(MaestroAccessToken)
-              -azdoToken $(AzdoDncEngQueueBuildsToken)
+              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
               -githubToken $(BotAccount-dotnet-bot-repo-PAT)
             displayName: Move build to 'Latest' channel 
