@@ -59,9 +59,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Windows.10.Amd64.VS2017.Open
+            queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
         variables:
         - _InternalBuildArgs: ''
 
@@ -108,9 +108,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Ubuntu.1604.Amd64.Open
+            queue: BuildPool.Ubuntu.1604.Amd64.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Ubuntu.1604.Amd64
+            queue: BuildPool.Ubuntu.1604.Amd64.Arcade
         strategy:
           matrix:
             Build_Debug:
@@ -148,12 +148,12 @@ stages:
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
+              HelixTargetQueues: Windows.10.Amd64.Arcade.Open;Debian.9.Amd64.Arcade.Open
               HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
               IsExternal: true
               Creator: arcade-validation
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64;Debian.9.Amd64
+              HelixTargetQueues: Windows.10.Amd64.Arcade;Debian.9.Amd64.Arcade
               HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
               HelixAccessToken: $(HelixApiAccessToken)
         displayName: Validate Helix
@@ -163,7 +163,7 @@ stages:
         - job: Validate_Signing
           pool: 
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
           strategy:
             matrix:
               Test_Signing:
