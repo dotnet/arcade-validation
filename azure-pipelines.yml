@@ -106,11 +106,11 @@ stages:
       - job: Linux
         container: LinuxContainer
         pool:
-          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             queue: BuildPool.Ubuntu.1604.Amd64.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Ubuntu.1604.Amd64
+            name: Hosted Ubuntu 1604
         strategy:
           matrix:
             Build_Debug:
