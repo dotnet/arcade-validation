@@ -3,10 +3,6 @@ variables:
     value: DotNetCore
   - name: _PublishUsingPipelines
     value: true
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCoreValidation
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
@@ -67,32 +63,24 @@ stages:
 
         # Only enable publishing in non-public, non PR scenarios.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-          - group: DotNet-Blob-Feed
-          - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
-          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) 
+              /p:TeamName=$(_TeamName)
               /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-              /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
         strategy:
           matrix:
-            Build_Debug:
-              _BuildConfig: Debug
-              _SignType: test
-              _DotNetPublishToBlobFeed : false
             Build_Release:
               _BuildConfig: Release
               # PRs or external builds are not signed.
               ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
                 _SignType: test
-                _DotNetPublishToBlobFeed : false
               ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
                 _SignType: real
-                _DotNetPublishToBlobFeed : true
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              Build_Debug:
+                _BuildConfig: Debug
+                _SignType: test
         steps:
         - checkout: self
           clean: true
@@ -116,11 +104,9 @@ stages:
             Build_Debug:
               _BuildConfig: Debug
               _SignType: none
-              _DotNetPublishToBlobFeed : false
             Build_Release:
               _BuildConfig: Release
               _SignType: none
-              _DotNetPublishToBlobFeed : false
         steps:
         - checkout: self
           clean: true
