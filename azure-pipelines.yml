@@ -24,10 +24,6 @@ trigger:
     include:
       - master
       - release/3.x
-pr:
-  branches:
-    include:
-    - '*'
 
 schedules:
 - cron: "0 0 * * *"
@@ -204,38 +200,34 @@ stages:
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
 
-  - stage: Push_to_latest_channel
-    displayName: Push build to 'Latest' channel
-    dependsOn:
-      # This will run only after all the publishing stages have run.
-      # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
-      - NetCore_Dev5_Publish
-      - Net5_Preview1_Publish
-      - Net5_Preview2_Publish
-      - Net_Eng_Latest_Publish
-      - Net_Eng_Validation_Publish
-      - General_Testing_Publish
-      - NETCore_Tooling_Dev_Publishing
-      - NETCore_Tooling_Release_Publishing
-      - NET_Internal_Tooling_Publishing
-      - NETCore_Experimental_Publishing
-      - Net_Eng_Services_Int_Publish
-      - Net_Eng_Services_Prod_Publish
-    jobs:
+# Arcade validiation with additional repos
+- stage: Additional_Arcade_Validation
+  displayName: Additional Arcade Validation
+  jobs:
     - template: /eng/common/templates/job/job.yml
       parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
+        name: Validate_with_Roslyn
+        displayName: Validate With Roslyn
         timeoutInMinutes: 180
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
+          - group: DotNet-Blob-Feed
+          - group: DotNet-Symbol-Server-Pats
+          - group: DotNet-VSTS-Infra-Access
         steps:
           - checkout: self
             clean: true
-          - powershell: eng/validation/update-channel.ps1
-              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+          - powershell: eng\validation\build-arcadewithrepo.ps1
+              -azdoOrg "devdiv" 
+              -azdoProject "devdiv"
+              -buildDefinitionId 8972
+              -azdoToken $(dn-bot-devdiv-build-rw-code-rw)
+              -githubUser "dotnet-bot"
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+              -githubOrg "dotnet"
+              -targetRepoName "roslyn"
               -barToken $(MaestroAccessToken)
-              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-              -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-            displayName: Move build to 'Latest' channel 
+              -buildParameters '{"SkipApplyOptimizationData":"true"}'
+  
+# End Arcade validation with runtime and roslyn
