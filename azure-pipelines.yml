@@ -24,10 +24,6 @@ trigger:
     include:
       - master
       - release/3.x
-pr:
-  branches:
-    include:
-    - '*'
 
 schedules:
 - cron: "0 0 * * *"
@@ -203,32 +199,32 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  # Arcade validation with additional repos
-  - stage: Validate_Arcade_With_Consumer_Repositories
-    displayName: Validate Arcade with Consumer Repositories
-    jobs:
-      - template: /eng/common/templates/job/job.yml
-        parameters:
-          name: Validate_Arcade_with_Roslyn
-          displayName: Validate Arcade with Roslyn
-          timeoutInMinutes: 180
-          variables:
-            - group: Publish-Build-Assets
-            - group: DotNetBot-GitHub
-            - group: DotNet-Blob-Feed
-            - group: DotNet-Symbol-Server-Pats
-            - group: DotNet-VSTS-Infra-Access
-          steps:
-            - checkout: self
-              clean: true
-            - powershell: eng\validation\build-arcadewithrepo.ps1
-                -azdoOrg "devdiv" 
-                -azdoProject "devdiv"
-                -buildDefinitionId 8972
-                -azdoToken $(dn-bot-devdiv-build-rw-code-rw)
-                -githubUser "dotnet-bot"
-                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-                -githubOrg "dotnet"
-                -targetRepoName "roslyn"
-                -barToken $(MaestroAccessToken)
-                -buildParameters '{"SkipApplyOptimizationData":"true"}' 
+# Arcade validation with additional repos
+- stage: Validate_Arcade_With_Consumer_Repositories
+  displayName: Validate Arcade with Consumer Repositories
+  jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Validate_Arcade_with_Roslyn
+        displayName: Validate Arcade with Roslyn
+        timeoutInMinutes: 180
+        variables:
+          - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+          - group: DotNet-Blob-Feed
+          - group: DotNet-Symbol-Server-Pats
+          - group: DotNet-VSTS-Infra-Access
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng\validation\build-arcadewithrepo.ps1
+              -azdoOrg "devdiv" 
+              -azdoProject "devdiv"
+              -buildDefinitionId 8972
+              -azdoToken $(dn-bot-devdiv-build-rw-code-rw)
+              -githubUser "dotnet-bot"
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+              -githubOrg "dotnet"
+              -targetRepoName "roslyn"
+              -barToken $(MaestroAccessToken)
+              -buildParameters '{"SkipApplyOptimizationData":"true"}' 
