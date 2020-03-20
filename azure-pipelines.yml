@@ -24,6 +24,10 @@ trigger:
     include:
       - master
       - release/3.x
+pr:
+  branches:
+    include:
+    - '*'
 
 schedules:
 - cron: "0 0 * * *"
