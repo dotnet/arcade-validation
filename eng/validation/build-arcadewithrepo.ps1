@@ -26,7 +26,9 @@ Param(
   [Parameter(Mandatory=$true)]
   [string] $barToken, 
 
-  [string] $buildParameters = ''
+  [string] $buildParameters = '',
+
+  [int] $daysOfOldestBuild = 3
 )
 
 set-strictmode -version 2.0
@@ -43,25 +45,20 @@ $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([S
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
 New-Item -Path $testRoot -ItemType Directory | Out-Null
 
-$days = 3
-$minTime = (Get-Date).AddDays(-$days)
+$minTime = (Get-Date).AddDays(-$daysOfOldestBuild)
 $buildReasonsList = @("batchedCI", "individualCI")
 
 function Get-LastKnownGoodBuildSha(
-    [string] $azdoOrg, 
-    [string] $azdoProject,
-    [int] $buildDefinitionId,
-    [string] $azdoToken)
+    [int] $buildDefinitionId)
 {
 
-    ## Have there been any builds in the last $days days? 
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    ## Have there been any builds in the last $daysOfOldestBuild days? 
+    $headers = Get-AzDOHeaders
     $count = 0
 
     foreach($reason in $buildReasonsList)
     {
-        $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds?api-version=5.1&statusFilter=completed&definitions=${buildDefinitionId}&reasonFilter=${reason}&minTime=${minTime}&`$top=1"
+        $uri = Get-AzDOBuildUri -queryStringParameters "&statusFilter=completed&definitions=${buildDefinitionId}&reasonFilter=${reason}&minTime=${minTime}&`$top=1"
         $reponse = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
         $count += $reponse.count
     }
@@ -73,7 +70,7 @@ function Get-LastKnownGoodBuildSha(
 
         foreach($reason in $buildReasonsList)
         {
-            $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds?api-version=5.1&resultsFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&`$top=1"
+            $uri = Get-AzDOBuildUri -queryStringParameters "&resultsFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&`$top=1"
             $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
             if(1 -eq $response.count)
             {
@@ -84,7 +81,7 @@ function Get-LastKnownGoodBuildSha(
         return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
     }
 
-    ## If there have been builds in the last $days days, get the last known good build from that time frame
+    ## If there have been builds in the last $daysOfOldestBuild days, get the last known good build from that time frame
     else
     {
         $contentArray = @()
@@ -92,14 +89,14 @@ function Get-LastKnownGoodBuildSha(
 
         foreach($reason in $buildReasonsList)
         {
-            $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds?api-version=5.1&resultFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&minTime=${minTime}&`$top=1"
+            $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&minTime=${minTime}&`$top=1"
             $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
             if(1 -eq $response.count)
             {
                 $contentArray += $response
             }
         }
-        ## If there are no last known good builds in the last $days days, then write a warning. 
+        ## If there are no last known good builds in the last $daysOfOldestBuild days, then write a warning. 
         $contentArray | Foreach-Object {$count += $_.count}
         if($count -eq 0)
         {
@@ -112,16 +109,12 @@ function Get-LastKnownGoodBuildSha(
 }
 
 function Invoke-AzDOBuild(
-    [string] $azdoOrg, 
-    [string] $azdoProject,
     [int] $buildDefinitionId,
-    [string] $azdoToken,
     [string] $branchName,
     [string] $buildParameters)
 { 
-    $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds?api-version=5.1"
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    $uri = Get-AzDOBuildUri
+    $headers = Get-AzDOHeaders
 
     $body = @{
         "definition"=@{
@@ -140,29 +133,43 @@ function Invoke-AzDOBuild(
 }
 
 function Get-BuildStatus(
-    [string] $azdoOrg, 
-    [string] $azdoProject,
-    [int] $buildId,
-    [string] $azdoToken)
+    [int] $buildId)
 {
-    $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds/${buildId}?api-version=5.1"
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    $uri = (Get-AzDOBuildUri -buildId $buildId)
+    $headers = Get-AzDOHeaders
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Method Get 
     return ($content | ConvertFrom-Json).status
 }
 
 function Get-BuildResult(
-    [string] $azdoOrg, 
-    [string] $azdoProject,
-    [int] $buildId,
-    [string] $azdoToken)
+    [int] $buildId)
 {
-    $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds/${buildId}?api-version=5.1"
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    $uri = (Get-AzDOBuildUri -buildId $buildId)
+    $headers = Get-AzDOHeaders
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Method Get 
     return ($content | ConvertFrom-Json).result
+}
+
+function Get-AzDOBuildUri(
+    [int] $buildId,
+    [string] $queryStringParameters
+)
+{
+    $uri = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_apis/build/builds/"
+    if(0 -ne $buildId) 
+    {
+        $uri += $buildId
+    }
+    
+    $uri += "?api-version=5.1" + $queryStringParameters
+    return $uri
+}
+
+function Get-AzDOHeaders()
+{
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
+    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    return $headers
 }
 
 function Get-Github-RepoAuthUri($repoName)
@@ -173,10 +180,10 @@ function Get-Github-RepoAuthUri($repoName)
 function GitHub-Clone($repoName) 
 {
     $authUri = Get-Github-RepoAuthUri $repoName
-    & git clone $authUri $(Get-Repo-Location $repoName)
+    Git-Command $repoName clone $authUri $(Get-Repo-Location $repoName)
     Push-Location -Path $(Get-Repo-Location $repoName)
-    & git config user.email "${githubUser}@test.com"
-    & git config user.name $githubUser
+    Git-Command $repoName config user.email "${githubUser}@test.com"
+    Git-Command $repoName config user.name $githubUser
     Pop-Location
 }
 
@@ -202,7 +209,7 @@ function Git-Command($repoName) {
 }
 
 ## If able to retrieve a build, get the SHA that it was built from
-$sha = Get-LastKnownGoodBuildSha -azdoOrg $azdoOrg -azdoProject $azdoProject -buildDefinitionId $buildDefinitionId -azdoToken $azdoToken
+$sha = Get-LastKnownGoodBuildSha -buildDefinitionId $buildDefinitionId
 
 ## Clone the repo from git
 GitHub-Clone $targetRepoName
@@ -238,10 +245,10 @@ Git-Command $targetRepoName push origin HEAD
 & darc add-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
 
 ## Run an official build of the branch using the official pipeline
-$buildId = Invoke-AzDOBuild -azdoOrg $azdoOrg -azdoProject $azdoProject -buildDefinitionId $buildDefinitionId -azdoToken $azdoToken -branchName $targetBranch -buildParameters $buildParameters
+$buildId = Invoke-AzDOBuild -buildDefinitionId $buildDefinitionId -branchName $targetBranch -buildParameters $buildParameters
 
 ## Check build for completion every 5 minutes. 
-while("completed" -ne (Get-BuildStatus -azdoOrg $azdoOrg -azdoProject $azdoProject -buildId $buildId -azdoToken $azdoToken))
+while("completed" -ne (Get-BuildStatus -buildId $buildId))
 {
     Write-Host "Waiting for build to complete..."
     Start-Sleep -Seconds (5*60)
@@ -254,7 +261,8 @@ Write-Host "Branch name in repository: ${targetBranch}"
 Write-Host "Last Known Good build SHA: ${sha}"
 
 ## If build fails, then exit
-if("failed" -eq (Get-BuildResult -azdoOrg $azdoOrg -azdoProject $azdoProject -buildId $buildId -azdoToken $azdoToken))
+$buildResult = (Get-BuildResult -buildId $buildId)
+if(("failed" -eq $buildResult) -or ("canceled" -eq $buildResult))
 {
     Write-Error "Build failed"
     exit
