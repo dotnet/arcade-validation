@@ -150,6 +150,15 @@ function Get-BuildResult(
     return ($content | ConvertFrom-Json).result
 }
 
+function Get-BuildLink(
+    [int] $build)
+{
+    $uri = (Get-AzDOBuildUri -buildId $buildId)
+    $headers = Get-AzDOHeaders
+    $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Method Get 
+    return ($content | ConvertFrom-Json)._links.web.href
+}
+
 function Get-AzDOBuildUri(
     [int] $buildId,
     [string] $queryStringParameters
@@ -180,17 +189,14 @@ function Get-Github-RepoAuthUri($repoName)
 function GitHub-Clone($repoName) 
 {
     $authUri = Get-Github-RepoAuthUri $repoName
-    Git-Command $repoName clone $authUri $(Get-Repo-Location $repoName)
+    & git clone $authUri $(Get-Repo-Location $repoName)
     Push-Location -Path $(Get-Repo-Location $repoName)
-    Git-Command $repoName config user.email "${githubUser}@test.com"
-    Git-Command $repoName config user.name $githubUser
+    & git config user.email "${githubUser}@test.com"
+    & git config user.name $githubUser
     Pop-Location
 }
 
-function Get-Repo-Location($repoName)
-{
-    "$testRoot\$repoName"
-}
+function Get-Repo-Location($repoName){ "$testRoot\$repoName" }
 
 function Git-Command($repoName) {
     Push-Location -Path $(Get-Repo-Location($repoName))
@@ -246,6 +252,8 @@ Git-Command $targetRepoName push origin HEAD
 
 ## Run an official build of the branch using the official pipeline
 $buildId = Invoke-AzDOBuild -buildDefinitionId $buildDefinitionId -branchName $targetBranch -buildParameters $buildParameters
+
+Write-Host "Link to view build: " (Get-BuildLink -buildId $buildId)
 
 ## Check build for completion every 5 minutes. 
 while("completed" -ne (Get-BuildStatus -buildId $buildId))
