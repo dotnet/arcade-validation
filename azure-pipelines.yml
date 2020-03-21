@@ -211,7 +211,7 @@ stages:
         parameters:
           name: Validate_Arcade_with_Roslyn
           displayName: Validate Arcade with Roslyn
-          timeoutInMinutes: 180
+          timeoutInMinutes: 210
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub

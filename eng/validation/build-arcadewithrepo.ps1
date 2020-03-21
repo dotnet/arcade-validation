@@ -1,33 +1,14 @@
 Param(
-  [Parameter(Mandatory=$true)]
-  [string] $azdoOrg, 
-
-  [Parameter(Mandatory=$true)]
-  [string] $azdoProject,
-
-  [Parameter(Mandatory=$true)]
-  [int] $buildDefinitionId,
-
-  [Parameter(Mandatory=$true)]
-  [string] $azdoToken,
-
-  [Parameter(Mandatory=$true)]
-  [string] $githubUser,
-  
-  [Parameter(Mandatory=$true)]
-  [string] $githubPAT,
-
-  [Parameter(Mandatory=$true)]
-  [string] $githubOrg, 
-
-  [Parameter(Mandatory=$true)]
-  [string] $targetRepoName,
-
-  [Parameter(Mandatory=$true)]
-  [string] $barToken, 
-
+  [Parameter(Mandatory=$true)][string] $azdoOrg, 
+  [Parameter(Mandatory=$true)][string] $azdoProject,
+  [Parameter(Mandatory=$true)][int] $buildDefinitionId,
+  [Parameter(Mandatory=$true)][string] $azdoToken,
+  [Parameter(Mandatory=$true)][string] $githubUser,
+  [Parameter(Mandatory=$true)][string] $githubPAT,
+  [Parameter(Mandatory=$true)][string] $githubOrg,
+  [Parameter(Mandatory=$true)][string] $targetRepoName,
+  [Parameter(Mandatory=$true)][string] $barToken, 
   [string] $buildParameters = '',
-
   [int] $daysOfOldestBuild = 3
 )
 
@@ -231,8 +212,15 @@ $darcRepoName = "https://github.com/${githubOrg}/${targetRepoName}"
 $branchExists = Git-Command $targetRepoName ls-remote --heads $githubUri refs/heads/$targetBranch
 if($null -ne $branchExists)
 {
-    & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
-    Git-Command $targetRepoName push origin --delete $targetBranch
+    try
+    {
+        & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
+        Git-Command $targetRepoName push origin --delete $targetBranch
+    }
+    catch
+    {
+        Write-Warning "Unable to delete default or branch when cleaning up existing branch"
+    }
 }
 Git-Command $targetRepoName checkout -b $targetBranch $sha
 
@@ -277,5 +265,12 @@ if(("failed" -eq $buildResult) -or ("canceled" -eq $buildResult))
 }
 
 ## Clean up branch if successful
-& darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
-Git-Command $targetRepoName push origin --delete $targetBranch
+try
+{
+    & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
+    Git-Command $targetRepoName push origin --delete $targetBranch
+}
+catch
+{
+    Write-Warning "Unable to delete default or branch when cleaning up branch"
+}
