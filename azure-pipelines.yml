@@ -203,39 +203,32 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-
-  - stage: Push_to_latest_channel
-    displayName: Push build to 'Latest' channel
-    dependsOn:
-      # This will run only after all the publishing stages have run.
-      # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
-      - NetCore_Dev5_Publish
-      - Net5_Preview1_Publish
-      - Net5_Preview2_Publish
-      - Net_Eng_Latest_Publish
-      - Net_Eng_Validation_Publish
-      - General_Testing_Publish
-      - NETCore_Tooling_Dev_Publishing
-      - NETCore_Tooling_Release_Publishing
-      - NET_Internal_Tooling_Publishing
-      - NETCore_Experimental_Publishing
-      - Net_Eng_Services_Int_Publish
-      - Net_Eng_Services_Prod_Publish
+  # Arcade validation with additional repos
+  - stage: Validate_Arcade_With_Consumer_Repositories
+    displayName: Validate Arcade with Consumer Repositories
     jobs:
-    - template: /eng/common/templates/job/job.yml
-      parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
-        timeoutInMinutes: 180
-        variables:
-          - group: Publish-Build-Assets
-          - group: DotNetBot-GitHub
-        steps:
-          - checkout: self
-            clean: true
-          - powershell: eng/validation/update-channel.ps1
-              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-              -barToken $(MaestroAccessToken)
-              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-              -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-            displayName: Move build to 'Latest' channel 
+      - template: /eng/common/templates/job/job.yml
+        parameters:
+          name: Validate_Arcade_with_Roslyn
+          displayName: Validate Arcade with Roslyn
+          timeoutInMinutes: 210
+          variables:
+            - group: Publish-Build-Assets
+            - group: DotNetBot-GitHub
+            - group: DotNet-Blob-Feed
+            - group: DotNet-Symbol-Server-Pats
+            - group: DotNet-VSTS-Infra-Access
+          steps:
+            - checkout: self
+              clean: true
+            - powershell: eng\validation\build-arcadewithrepo.ps1
+                -azdoOrg "devdiv" 
+                -azdoProject "devdiv"
+                -buildDefinitionId 8972
+                -azdoToken $(dn-bot-devdiv-build-rw-code-rw)
+                -githubUser "dotnet-bot"
+                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+                -githubOrg "dotnet"
+                -targetRepoName "roslyn"
+                -barToken $(MaestroAccessToken)
+                -buildParameters '{"SkipApplyOptimizationData":"true"}' 
