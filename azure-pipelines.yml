@@ -209,26 +209,42 @@ stages:
     jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
-          name: Validate_Arcade_with_Roslyn
-          displayName: Validate Arcade with Roslyn
-          timeoutInMinutes: 210
+          name: Validate_Arcade_With_Consumer_Repositories
+          displayName: Validate Arcade with Consumer Repositories
+          timeoutInMinutes: 240
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
             - group: DotNet-Blob-Feed
             - group: DotNet-Symbol-Server-Pats
             - group: DotNet-VSTS-Infra-Access
+          strategy:
+            matrix:
+              ValidateWithRuntime:
+                _azdoOrg: "dnceng"
+                _azdoProject: "internal"
+                _buildDefinitionId: 679
+                _githubRepoName: "runtime"
+                _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+                _optionalParameters: "-azdoRepoName 'dotnet-runtime'"
+              ValidateWithRoslyn: 
+                _azdoOrg: "devdiv"
+                _azdoProject: "devdiv"
+                _buildDefinitionId: 8972
+                _githubRepoName: "roslyn"
+                _azdoToken: $(dn-bot-devdiv-build-rw-code-rw)
+                _optionalParameters: "-buildParameters '{\"SkipApplyOptimizationData\":\"true\"}' -pushBranchToGithub"
           steps:
             - checkout: self
               clean: true
             - powershell: eng\validation\build-arcadewithrepo.ps1
-                -azdoOrg "devdiv" 
-                -azdoProject "devdiv"
-                -buildDefinitionId 8972
-                -azdoToken $(dn-bot-devdiv-build-rw-code-rw)
+                -azdoOrg $(_azdoOrg)
+                -azdoProject $(_azdoProject)
+                -buildDefinitionId $(_buildDefinitionId)
+                -azdoToken $(_azdoToken)
                 -githubUser "dotnet-bot"
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
                 -githubOrg "dotnet"
-                -targetRepoName "roslyn"
+                -githubRepoName $(_githubRepoName)
                 -barToken $(MaestroAccessToken)
-                -buildParameters '{"SkipApplyOptimizationData":"true"}' 
+                $(_optionalParameters)

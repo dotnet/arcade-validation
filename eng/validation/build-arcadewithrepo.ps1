@@ -6,10 +6,12 @@ Param(
   [Parameter(Mandatory=$true)][string] $githubUser,
   [Parameter(Mandatory=$true)][string] $githubPAT,
   [Parameter(Mandatory=$true)][string] $githubOrg,
-  [Parameter(Mandatory=$true)][string] $targetRepoName,
+  [Parameter(Mandatory=$true)][string] $githubRepoName,
   [Parameter(Mandatory=$true)][string] $barToken, 
   [string] $buildParameters = '',
-  [int] $daysOfOldestBuild = 3
+  [int] $daysOfOldestBuild = 3,
+  [switch] $pushBranchToGithub,
+  [string] $azdoRepoName
 )
 
 set-strictmode -version 2.0
@@ -29,10 +31,8 @@ New-Item -Path $testRoot -ItemType Directory | Out-Null
 $minTime = (Get-Date).AddDays(-$daysOfOldestBuild)
 $buildReasonsList = @("batchedCI", "individualCI")
 
-function Get-LastKnownGoodBuildSha(
-    [int] $buildDefinitionId)
+function Get-LastKnownGoodBuildSha()
 {
-
     ## Have there been any builds in the last $daysOfOldestBuild days? 
     $headers = Get-AzDOHeaders
     $count = 0
@@ -47,45 +47,31 @@ function Get-LastKnownGoodBuildSha(
     ## No? Then get the last known good build regardless of age
     if($count -eq 0)
     {
-        $contentArray = @()
-
-        foreach($reason in $buildReasonsList)
-        {
-            $uri = Get-AzDOBuildUri -queryStringParameters "&resultsFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&`$top=1"
-            $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
-            if(1 -eq $response.count)
-            {
-                $contentArray += $response
-            }
-        }
-
+        $contentArray = Get-Builds
         return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
     }
 
     ## If there have been builds in the last $daysOfOldestBuild days, get the last known good build from that time frame
     else
     {
-        $contentArray = @()
         $count = 0
-
-        foreach($reason in $buildReasonsList)
-        {
-            $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&minTime=${minTime}&`$top=1"
-            $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
-            if(1 -eq $response.count)
-            {
-                $contentArray += $response
-            }
-        }
+        $contentArray = Get-Builds -useMinTime
         ## If there are no last known good builds in the last $daysOfOldestBuild days, then write a warning. 
         $contentArray | Foreach-Object {$count += $_.count}
         if($count -eq 0)
         {
-            Write-warning "There were no successful builds for this repository in the last ${daysOfOldestBuild} days."
+            Write-warning "There were no successful builds for the '${githubRepoName}' repository in the last ${daysOfOldestBuild} days."
             Exit
         }
-        
-        return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+
+        if("" -eq ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo)
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.sourceVersion
+        }
+        else
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+        }
     }
 }
 
@@ -111,6 +97,31 @@ function Invoke-AzDOBuild(
 
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Body ($body | ConvertTo-Json) -Method Post 
     return ($content | ConvertFrom-Json).id
+}
+
+function Get-Builds(
+    [switch] $useMinTime
+)
+{
+    $contentArray = @()
+
+    foreach($reason in $buildReasonsList)
+    {
+        $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&`$top=1"
+        if($useMinTime)
+        {
+            $uri += "&minTime=${minTime}"
+        }
+
+        $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
+
+        if(1 -eq $response.count)
+        {
+            $contentArray += $response
+        }
+    }
+
+    return $contentArray
 }
 
 function Get-BuildStatus(
@@ -167,10 +178,14 @@ function Get-Github-RepoAuthUri($repoName)
     "https://${githubUser}:${githubPAT}@github.com/${githubOrg}/${repoName}"
 }
 
+function Get-AzDO-RepoAuthUri($repoName)
+{
+    "https://${githubUser}:${azdoToken}@dev.azure.com/${azdoOrg}/${azdoProject}/_git/${repoName}"
+}
+
 function GitHub-Clone($repoName) 
 {
-    $authUri = Get-Github-RepoAuthUri $repoName
-    & git clone $authUri $(Get-Repo-Location $repoName)
+    & git clone $githubUri $(Get-Repo-Location $repoName)
     Push-Location -Path $(Get-Repo-Location $repoName)
     & git config user.email "${githubUser}@test.com"
     & git config user.name $githubUser
@@ -195,51 +210,104 @@ function Git-Command($repoName) {
     }
 }
 
+## Global Variables
+$githubUri = Get-Github-RepoAuthUri $githubRepoName
+$azdoUri = Get-AzDO-RepoAuthUri $azdoRepoName
+$remoteName = ($azdoOrg + "-" + $azdoRepoName)
+$targetBranch = "dev/" + $githubUser + "/arcade-" + $arcadeSdkVersion
+$darcBranchName = "refs/heads/" + $targetBranch
+$darcGitHubRepoName = "https://github.com/${githubOrg}/${githubRepoName}"
+$darcAzDORepoName = "https://${azdoOrg}.visualstudio.com/${azdoProject}/_git/${azdoRepoName}"
+
 ## If able to retrieve a build, get the SHA that it was built from
-$sha = Get-LastKnownGoodBuildSha -buildDefinitionId $buildDefinitionId
+$sha = Get-LastKnownGoodBuildSha
+Write-Host "Last Known Good Build SHA: ${sha}"
 
 ## Clone the repo from git
-GitHub-Clone $targetRepoName
-
-## Create a branch from the repo with the given SHA. 
-$targetBranch = "dev/" + $githubUser + "/arcade-" + $arcadeSdkVersion
-$githubUri = Get-Github-RepoAuthUri $targetRepoName
-
-$darcBranchName = "refs/heads/" + $targetBranch
-$darcRepoName = "https://github.com/${githubOrg}/${targetRepoName}"
-
-# check to see if branch exists and clean it up if it does
-$branchExists = Git-Command $targetRepoName ls-remote --heads $githubUri refs/heads/$targetBranch
+Write-Host "Cloning '${githubRepoName} from GitHub"
+GitHub-Clone $githubRepoName
+ 
+## Check to see if branch exists and clean it up if it does
+$branchExists = $false
+if($true -eq $pushBranchToGithub)
+{
+    Write-Host "Looking up '${targetBranch}' branch on GitHub"
+    $branchExists = Git-Command $githubRepoName ls-remote --heads $githubUri refs/heads/$targetBranch
+}
+else 
+{
+    Write-Host "Looking up '${targetBranch}' branch on Azure DevOps"
+    $branchExists = Git-Command $githubRepoName ls-remote --heads $azdoUri refs/heads/$targetBranch
+}
 if($null -ne $branchExists)
 {
+    Write-Host "${targetBranch} was found. Attempting to clean up."
     try
     {
         & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
-        Git-Command $targetRepoName push origin --delete $targetBranch
+        if($true -eq $pushBranchToGithub)
+        {
+            & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcGitHubRepoName --github-pat $githubPAT --password $barToken
+            Git-Command $githubRepoName push origin --delete $targetBranch
+        }
+        else
+        {
+            & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcAzDORepoName --azdev-pat $azdoToken --password $barToken
+            Git-Command $githubRepoName remote add $remoteName $azdoUri
+            Git-Command $githubRepoName push $remoteName --delete $targetBranch
+        }
     }
     catch
     {
-        Write-Warning "Unable to delete default or branch when cleaning up existing branch"
+        Write-Warning "Unable to delete default channel or branch when cleaning up existing branch"
     }
 }
-Git-Command $targetRepoName checkout -b $targetBranch $sha
+
+## Create a branch from the repo with the given SHA.
+Git-Command $githubRepoName checkout -b $targetBranch $sha
 
 ## Make the changes to that branch to update Arcade - use darc
-Set-Location $(Get-Repo-Location $targetRepoName)
-& darc update-dependencies --channel ".NET Eng - Validation" --source-repo "arcade" --github-pat $githubPAT --password $barToken
+Set-Location $(Get-Repo-Location $githubRepoName)
+& darc update-dependencies --channel ".NET Eng - Validation" --source-repo "arcade" --github-pat $githubPAT --azdev-pat $azdoToken --password $barToken
 
-## Push branch to github
-Git-Command $targetRepoName commit -am "Arcade Validation test branch - version ${arcadeSdkVersion}"
-Git-Command $targetRepoName push origin HEAD
+Git-Command $githubRepoName commit -am "Arcade Validation test branch - version ${arcadeSdkVersion}"
 
-## Push branch to AzDO org/project with the official pipeline to build the repo
-## Don't need to do this for Roslyn, but we'll need to do it for Runtime. 
+if($true -eq $pushBranchToGithub)
+{
+    ## Push branch to github
+    Git-Command $githubRepoName push origin HEAD
 
-## Add default channel from that github repo and branch to "General Testing"
-& darc add-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
+    ## Add default channel from that github repo and branch to "General Testing"
+    & darc add-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcGitHubRepoName --github-pat $githubPAT --password $barToken
+}
+else
+{
+    ## Push branch to AzDO org/project with the official pipeline to build the repo
+    ## make remote, it might already exist if we had to delete it earlier, so wrapping it in a try/catch
+    try
+    {
+        Git-Command $githubRepoName remote add $remoteName $azdoUri
+    }
+    catch
+    {
+        Write-Host "'${remoteName}' already exists."
+    }
+    ## push to remote
+    Git-Command $githubRepoName push $remoteName $targetBranch
+
+    ## Add default channel from that AzDO repo and branch to "General Testing"
+    & darc add-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcAzDORepoName --azdev-pat $azdoToken --password $barToken
+}
 
 ## Run an official build of the branch using the official pipeline
+Write-Host "Invoking build on Azure DevOps"
 $buildId = Invoke-AzDOBuild -buildDefinitionId $buildDefinitionId -branchName $targetBranch -buildParameters $buildParameters
+
+## Output summary of references for investigations
+Write-Host "Arcade Version: ${arcadeSdkVersion}"
+Write-Host "Repository Cloned: ${githubOrg}/${githubRepoName}"
+Write-Host "Branch name in repository: ${targetBranch}"
+Write-Host "Last Known Good build SHA: ${sha}"
 
 Write-Host "Link to view build: " (Get-BuildLink -buildId $buildId)
 
@@ -250,27 +318,30 @@ while("completed" -ne (Get-BuildStatus -buildId $buildId))
     Start-Sleep -Seconds (5*60)
 }
 
-## Output summary of references for investigations
-Write-Host "Arcade Version: ${arcadeSdkVersion}"
-Write-Host "Repository Cloned: ${githubOrg}/${targetRepoName}"
-Write-Host "Branch name in repository: ${targetBranch}"
-Write-Host "Last Known Good build SHA: ${sha}"
-
 ## If build fails, then exit
 $buildResult = (Get-BuildResult -buildId $buildId)
 if(("failed" -eq $buildResult) -or ("canceled" -eq $buildResult))
 {
-    Write-Error "Build failed"
+    Write-Error "Build failed or was cancelled"
     exit
 }
 
 ## Clean up branch if successful
+Write-Host "Build was successful. Cleaning up ${targetBranch} branch."
 try
 {
-    & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcRepoName --github-pat $githubPAT --password $barToken
-    Git-Command $targetRepoName push origin --delete $targetBranch
+    if($true -eq $pushBranchToGithub)
+    {
+        & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcGitHubRepoName --github-pat $githubPAT --password $barToken
+        Git-Command $githubRepoName push origin --delete $targetBranch
+    }
+    else
+    {
+        & darc delete-default-channel --channel "General Testing" --branch $darcBranchName --repo $darcAzDORepoName --azdev-pat $azdoToken --password $barToken
+        Git-Command $githubRepoName push $remoteName --delete $targetBranch
+    }
 }
 catch
 {
-    Write-Warning "Unable to delete default or branch when cleaning up branch"
+    Write-Warning "Unable to delete default channel or branch when cleaning up branch"
 }
