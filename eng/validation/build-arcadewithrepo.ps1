@@ -173,16 +173,6 @@ function Get-AzDOHeaders()
     return $headers
 }
 
-function Get-Github-RepoAuthUri($repoName)
-{
-    "https://${githubUser}:${githubPAT}@github.com/${githubOrg}/${repoName}"
-}
-
-function Get-AzDO-RepoAuthUri($repoName)
-{
-    "https://${githubUser}:${azdoToken}@dev.azure.com/${azdoOrg}/${azdoProject}/_git/${repoName}"
-}
-
 function GitHub-Clone($repoName) 
 {
     & git clone $githubUri $(Get-Repo-Location $repoName)
@@ -211,13 +201,13 @@ function Git-Command($repoName) {
 }
 
 ## Global Variables
-$githubUri = Get-Github-RepoAuthUri $githubRepoName
-$azdoUri = Get-AzDO-RepoAuthUri $azdoRepoName
-$remoteName = ($azdoOrg + "-" + $azdoRepoName)
-$targetBranch = "dev/" + $githubUser + "/arcade-" + $arcadeSdkVersion
-$darcBranchName = "refs/heads/" + $targetBranch
-$darcGitHubRepoName = "https://github.com/${githubOrg}/${githubRepoName}"
-$darcAzDORepoName = "https://${azdoOrg}.visualstudio.com/${azdoProject}/_git/${azdoRepoName}"
+$global:githubUri = "https://${githubUser}:${githubPAT}@github.com/${githubOrg}/${githubRepoName}"
+$global:azdoUri = "https://${githubUser}:${azdoToken}@dev.azure.com/${azdoOrg}/${azdoProject}/_git/${azdoRepoName}"
+$global:remoteName = ($azdoOrg + "-" + $azdoRepoName)
+$global:targetBranch = "dev/" + $githubUser + "/arcade-" + $arcadeSdkVersion
+$global:darcBranchName = "refs/heads/" + $targetBranch
+$global:darcGitHubRepoName = "https://github.com/${githubOrg}/${githubRepoName}"
+$global:darcAzDORepoName = "https://dev.azure.com/${azdoOrg}/${azdoProject}/_git/${azdoRepoName}"
 
 ## If able to retrieve a build, get the SHA that it was built from
 $sha = Get-LastKnownGoodBuildSha
@@ -259,7 +249,7 @@ if($null -ne $branchExists)
     }
     catch
     {
-        Write-Warning "Unable to delete default channel or branch when cleaning up existing branch"
+        Write-Warning "Unable to delete default channel or branch when cleaning up"
     }
 }
 
@@ -343,5 +333,5 @@ try
 }
 catch
 {
-    Write-Warning "Unable to delete default channel or branch when cleaning up branch"
+    Write-Warning "Unable to delete default channel or branch when cleaning up"
 }
