@@ -273,7 +273,7 @@ $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 
 ## Make the changes to that branch to update Arcade - use darc
 Set-Location $(Get-Repo-Location $global:githubRepoName)
-& darc update-dependencies --channel ".NET Eng - Validation" --source-repo "arcade" --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+& darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 
 Git-Command $global:githubRepoName commit -am "Arcade Validation test branch - version ${global:arcadeSdkVersion}"
 
