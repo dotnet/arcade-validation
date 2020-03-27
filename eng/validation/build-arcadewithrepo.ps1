@@ -267,7 +267,7 @@ if($null -ne $branchExists)
 Git-Command $global:githubRepoName checkout -b $global:targetBranch $sha
 
 ## Get the BAR Build ID for the version of Arcade we want to use in update-dependecies
-$asset = darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion
+$asset = darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 $barBuildIdString = $asset | Select-String -Pattern 'BAR Build Id:'
 $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 
