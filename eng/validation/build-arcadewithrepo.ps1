@@ -11,7 +11,8 @@ Param(
   [string] $buildParameters = '',
   [int] $daysOfOldestBuild = 3,
   [switch] $pushBranchToGithub,
-  [string] $azdoRepoName
+  [string] $azdoRepoName,
+  [string] $subscribedBranchName
 )
 
 set-strictmode -version 2.0
@@ -42,7 +43,7 @@ $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRand
 New-Item -Path $testRoot -ItemType Directory | Out-Null
 
 $global:minTime = (Get-Date).AddDays(-$global:daysOfOldestBuild)
-$global:buildReasonsList = @("batchedCI", "individualCI")
+$global:buildReasonsList = @("batchedCI", "individualCI", "manual")
 
 function Get-LastKnownGoodBuildSha()
 {
@@ -52,7 +53,7 @@ function Get-LastKnownGoodBuildSha()
 
     foreach($reason in $global:buildReasonsList)
     {
-        $uri = Get-AzDOBuildUri -queryStringParameters "&statusFilter=completed&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&minTime=${global:minTime}&`$top=1"
+        $uri = Get-AzDOBuildUri -queryStringParameters "&statusFilter=completed&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&minTime=${global:minTime}&branchName=${global:subscribedBranchName}&`$top=1"
         $reponse = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
         $count += $reponse.count
     }
@@ -61,6 +62,11 @@ function Get-LastKnownGoodBuildSha()
     if($count -eq 0)
     {
         $contentArray = Get-Builds
+        if($null -eq $contentArray)
+        {
+            Write-Warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository."
+        }
+        
         return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
     }
 
@@ -73,7 +79,7 @@ function Get-LastKnownGoodBuildSha()
         $contentArray | Foreach-Object {$count += $_.count}
         if($count -eq 0)
         {
-            Write-warning "There were no successful builds for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
+            Write-warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
             Exit
         }
 
@@ -117,7 +123,7 @@ function Get-Builds(
 
     foreach($reason in $global:buildReasonslist)
     {
-        $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&buildQueryOrder=finishTimeAscending&`$top=1"
+        $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&branchName=${global:subscribedBranchName}&buildQueryOrder=finishTimeAscending&`$top=1"
         if($useMinTime)
         {
             $uri += "&minTime=${global:minTime}"
@@ -173,6 +179,7 @@ function Get-AzDOBuildUri(
     }
     
     $uri += "?api-version=5.1" + $queryStringParameters
+
     return $uri
 }
 
@@ -210,6 +217,34 @@ function Git-Command($repoName) {
     }
 }
 
+function Get-SubscribedBranch()
+{
+    $targetRepoRegex = "${global:githubRepoName}$"
+    $subscriptions = darc get-subscriptions --target-repo $targetRepoRegex --source-repo "arcade$" --channel ".NET Eng - Latest" --regex --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+
+    if("String" -eq $subscriptions.GetType().Name)
+    {
+        ## If the repo we're testing against doesn't have a subscription to Arcade in .NET Eng - Latest, then we shouldn't test with it
+        Write-Warning "${global:githubRepoName} does not have a subscription to Arcade in '.NET Eng - Latest'"
+        exit
+    }
+
+    $count = 0
+    $subscriptions | foreach { if($_.StartsWith("https://github.com/dotnet/arcade (.NET Eng - Latest)")){ $count++ } }
+    if($count -gt 1)
+    {
+        ## If the repo we're testing against is subscribed to Latest in more than one branch, we won't test it
+        Write-Warning "${global:githubRepoName} has more than one branch subscribed to Arcade in '.NET Eng - Latest'"
+        exit
+    }
+
+    $startBranchName = $subscriptions[0].IndexOf("('") + 2
+    $branchNameLength = $subscriptions[0].IndexOf("')") - $startBranchName
+    $branchName = $subscriptions[0].Substring($startBranchName, $branchNameLength)
+
+    return $branchName
+}
+
 ## Global Variables
 $global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
@@ -219,6 +254,7 @@ $global:darcBranchName = "refs/heads/" + $global:targetBranch
 $global:darcGitHubRepoName = "https://github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:darcAzDORepoName = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:darcRepoName = ""
+$global:subscribedBranchName = if (-not $subscribedBranchName) { "refs/heads/" + (Get-SubscribedBranch) } else { "refs/heads/${subscribedBranchName}" }
 
 ## If able to retrieve a build, get the SHA that it was built from
 $sha = Get-LastKnownGoodBuildSha
@@ -313,6 +349,7 @@ $buildId = Invoke-AzDOBuild
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
+Write-Host "BAR Build ID for Arcade: ${barBuildId}"
 Write-Host "Repository Cloned: ${global:githubOrg}/${global:githubRepoName}"
 Write-Host "Branch name in repository: ${global:targetBranch}"
 Write-Host "Last Known Good build SHA: ${sha}"
