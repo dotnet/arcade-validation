@@ -1,5 +1,5 @@
 Param(
-  [Parameter(Mandatory=$true)][int] $assetId,
+  [Parameter(Mandatory=$true)][int] $assetId
 )
 
 set-strictmode -version 2.0
