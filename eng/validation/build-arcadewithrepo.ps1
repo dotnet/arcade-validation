@@ -79,7 +79,7 @@ function Get-LastKnownGoodBuildSha()
         $contentArray | Foreach-Object {$count += $_.count}
         if($count -eq 0)
         {
-            Write-warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
+            Write-Error "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
             Exit
         }
 
