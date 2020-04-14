@@ -354,7 +354,11 @@ Write-Host "Repository Cloned: ${global:githubOrg}/${global:githubRepoName}"
 Write-Host "Branch name in repository: ${global:targetBranch}"
 Write-Host "Last Known Good build SHA: ${sha}"
 
-Write-Host "Link to view build: " (Get-BuildLink -buildId $buildId)
+$buildLink = (Get-BuildLink -buildId $buildId)
+Write-Host "Link to view build: ${buildLink}"
+
+Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
+Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]${buildLink}"
 
 ## Check build for completion every 5 minutes. 
 while("completed" -ne (Get-BuildStatus -buildId $buildId))
