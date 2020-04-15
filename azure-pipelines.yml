@@ -89,5 +89,5 @@ stages:
                 $(_optionalParameters)
               continueOnError: true
             - powershell: |
-                write-host 'arcadeVersion is $(arcadeVersion)'
+                write-host 'arcadeVersion is ' $(arcadeVersion)
               condition: always()
