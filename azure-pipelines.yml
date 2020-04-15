@@ -87,3 +87,5 @@ stages:
                 -githubRepoName $(_githubRepoName)
                 -barToken $(MaestroAccessToken)
                 $(_optionalParameters)
+            - powershell: |
+                write-host 'arcadeVersion is $(arcadeVersion)'

@@ -37,6 +37,8 @@ $global:daysOfOldestBuild = if (-not $daysOfOldestBuild) { 3 } else { $daysOfOld
 $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
 
+Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]$global:arcadeSdkVersion"
+
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
@@ -357,8 +359,7 @@ Write-Host "Last Known Good build SHA: ${sha}"
 $buildLink = (Get-BuildLink -buildId $buildId)
 Write-Host "Link to view build: ${buildLink}"
 
-Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
-Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]${buildLink}"
+Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]$buildLink"
 
 ## Check build for completion every 5 minutes. 
 while("completed" -ne (Get-BuildStatus -buildId $buildId))
