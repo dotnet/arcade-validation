@@ -37,7 +37,7 @@ $global:daysOfOldestBuild = if (-not $daysOfOldestBuild) { 3 } else { $daysOfOld
 $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
 
-Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]$global:arcadeSdkVersion"
+Write-Host '##vso[task.setvariable variable=arcadeVersion;isOutput=true]$global:arcadeSdkVersion'
 
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
@@ -347,7 +347,7 @@ else
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
-$buildId = Invoke-AzDOBuild
+$buildId = 0#Invoke-AzDOBuild
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
