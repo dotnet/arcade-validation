@@ -38,6 +38,7 @@ $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
 
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
+Write-Host "##vso[task.setvariable variable=repo;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
 
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
@@ -81,6 +82,7 @@ function Get-LastKnownGoodBuildSha()
         $contentArray | Foreach-Object {$count += $_.count}
         if($count -eq 0)
         {
+            Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
             Write-Error "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
             Exit
         }
@@ -347,7 +349,7 @@ else
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
-$buildId = 0#Invoke-AzDOBuild
+$buildId = Invoke-AzDOBuild
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
@@ -358,8 +360,6 @@ Write-Host "Last Known Good build SHA: ${sha}"
 
 $buildLink = (Get-BuildLink -buildId $buildId)
 Write-Host "Link to view build: ${buildLink}"
-
-Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]$buildLink"
 
 ## Check build for completion every 5 minutes. 
 while("completed" -ne (Get-BuildStatus -buildId $buildId))
@@ -375,6 +375,12 @@ if(("failed" -eq $buildResult) -or ("canceled" -eq $buildResult))
     Write-Error "Build failed or was cancelled"
     exit
 }
+
+$currentDateTime = Get-Date
+Write-Host "##vso[task.setvariable variable=buildBeginDateTime;isOutput=true]${currentDateTime}"
+Write-Host "##vso[task.setvariable variable=barBuildId;isOutput=true]${barBuildId}"
+Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]${buildLink}"
+Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]${buildResult}"
 
 ## Clean up branch if successful
 Write-Host "Build was successful. Cleaning up ${global:targetBranch} branch."

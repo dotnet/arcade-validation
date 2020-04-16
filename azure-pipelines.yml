@@ -87,7 +87,6 @@ stages:
                 -githubRepoName $(_githubRepoName)
                 -barToken $(MaestroAccessToken)
                 $(_optionalParameters)
-              continueOnError: true
               name: buildarcade
             - powershell: |
                 write-host 'arcadeVersion is $(buildarcade.arcadeVersion)'
