@@ -43,6 +43,167 @@ resources:
     image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
 stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enablePublishBuildArtifacts: true
+      enablePublishBuildAssets: true
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
+      enableTelemetry: true
+      helixRepo: dotnet/arcade-validation
+      jobs:
+      - job: Windows_NT
+        pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
+        variables:
+        - _InternalBuildArgs: ''
+
+        # Only enable publishing in non-public, non PR scenarios.
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) 
+              /p:TeamName=$(_TeamName)
+              /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
+        strategy:
+          matrix:
+            Build_Release:
+              _BuildConfig: Release
+              # PRs or external builds are not signed.
+              ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: test
+              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: real
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              Build_Debug:
+                _BuildConfig: Debug
+                _SignType: test
+        steps:
+        - checkout: self
+          clean: true
+        # Use utility script to run script command dependent on agent OS.
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig) 
+            -prepareMachine
+            $(_InternalBuildArgs)
+          displayName: Windows Build / Publish
+
+      - job: Linux
+        container: LinuxContainer
+        pool:
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64.Arcade.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            name: Hosted Ubuntu 1604
+        strategy:
+          matrix:
+            Build_Debug:
+              _BuildConfig: Debug
+              _SignType: none
+            Build_Release:
+              _BuildConfig: Release
+              _SignType: none
+        steps:
+        - checkout: self
+          clean: true
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+          displayName: Unix Build / Publish
+
+      - job: Validate_Helix
+        variables:
+        - HelixApiAccessToken: ''
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - group: DotNet-HelixApi-Access
+        - _BuildConfig: Release
+        steps:
+        - template: /eng/common/templates/steps/send-to-helix.yml
+          parameters:
+            HelixType: test/product/
+            XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+            XUnitTargetFramework: netcoreapp2.0
+            XUnitRunnerVersion: 2.4.1
+            IncludeDotNetCli: true
+            DotNetCliPackageType: sdk
+            DotNetCliVersion: 2.1.403
+            EnableXUnitReporter: true
+            WaitForWorkItemCompletion: true
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64.Arcade.Open;Debian.9.Amd64.Arcade.Open
+              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+              IsExternal: true
+              Creator: arcade-validation
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64.Arcade;Debian.9.Amd64.Arcade
+              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
+              HelixAccessToken: $(HelixApiAccessToken)
+        displayName: Validate Helix
+
+  # Jobs that should only run as part of internal builds.
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - job: Validate_Signing
+          pool: 
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
+          strategy:
+            matrix:
+              Test_Signing:
+                _BuildConfig: Debug
+                _SignType: test
+              Real_Signing:
+                _BuildConfig: Release
+                _SignType: real
+          steps:
+            - checkout: self
+              clean: true
+            - task: CopyFiles@2
+              displayName: Copy test packages to artifacts directory
+              inputs:
+                sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+                targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+            - powershell: eng\common\build.ps1
+                -configuration $(_BuildConfig)
+                -restore
+                -prepareMachine
+                -sign
+                -ci
+                /p:DotNetSignType=$(_SignType)
+                /p:TeamName=DotNetCore
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+              displayName: Sign packages
+
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: eng\common\templates\post-build\post-build.yml
+    parameters:
+      # Symbol validation isn't being very reliable lately. This should be enabled back
+      # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
+      enableSymbolValidation: false
+      # Sourcelink validation isn't passing for Arcade-validation. This should be
+      # enabled back once this issue is resolved: https://github.com/dotnet/arcade/issues/3069
+      enableSourceLinkValidation: false
+      # This is to enable SDL runs part of Post-Build Validation Stage
+      SDLValidationParameters:
+        enable: true
+        params: ' -SourceToolsList @("policheck","credscan")
+        -TsaInstanceURL $(_TsaInstanceURL)
+        -TsaProjectName $(_TsaProjectName)
+        -TsaNotificationEmail $(_TsaNotificationEmail)
+        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaIterationPath $(_TsaIterationPath)
+        -TsaRepositoryName "Arcade-Validation"
+        -TsaCodebaseName "Arcade-Validation"
+        -TsaPublish $True'
+  # Arcade validation with additional repos
   - stage: Validate_Arcade_With_Consumer_Repositories
     displayName: Validate Arcade with Consumer Repositories
     jobs:
@@ -88,11 +249,3 @@ stages:
                 -barToken $(MaestroAccessToken)
                 $(_optionalParameters)
               name: buildarcade
-            - powershell: |
-                write-host 'arcadeVersion is $(buildarcade.arcadeVersion)'
-                write-host 'repo is $(buildarcade.repo)'
-                write-host 'buildBeginDateTime is $(buildarcade.buildBeginDateTime)'
-                write-host 'barBuildId is $(buildarcade.barBuildId)'
-                write-host 'buildLink is $(buildarcade.buildLink)'
-                write-host 'buildStatus is $(buildarcade.buildStatus)'
-              condition: always()
