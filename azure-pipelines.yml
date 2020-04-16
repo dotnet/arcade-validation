@@ -90,6 +90,9 @@ stages:
               name: buildarcade
             - powershell: |
                 write-host 'arcadeVersion is $(buildarcade.arcadeVersion)'
-              env: 
-                Arcade_Version: $(arcadeVersion)
+                write-host 'repo is $(buildarcade.repo)'
+                write-host 'buildBeginDateTime is $(buildarcade.buildBeginDateTime)'
+                write-host 'barBuildId is $(buildarcade.barBuildId)'
+                write-host 'buildLink is $(buildarcade.buildLink)'
+                write-host 'buildStatus is $(buildarcade.buildStatus)'
               condition: always()
