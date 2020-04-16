@@ -37,7 +37,7 @@ $global:daysOfOldestBuild = if (-not $daysOfOldestBuild) { 3 } else { $daysOfOld
 $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
 
-Write-Host '##vso[task.setvariable variable=arcadeVersion;isOutput=true]$global:arcadeSdkVersion'
+Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
