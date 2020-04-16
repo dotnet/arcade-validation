@@ -90,7 +90,7 @@ stages:
               continueOnError: true
               name: buildarcade
             - powershell: |
-                write-host 'arcadeVersion is $(buildarcade.Arcade_Version)'
+                write-host 'arcadeVersion is $(buildarcade.arcadeVersion)'
               env: 
                 Arcade_Version: $(arcadeVersion)
               condition: always()
