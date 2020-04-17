@@ -248,3 +248,4 @@ stages:
                 -githubRepoName $(_githubRepoName)
                 -barToken $(MaestroAccessToken)
                 $(_optionalParameters)
+              name: buildarcade
