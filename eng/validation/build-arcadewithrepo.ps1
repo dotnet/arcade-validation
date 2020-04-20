@@ -143,20 +143,10 @@ function Get-Builds(
                 $uri += "&minTime=${global:minTime}"
             }
 
-            Write-Host "Uri: ${uri}"
             $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
 
             if(1 -eq $response.count)
             {
-                if("" -eq $response.value.triggerInfo)
-                {
-                    Write-Hose "SHA: ${response.value.sourceVersion}"
-                }
-                else
-                {
-                    Write-Host "SHA: ${response.value.triggerInfo.'ci.sourceSha'}"
-                }
-
                 $contentArray += $response
             }
         }
@@ -370,7 +360,7 @@ else
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
-$buildId = 0#Invoke-AzDOBuild
+$buildId = Invoke-AzDOBuild
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
