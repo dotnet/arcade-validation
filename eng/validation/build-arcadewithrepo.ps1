@@ -71,7 +71,14 @@ function Get-LastKnownGoodBuildSha()
             Write-Warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository."
         }
         
-        return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+        if("" -eq ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo)
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.sourceVersion
+        }
+        else
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+        }
     }
 
     ## If there have been builds in the last $global:daysOfOldestBuild days, get the last known good build from that time frame
@@ -136,10 +143,20 @@ function Get-Builds(
                 $uri += "&minTime=${global:minTime}"
             }
 
+            Write-Host "Uri: ${uri}"
             $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
 
             if(1 -eq $response.count)
             {
+                if("" -eq $response.value.triggerInfo)
+                {
+                    Write-Hose "SHA: ${response.value.sourceVersion}"
+                }
+                else
+                {
+                    Write-Host "SHA: ${response.value.triggerInfo.'ci.sourceSha'}"
+                }
+
                 $contentArray += $response
             }
         }
