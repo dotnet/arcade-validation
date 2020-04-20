@@ -47,6 +47,7 @@ New-Item -Path $testRoot -ItemType Directory | Out-Null
 
 $global:minTime = (Get-Date).AddDays(-$global:daysOfOldestBuild)
 $global:buildReasonsList = @("batchedCI", "individualCI", "manual")
+$global:buildSuccessResultList = @("succeeded", "partiallySucceeded")
 
 function Get-LastKnownGoodBuildSha()
 {
@@ -70,7 +71,14 @@ function Get-LastKnownGoodBuildSha()
             Write-Warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository."
         }
         
-        return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+        if("" -eq ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo)
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.sourceVersion
+        }
+        else
+        {
+            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+        }
     }
 
     ## If there have been builds in the last $global:daysOfOldestBuild days, get the last known good build from that time frame
@@ -127,17 +135,20 @@ function Get-Builds(
 
     foreach($reason in $global:buildReasonslist)
     {
-        $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=succeeded&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&branchName=${global:subscribedBranchName}&buildQueryOrder=finishTimeAscending&`$top=1"
-        if($useMinTime)
+        foreach($result in $global:buildSuccessResultList)
         {
-            $uri += "&minTime=${global:minTime}"
-        }
+            $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=${result}&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&branchName=${global:subscribedBranchName}&buildQueryOrder=finishTimeAscending&`$top=1"
+            if($useMinTime)
+            {
+                $uri += "&minTime=${global:minTime}"
+            }
 
-        $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
+            $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
 
-        if(1 -eq $response.count)
-        {
-            $contentArray += $response
+            if(1 -eq $response.count)
+            {
+                $contentArray += $response
+            }
         }
     }
 
@@ -361,6 +372,11 @@ Write-Host "Last Known Good build SHA: ${sha}"
 $buildLink = (Get-BuildLink -buildId $buildId)
 Write-Host "Link to view build: ${buildLink}"
 
+$currentDateTime = Get-Date
+Write-Host "##vso[task.setvariable variable=buildBeginDateTime;isOutput=true]${currentDateTime}"
+Write-Host "##vso[task.setvariable variable=barBuildId;isOutput=true]${barBuildId}"
+Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]${buildLink}"
+
 ## Check build for completion every 5 minutes. 
 while("completed" -ne (Get-BuildStatus -buildId $buildId))
 {
@@ -370,17 +386,12 @@ while("completed" -ne (Get-BuildStatus -buildId $buildId))
 
 ## If build fails, then exit
 $buildResult = (Get-BuildResult -buildId $buildId)
+Write-Host "##vso[task.setvariable variable=buildResult;isOutput=true]${buildResult}"
 if(("failed" -eq $buildResult) -or ("canceled" -eq $buildResult))
 {
     Write-Error "Build failed or was cancelled"
     exit
 }
-
-$currentDateTime = Get-Date
-Write-Host "##vso[task.setvariable variable=buildBeginDateTime;isOutput=true]${currentDateTime}"
-Write-Host "##vso[task.setvariable variable=barBuildId;isOutput=true]${barBuildId}"
-Write-Host "##vso[task.setvariable variable=buildLink;isOutput=true]${buildLink}"
-Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]${buildResult}"
 
 ## Clean up branch if successful
 Write-Host "Build was successful. Cleaning up ${global:targetBranch} branch."
