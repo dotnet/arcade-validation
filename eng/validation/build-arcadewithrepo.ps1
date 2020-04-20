@@ -47,7 +47,7 @@ New-Item -Path $testRoot -ItemType Directory | Out-Null
 
 $global:minTime = (Get-Date).AddDays(-$global:daysOfOldestBuild)
 $global:buildReasonsList = @("batchedCI", "individualCI", "manual")
-$global:buildSuccessResultList = @("succeded", "partiallySucceeded")
+$global:buildSuccessResultList = @("succeeded", "partiallySucceeded")
 
 function Get-LastKnownGoodBuildSha()
 {
