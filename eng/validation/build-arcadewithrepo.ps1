@@ -370,7 +370,7 @@ else
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
-$buildId = Invoke-AzDOBuild
+$buildId = 0#Invoke-AzDOBuild
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
