@@ -234,6 +234,13 @@ stages:
                 _githubRepoName: "aspnetcore"
                 _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
                 _optionalParameters: "-azdoRepoName 'dotnet-aspnetcore' -subscribedBranchName 'master'"
+              ValidateWithInstaller:
+                _azdoOrg: "dnceng"
+                _azdoProject: "internal"
+                _buildDefinitionId: 286
+                _githubRepoName: "installer"
+                _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+                _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'master'"
           steps:
             - checkout: self
               clean: true
