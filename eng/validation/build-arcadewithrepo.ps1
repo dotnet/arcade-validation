@@ -260,6 +260,13 @@ function Get-SubscribedBranch()
     return $branchName
 }
 
+function Update-BuildPropsForInstaller()
+{
+    $branchInfo = [xml](Get-Content .\src\CopyToLatest\targets\BranchInfo.props)
+    $branchInfo.Project.PropertyGroup.Channel = "GeneralTesting"
+    $branchInfo.Save($(Resolve-Path "src\CopyToLatest\targets\BranchInfo.props"))
+}
+
 ## Global Variables
 $global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
@@ -325,6 +332,11 @@ $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 ## Make the changes to that branch to update Arcade - use darc
 Set-Location $(Get-Repo-Location $global:githubRepoName)
 & darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+
+if($global:githubRepoName -eq "installer")
+{
+    Update-BuildPropsForInstaller
+}
 
 Git-Command $global:githubRepoName commit -am "Arcade Validation test branch - version ${global:arcadeSdkVersion}"
 
