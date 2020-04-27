@@ -279,7 +279,7 @@ $global:darcRepoName = ""
 $global:subscribedBranchName = if (-not $subscribedBranchName) { "refs/heads/" + (Get-SubscribedBranch) } else { "refs/heads/${subscribedBranchName}" }
 
 ## If able to retrieve a build, get the SHA that it was built from
-$sha = Get-LastKnownGoodBuildSha
+$sha = "63747242eace4658070715e6f1405efcdc40c1b4" #Get-LastKnownGoodBuildSha
 Write-Host "Last Known Good Build SHA: ${sha}"
 
 ## Clone the repo from git
