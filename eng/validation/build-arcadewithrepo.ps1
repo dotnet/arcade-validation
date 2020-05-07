@@ -51,7 +51,7 @@ function Get-LatestBuildSha()
     $uri = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_apis/build/latest/${global:buildDefinitionId}?branchName=${global:subscribedBranchName}&api-version=5.1-preview.1"
     
     Write-host "DEBUG: URI: ${uri}"
-    $reponse = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
+    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
 
     ## Is it successful or partially successful? Then use that as the foundation for our branch. 
     if(($response.result -eq "succeeded") -or ($response.result -eq "partiallySucceeded"))
