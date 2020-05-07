@@ -171,34 +171,6 @@ function Git-Command($repoName) {
     }
 }
 
-function Get-SubscribedBranch()
-{
-    $targetRepoRegex = "${global:githubRepoName}$"
-    $subscriptions = darc get-subscriptions --target-repo $targetRepoRegex --source-repo "arcade$" --channel ".NET Eng - Latest" --regex --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
-
-    if("String" -eq $subscriptions.GetType().Name)
-    {
-        ## If the repo we're testing against doesn't have a subscription to Arcade in .NET Eng - Latest, then we shouldn't test with it
-        Write-Warning "${global:githubRepoName} does not have a subscription to Arcade in '.NET Eng - Latest'"
-        exit
-    }
-
-    $count = 0
-    $subscriptions | foreach { if($_.StartsWith("https://github.com/dotnet/arcade (.NET Eng - Latest)")){ $count++ } }
-    if($count -gt 1)
-    {
-        ## If the repo we're testing against is subscribed to Latest in more than one branch, we won't test it
-        Write-Warning "${global:githubRepoName} has more than one branch subscribed to Arcade in '.NET Eng - Latest'"
-        exit
-    }
-
-    $startBranchName = $subscriptions[0].IndexOf("('") + 2
-    $branchNameLength = $subscriptions[0].IndexOf("')") - $startBranchName
-    $branchName = $subscriptions[0].Substring($startBranchName, $branchNameLength)
-
-    return $branchName
-}
-
 function Update-BuildPropsForInstaller()
 {
     $branchInfo = [xml](Get-Content .\src\CopyToLatest\targets\BranchInfo.props)
@@ -215,7 +187,6 @@ $global:darcBranchName = "refs/heads/" + $global:targetBranch
 $global:darcGitHubRepoName = "https://github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:darcAzDORepoName = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:darcRepoName = ""
-$global:subscribedBranchName = if (-not $subscribedBranchName) { "refs/heads/" + (Get-SubscribedBranch) } else { "refs/heads/${subscribedBranchName}" }
 
 ## If able to retrieve the latest build, get the SHA that it was built from
 $sha = Get-LatestBuildSha
