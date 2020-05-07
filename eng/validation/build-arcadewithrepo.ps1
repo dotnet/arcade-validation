@@ -34,6 +34,7 @@ $global:barToken = $barToken
 $global:buildParameters = if (-not $buildParameters) { "" } else { $buildParameters }
 $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
+$global:subscribedBranchName = $subscribedBranchName
 
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
