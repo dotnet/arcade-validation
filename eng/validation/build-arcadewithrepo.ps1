@@ -49,11 +49,10 @@ function Get-LatestBuildSha()
     ## Verified that this API gets completed builds, not in progress builds
     $headers = Get-AzDOHeaders
     $uri = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_apis/build/latest/${global:buildDefinitionId}?branchName=${global:subscribedBranchName}&api-version=5.1-preview.1"
-    
-    Write-host "DEBUG: URI: ${uri}"
     $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
 
     ## Is it successful or partially successful? Then use that as the foundation for our branch. 
+    ## How do we want to handle cancelled builds? 
     if(($response.result -eq "succeeded") -or ($response.result -eq "partiallySucceeded"))
     {
         if("" -eq $response.triggerInfo)
@@ -68,8 +67,8 @@ function Get-LatestBuildSha()
     ## If not, then bail out and don't attempt to validate
     else 
     {
-        Write-Warning "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."
         Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
+        Write-Error "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."        
         Exit
     }
 }
