@@ -52,7 +52,6 @@ function Get-LatestBuildSha()
     $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
 
     ## Is it successful or partially successful? Then use that as the foundation for our branch. 
-    ## How do we want to handle cancelled builds? 
     if(($response.result -eq "succeeded") -or ($response.result -eq "partiallySucceeded"))
     {
         if("" -eq $response.triggerInfo)
