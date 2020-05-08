@@ -9,7 +9,6 @@ Param(
   [Parameter(Mandatory=$true)][string] $githubRepoName,
   [Parameter(Mandatory=$true)][string] $barToken, 
   [string] $buildParameters = '',
-  [int] $daysOfOldestBuild = 3,
   [switch] $pushBranchToGithub,
   [string] $azdoRepoName,
   [string] $subscribedBranchName
@@ -33,9 +32,9 @@ $global:githubOrg = $githubOrg
 $global:githubRepoName = $githubRepoName
 $global:barToken = $barToken
 $global:buildParameters = if (-not $buildParameters) { "" } else { $buildParameters }
-$global:daysOfOldestBuild = if (-not $daysOfOldestBuild) { 3 } else { $daysOfOldestBuild }
 $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
+$global:subscribedBranchName = $subscribedBranchName
 
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
@@ -45,64 +44,31 @@ $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([S
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
 New-Item -Path $testRoot -ItemType Directory | Out-Null
 
-$global:minTime = (Get-Date).AddDays(-$global:daysOfOldestBuild)
-$global:buildReasonsList = @("batchedCI", "individualCI", "manual")
-$global:buildSuccessResultList = @("succeeded", "partiallySucceeded")
-
-function Get-LastKnownGoodBuildSha()
+function Get-LatestBuildSha()
 {
-    ## Have there been any builds in the last $daysOfOldestBuild days? 
+    ## Verified that this API gets completed builds, not in progress builds
     $headers = Get-AzDOHeaders
-    $count = 0
+    $uri = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_apis/build/latest/${global:buildDefinitionId}?branchName=${global:subscribedBranchName}&api-version=5.1-preview.1"
+    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
 
-    foreach($reason in $global:buildReasonsList)
+    ## Is it successful or partially successful? Then use that as the foundation for our branch. 
+    if(($response.result -eq "succeeded") -or ($response.result -eq "partiallySucceeded"))
     {
-        $uri = Get-AzDOBuildUri -queryStringParameters "&statusFilter=completed&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&minTime=${global:minTime}&branchName=${global:subscribedBranchName}&`$top=1"
-        $reponse = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
-        $count += $reponse.count
-    }
-
-    ## No? Then get the last known good build regardless of age
-    if($count -eq 0)
-    {
-        $contentArray = Get-Builds
-        if($null -eq $contentArray)
+        if("" -eq $response.triggerInfo)
         {
-            Write-Warning "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository."
+            return $response.sourceVersion
         }
-        
-        if("" -eq ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo)
+        else 
         {
-            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.sourceVersion
-        }
-        else
-        {
-            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
+            return $response.triggerInfo.'ci.sourceSha'
         }
     }
-
-    ## If there have been builds in the last $global:daysOfOldestBuild days, get the last known good build from that time frame
-    else
+    ## If not, then bail out and don't attempt to validate
+    else 
     {
-        $count = 0
-        $contentArray = Get-Builds -useMinTime
-        ## If there are no last known good builds in the last $global:daysOfOldestBuild days, then write a warning. 
-        $contentArray | Foreach-Object {$count += $_.count}
-        if($count -eq 0)
-        {
-            Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
-            Write-Error "There were no successful builds on the '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository in the last ${global:daysOfOldestBuild} days."
-            Exit
-        }
-
-        if("" -eq ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo)
-        {
-            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.sourceVersion
-        }
-        else
-        {
-            return ($contentArray | Sort-Object { $_.value.finishTime } -descending)[0].value.triggerInfo.'ci.sourceSha'
-        }
+        Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
+        Write-Error "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."        
+        Exit
     }
 }
 
@@ -125,34 +91,6 @@ function Invoke-AzDOBuild()
 
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Body ($body | ConvertTo-Json) -Method Post 
     return ($content | ConvertFrom-Json).id
-}
-
-function Get-Builds(
-    [switch] $useMinTime
-)
-{
-    $contentArray = @()
-
-    foreach($reason in $global:buildReasonslist)
-    {
-        foreach($result in $global:buildSuccessResultList)
-        {
-            $uri = Get-AzDOBuildUri -queryStringParameters "&resultFilter=${result}&definitions=${global:buildDefinitionId}&reasonFilter=${reason}&branchName=${global:subscribedBranchName}&buildQueryOrder=finishTimeAscending&`$top=1"
-            if($useMinTime)
-            {
-                $uri += "&minTime=${global:minTime}"
-            }
-
-            $response = ((Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json)
-
-            if(1 -eq $response.count)
-            {
-                $contentArray += $response
-            }
-        }
-    }
-
-    return $contentArray
 }
 
 function Get-BuildStatus(
@@ -232,34 +170,6 @@ function Git-Command($repoName) {
     }
 }
 
-function Get-SubscribedBranch()
-{
-    $targetRepoRegex = "${global:githubRepoName}$"
-    $subscriptions = darc get-subscriptions --target-repo $targetRepoRegex --source-repo "arcade$" --channel ".NET Eng - Latest" --regex --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
-
-    if("String" -eq $subscriptions.GetType().Name)
-    {
-        ## If the repo we're testing against doesn't have a subscription to Arcade in .NET Eng - Latest, then we shouldn't test with it
-        Write-Warning "${global:githubRepoName} does not have a subscription to Arcade in '.NET Eng - Latest'"
-        exit
-    }
-
-    $count = 0
-    $subscriptions | foreach { if($_.StartsWith("https://github.com/dotnet/arcade (.NET Eng - Latest)")){ $count++ } }
-    if($count -gt 1)
-    {
-        ## If the repo we're testing against is subscribed to Latest in more than one branch, we won't test it
-        Write-Warning "${global:githubRepoName} has more than one branch subscribed to Arcade in '.NET Eng - Latest'"
-        exit
-    }
-
-    $startBranchName = $subscriptions[0].IndexOf("('") + 2
-    $branchNameLength = $subscriptions[0].IndexOf("')") - $startBranchName
-    $branchName = $subscriptions[0].Substring($startBranchName, $branchNameLength)
-
-    return $branchName
-}
-
 function Update-BuildPropsForInstaller()
 {
     $branchInfo = [xml](Get-Content .\src\CopyToLatest\targets\BranchInfo.props)
@@ -276,11 +186,10 @@ $global:darcBranchName = "refs/heads/" + $global:targetBranch
 $global:darcGitHubRepoName = "https://github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:darcAzDORepoName = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:darcRepoName = ""
-$global:subscribedBranchName = if (-not $subscribedBranchName) { "refs/heads/" + (Get-SubscribedBranch) } else { "refs/heads/${subscribedBranchName}" }
 
-## If able to retrieve a build, get the SHA that it was built from
-$sha = Get-LastKnownGoodBuildSha
-Write-Host "Last Known Good Build SHA: ${sha}"
+## If able to retrieve the latest build, get the SHA that it was built from
+$sha = Get-LatestBuildSha
+Write-Host "Lastest Build SHA: ${sha}"
 
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
