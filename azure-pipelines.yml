@@ -206,6 +206,7 @@ stages:
   # Arcade validation with additional repos
   - stage: Validate_Arcade_With_Consumer_Repositories
     displayName: Validate Arcade with Consumer Repositories
+    condition: eq(variables['RunBellwetherRepoBuilds'], 'true')
     jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
@@ -255,4 +256,5 @@ stages:
                 -githubRepoName $(_githubRepoName)
                 -barToken $(MaestroAccessToken)
                 $(_optionalParameters)
-              name: buildarcade
+              displayName: Build Bellwether Repo With Arcade
+              name: Build_Bellwether_Repo_With_Arcade
