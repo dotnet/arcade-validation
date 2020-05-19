@@ -44,9 +44,9 @@ resources:
 
 stages:
 # Arcade validation with additional repos
-- ${{ if eq(variables['RunBellwetherRepoBuilds'], 'public') }}:
   - stage: Validate_Arcade_With_Consumer_Repositories
     displayName: Validate Arcade with Consumer Repositories
+    - ${{ if eq(variables['RunBellwetherRepoBuilds'], 'true') }}:
     jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
