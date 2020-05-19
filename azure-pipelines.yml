@@ -48,6 +48,7 @@ stages:
     displayName: Validate Arcade with Consumer Repositories
     condition: eq(variables['RunBellwetherRepoBuilds'], 'true')
     jobs:
+    - ${{ if eq(variables['RunBellwetherRepoBuilds'], 'true') }}:
       - template: /eng/common/templates/job/job.yml
         parameters:
           name: Validate_Arcade_With_Consumer_Repositories
