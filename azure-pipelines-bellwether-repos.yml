@@ -9,7 +9,7 @@ stages:
         displayName: Validate Arcade with Consumer Repositories
         timeoutInMinutes: 240
         pool: 
-          queue: Hosted VS2017
+          vmImage: vs2017-win2016
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
