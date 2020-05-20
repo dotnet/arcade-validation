@@ -36,7 +36,7 @@ $global:pushBranchToGithub = $pushBranchToGithub
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
 $global:subscribedBranchName = $subscribedBranchName
 
-$env:GIT_REDIRECT_STDERR = '2>&1'
+##$env:GIT_REDIRECT_STDERR = '2>&1'
 
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
