@@ -1,0 +1,57 @@
+stages:
+# Arcade validation with additional repos
+- stage: Validate_Arcade_With_Consumer_Repositories
+  displayName: Validate Arcade with Consumer Repositories
+  jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Validate_Arcade_With_Consumer_Repositories
+        displayName: Validate Arcade with Consumer Repositories
+        timeoutInMinutes: 240
+        pool: 
+          vmImage: vs2017-win2016
+        variables:
+          - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+          - group: DotNet-Blob-Feed
+          - group: DotNet-Symbol-Server-Pats
+          - group: DotNet-VSTS-Infra-Access
+        strategy:
+          matrix:
+            ValidateWithRuntime:
+              _azdoOrg: "dnceng"
+              _azdoProject: "internal"
+              _buildDefinitionId: 679
+              _githubRepoName: "runtime"
+              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _optionalParameters: "-azdoRepoName 'dotnet-runtime' -subscribedBranchName 'master'"
+            ValidateWithASPNETCore:
+              _azdoOrg: "dnceng"
+              _azdoProject: "internal"
+              _buildDefinitionId: 21
+              _githubRepoName: "aspnetcore"
+              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _optionalParameters: "-azdoRepoName 'dotnet-aspnetcore' -subscribedBranchName 'master'"
+            ValidateWithInstaller:
+              _azdoOrg: "dnceng"
+              _azdoProject: "internal"
+              _buildDefinitionId: 286
+              _githubRepoName: "installer"
+              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'master'"
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng\validation\build-arcadewithrepo.ps1
+              -azdoOrg $(_azdoOrg)
+              -azdoProject $(_azdoProject)
+              -buildDefinitionId $(_buildDefinitionId)
+              -azdoToken $(_azdoToken)
+              -githubUser "dotnet-bot"
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+              -githubOrg "dotnet"
+              -githubRepoName $(_githubRepoName)
+              -barToken $(MaestroAccessToken)
+              $(_optionalParameters)
+            displayName: Build Bellwether Repo With Arcade
+            name: Build_Bellwether_Repo_With_Arcade
