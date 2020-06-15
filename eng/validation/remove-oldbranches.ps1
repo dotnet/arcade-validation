@@ -3,6 +3,8 @@ Param(
   [Parameter(Mandatory=$true)][string] $azdoProject,
   [Parameter(Mandatory=$true)][string] $azdoToken,
   [Parameter(Mandatory=$true)][string] $githubUser,
+  [Parameter(Mandatory=$true)][string] $githubPAT,
+  [Parameter(Mandatory=$true)][string] $githubOrg,
   [Parameter(Mandatory=$true)][string] $githubRepoName,
   [Parameter(Mandatory=$true)][string] $barToken, 
   [string] $azdoRepoName
@@ -20,6 +22,8 @@ $global:azdoOrg = $azdoOrg
 $global:azdoProject = $azdoProject
 $global:azdoToken = $azdoToken
 $global:githubUser = $githubUser
+$global:githubPAT = $githubPAT
+$global:githubOrg = $githubOrg
 $global:githubRepoName = $githubRepoName
 $global:barToken = $barToken
 $global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
@@ -57,6 +61,7 @@ function Git-Command($repoName) {
 }
 
 ## Global Variables
+$global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:remoteName = ($global:azdoOrg + "-" + $global:azdoRepoName)
 $global:branchNamePrefix = "refs/heads/dev/" + $global:githubUser + "/arcade-"
