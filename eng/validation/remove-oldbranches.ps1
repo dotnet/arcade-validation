@@ -29,6 +29,15 @@ $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([S
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
 New-Item -Path $testRoot -ItemType Directory | Out-Null
 
+function GitHub-Clone($repoName) 
+{
+    & git clone $global:githubUri $(Get-Repo-Location $repoName)
+    Push-Location -Path $(Get-Repo-Location $repoName)
+    & git config user.email "${global:githubUser}@test.com"
+    & git config user.name $global:githubUser
+    Pop-Location
+}
+
 function Get-Repo-Location($repoName){ "$testRoot\$repoName" }
 
 function Git-Command($repoName) {
