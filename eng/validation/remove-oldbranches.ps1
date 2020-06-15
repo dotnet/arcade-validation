@@ -71,8 +71,11 @@ $global:lastBranch = $global:branchNamePrefix + $global:arcadeSdkVersion
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
 GitHub-Clone $global:githubRepoName
 
+Write-Host "Add remote to Azure DevOps"
+Git-Command $global:githubRepoName remote add $remoteName $global:azdoUri
+
 $remoteBranches = @()
-Write-Host "Getting remote branches on ${global:githubRepoName} in Azure DevOps"
+Write-Host "Getting remote branches for '${global:githubRepoName}' on Azure DevOps"
 $remoteBranches = Git-Command $global:githubRepoName ls-remote --heads $global:azdoUri
 
 foreach($remoteBranch in $remoteBranches)
@@ -83,8 +86,8 @@ foreach($remoteBranch in $remoteBranches)
         $branchName = ($remoteBranch -split "`t")[1]
         try
         {
+            Write-Host "Delete default channel and branch for branch named '${branchName}'"
             & darc delete-default-channel --channel "General Testing" --branch $branchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
-            Git-Command $global:githubRepoName remote add $remoteName $global:azdoUri
             Git-Command $global:githubRepoName push $remoteName --delete $branchName
         }
         catch
