@@ -38,5 +38,5 @@ stages:
               -githubRepoName $(_githubRepoName)
               -barToken $(MaestroAccessToken)
               -azdoRepoName $(_azdoRepoName)
-            displayName: Build Bellwether Repo With Arcade
-            name: Build_Bellwether_Repo_With_Arcade
+            displayName: Clean Up Arcade Branches On Consumer Repositories
+            name: Clean_Up_Arcade_Branches_On_Consumer_Repositories

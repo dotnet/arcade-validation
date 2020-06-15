@@ -54,6 +54,9 @@ $global:branchNamePrefix = "refs/heads/dev/" + $global:githubUser + "/arcade-"
 $global:darcAzDORepoName = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:lastBranch = $global:branchNamePrefix + $global:arcadeSdkVersion
 
+Write-Host "Cloning '${global:githubRepoName} from GitHub"
+GitHub-Clone $global:githubRepoName
+
 $remoteBranches = @()
 Write-Host "Getting remote branches on ${global:githubRepoName} in Azure DevOps"
 $remoteBranches = Git-Command $global:githubRepoName ls-remote --heads $global:azdoUri
