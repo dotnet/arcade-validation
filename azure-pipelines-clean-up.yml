@@ -35,6 +35,8 @@ stages:
               -azdoProject "internal"
               -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
               -githubUser "dotnet-bot"
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+              -githubOrg "dotnet"
               -githubRepoName $(_githubRepoName)
               -barToken $(MaestroAccessToken)
               -azdoRepoName $(_azdoRepoName)
