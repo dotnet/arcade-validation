@@ -13,13 +13,10 @@ jobs:
       strategy:
         matrix:
           CleanUpRuntime:
-            _githubRepoName: "runtime"
             _azdoRepoName: "dotnet-runtime"
           CleanUpASPNETCore:
-            _githubRepoName: "aspnetcore"
             _azdoRepoName: "dotnet-aspnetcore"
           CleanUpInstaller:
-            _githubRepoName: "installer"
             _azdoRepoName: "dotnet-installer"
       steps:
         - checkout: self
@@ -29,9 +26,6 @@ jobs:
             -azdoProject "internal"
             -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
             -user "dotnet-bot"
-            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-            -githubOrg "dotnet"
-            -githubRepoName $(_githubRepoName)
             -barToken $(MaestroAccessToken)
             -azdoRepoName $(_azdoRepoName)
           displayName: Clean Up Arcade Branches On Consumer Repositories
