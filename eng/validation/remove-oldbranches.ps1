@@ -4,7 +4,7 @@ Param(
   [Parameter(Mandatory=$true)][string] $azdoToken,
   [Parameter(Mandatory=$true)][string] $user,
   [Parameter(Mandatory=$true)][string] $barToken, 
-  [string] $azdoRepoName
+  [Parameter(Mandatory=$true)][string] $azdoRepoName
 )
 
 set-strictmode -version 2.0
@@ -25,7 +25,7 @@ $global:azdoProject = $azdoProject
 $global:azdoToken = $azdoToken
 $global:user = $user
 $global:barToken = $barToken
-$global:azdoRepoName = if (-not $azdoRepoName) { "" } else { $azdoRepoName }
+$global:azdoRepoName = $azdoRepoName
 $global:azdoUri = "https://${global:user}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
 $global:branchNamePrefix = "dev/" + $global:user + "/arcade-"
 $global:darcAzDORepoName = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
@@ -95,18 +95,21 @@ if($null -ne $remotebranches)
         }
     }
 
-    $results = Remove-AzDOBranches($jsonBodyArray)
-
-    if($null -ne $results)
+    if($jsonBodyArray.count -gt 0)
     {
-        foreach($result in $results)
-        {
-            $branchName = $result.name
-            $updateStatus = $result.updateStatus
+        $results = Remove-AzDOBranches($jsonBodyArray)
 
-            if(-not $result.success)
+        if($null -ne $results)
+        {
+            foreach($result in $results)
             {
-                Write-Warning "Deleting branch '${branchName}' was not successful: '${updateStatus}'"
+                $branchName = $result.name
+                $updateStatus = $result.updateStatus
+
+                if(-not $result.success)
+                {
+                    Write-Warning "Deleting branch '${branchName}' was not successful: '${updateStatus}'"
+                }
             }
         }
     }
