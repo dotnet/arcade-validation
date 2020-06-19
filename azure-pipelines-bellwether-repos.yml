@@ -13,9 +13,6 @@ stages:
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
-          - group: DotNet-Blob-Feed
-          - group: DotNet-Symbol-Server-Pats
-          - group: DotNet-VSTS-Infra-Access
         strategy:
           matrix:
             ValidateWithRuntime:

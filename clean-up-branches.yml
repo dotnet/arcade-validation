@@ -1,0 +1,31 @@
+# Clean up branches made to validate Arcade on bellwether repos
+jobs:
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      name: Clean_Up_Arcade_Branches_On_Consumer_Repositories
+      displayName: Clean Up Arcade Branches On Consumer Repositories
+      timeoutInMinutes: 240
+      pool: 
+        vmImage: vs2017-win2016
+      variables:
+        - group: Publish-Build-Assets
+      strategy:
+        matrix:
+          CleanUpRuntime:
+            _azdoRepoName: "dotnet-runtime"
+          CleanUpASPNETCore:
+            _azdoRepoName: "dotnet-aspnetcore"
+          CleanUpInstaller:
+            _azdoRepoName: "dotnet-installer"
+      steps:
+        - checkout: self
+          clean: true
+        - powershell: eng\validation\remove-oldbranches.ps1
+            -azdoOrg "dnceng"
+            -azdoProject "internal"
+            -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+            -user "dotnet-bot"
+            -barToken $(MaestroAccessToken)
+            -azdoRepoName $(_azdoRepoName)
+          displayName: Clean Up Arcade Branches On Consumer Repositories
+          name: Clean_Up_Arcade_Branches_On_Consumer_Repositories
