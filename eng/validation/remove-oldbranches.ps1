@@ -13,11 +13,6 @@ $ErrorActionPreference = 'Stop'
 . $PSScriptRoot\..\common\tools.ps1
 . $PSScriptRoot\..\common\darc-init.ps1
 
-# Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
-$testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
-$testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
-New-Item -Path $testRoot -ItemType Directory | Out-Null
-
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:azdoOrg = $azdoOrg
@@ -62,6 +57,7 @@ function Remove-AzDOBranches($body)
     $uri = Get-AzDOGitReposUri
     $headers = Get-AzDOHeaders
 
+    Write-Host "Calling AzDO API to delete branches."
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Body (ConvertTo-Json $body) -Method Post 
     return ($content | ConvertFrom-Json).value
 }
@@ -89,8 +85,8 @@ if($null -ne $remotebranches)
             
             $jsonBodyArray += $json
 
-            Write-Host "Sending '${branchName}' to AzDO API to be deleted"
-            Write-Host "Delete default channel and branch for branch named '${branchName}'"
+            Write-Host "Preparing '${branchName}' to be deleted"
+            Write-Host "Deleting default channel for branch named '${branchName}'"
             & darc delete-default-channel --channel "General Testing" --branch $branchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
         }
     }
