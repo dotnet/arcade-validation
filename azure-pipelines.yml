@@ -203,6 +203,29 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
+  - stage: Validate_Publishing
+    displayName: Validate Publishing
+    jobs: 
+    - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Validate_Publishing
+        displayName: Validate Publishing
+        dependsOn: setupMaestroVars
+        timeoutInMinutes: 240
+        pool: 
+          vmImage: vs2017-win2016
+        variables:
+          - group: Publish-Build-Assets
+          - name: BARBuildId
+            value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng\validation\test-publishing.ps1
+              -buildId $(BARBuildId)
+              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+              -barToken $(MaestroAccessToken)
   # Arcade validation with additional repos
   - stage: Validate_Arcade_With_Consumer_Repositories
     displayName: Validate Arcade with Consumer Repositories
