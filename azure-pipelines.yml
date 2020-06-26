@@ -217,6 +217,7 @@ stages:
           vmImage: vs2017-win2016
         variables:
           - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
           - name: BARBuildId
             value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
         steps:
@@ -226,6 +227,7 @@ stages:
               -buildId $(BARBuildId)
               -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
               -barToken $(MaestroAccessToken)
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
   # Arcade validation with additional repos
   - stage: Validate_Arcade_With_Consumer_Repositories
     displayName: Validate Arcade with Consumer Repositories
