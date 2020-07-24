@@ -51,24 +51,20 @@ function Get-LatestBuildSha()
     $uri = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_apis/build/latest/${global:buildDefinitionId}?branchName=${global:subscribedBranchName}&api-version=5.1-preview.1"
     $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
 
-    ## Is it successful or partially successful? Then use that as the foundation for our branch. 
-    if(($response.result -eq "succeeded") -or ($response.result -eq "partiallySucceeded"))
-    {
-        if("" -eq $response.triggerInfo)
-        {
-            return $response.sourceVersion
-        }
-        else 
-        {
-            return $response.triggerInfo.'ci.sourceSha'
-        }
-    }
-    ## If not, then bail out and don't attempt to validate
-    else 
+    ## Report non-green repos for investigation purposes. 
+    if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
         Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
-        Write-Error "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."        
-        Exit
+        Write-Warning "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."
+    }
+
+    if("" -eq $response.triggerInfo)
+    {
+        return $response.sourceVersion
+    }
+    else 
+    {
+        return $response.triggerInfo.'ci.sourceSha'
     }
 }
 
