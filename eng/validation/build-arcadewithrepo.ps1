@@ -20,6 +20,8 @@ $ErrorActionPreference = 'Stop'
 . $PSScriptRoot\..\common\tools.ps1
 . $PSScriptRoot\..\common\darc-init.ps1
 
+refreshenv
+
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:azdoOrg = $azdoOrg
