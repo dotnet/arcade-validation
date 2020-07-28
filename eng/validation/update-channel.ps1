@@ -47,6 +47,8 @@ try {
 
     . $PSScriptRoot\..\common\darc-init.ps1
 
+    refreshenv
+
     $DarcOutput = darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
     
     if ($LastExitCode -ne 0) {
