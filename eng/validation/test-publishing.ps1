@@ -10,6 +10,8 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\darc-init.ps1
 
+refreshenv
+
 $global:buildId = $buildId
 $global:targetChannel = "General Testing"
 $global:azdoToken = $azdoToken
