@@ -8,9 +8,7 @@ Param(
 set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
-. $PSScriptRoot\..\common\darc-init.ps1
-
-refreshenv
+$darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:buildId = $buildId
 $global:targetChannel = "General Testing"
@@ -23,7 +21,7 @@ function Find-BuildInTargetChannel(
     [string] $targetChannelName
 )
 {
-    $buildJson = darc get-build --id $buildId --azdev-pat $global:azdoToken --password $global:barToken --output-format json
+    $buildJson = & $darc get-build --id $buildId --azdev-pat $global:azdoToken --password $global:barToken --output-format json
     $build = ($buildJson | ConvertFrom-Json)
 
     $channels = ($build | Select-Object -ExpandProperty channels)
@@ -44,7 +42,7 @@ if($preCheck)
 }
 
 Write-Host "Adding build '${global:buildId}' to channel '${global:targetChannel}'"
-& darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:barToken
+& $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:barToken
 
 if ($LastExitCode -ne 0) {
     Write-Host "Problems using Darc to promote build '${global:buildId}' to channel '${global:targetChannel}'. Stopping execution..."

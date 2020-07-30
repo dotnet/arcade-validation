@@ -11,9 +11,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
-. $PSScriptRoot\..\common\darc-init.ps1
-
-refreshenv
+$darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
@@ -89,7 +87,7 @@ if($null -ne $remotebranches)
 
             Write-Host "Preparing '${branchName}' to be deleted"
             Write-Host "Deleting default channel for branch named '${branchName}'"
-            & darc delete-default-channel --channel "General Testing" --branch $branchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+            & $darc delete-default-channel --channel "General Testing" --branch $branchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
         }
     }
 

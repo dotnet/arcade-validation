@@ -45,11 +45,9 @@ try {
 
     $buildId = $assets[0].'buildId'
 
-    . $PSScriptRoot\..\common\darc-init.ps1
+    $darc = & "$PSScriptRoot\get-darc.ps1"
 
-    refreshenv
-
-    $DarcOutput = darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
+    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
     
     if ($LastExitCode -ne 0) {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
