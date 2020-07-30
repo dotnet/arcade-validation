@@ -18,9 +18,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
-. $PSScriptRoot\..\common\darc-init.ps1
-
-refreshenv
+$darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
@@ -212,12 +210,12 @@ if($null -ne $branchExists)
     {
         if($true -eq $global:pushBranchToGithub)
         {
-            & darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
+            & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
             Git-Command $global:githubRepoName push origin --delete $global:targetBranch
         }
         else
         {
-            & darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+            & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
             Git-Command $global:githubRepoName remote add $remoteName $global:azdoUri
             Git-Command $global:githubRepoName push $remoteName --delete $global:targetBranch
         }
@@ -232,13 +230,13 @@ if($null -ne $branchExists)
 Git-Command $global:githubRepoName checkout -b $global:targetBranch $sha
 
 ## Get the BAR Build ID for the version of Arcade we want to use in update-dependecies
-$asset = darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+$asset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 $barBuildIdString = $asset | Select-String -Pattern 'BAR Build Id:'
 $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 
 ## Make the changes to that branch to update Arcade - use darc
 Set-Location $(Get-Repo-Location $global:githubRepoName)
-& darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+& $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 
 if($global:githubRepoName -eq "installer")
 {
@@ -275,7 +273,7 @@ else
 }
 
 ## Add default channel from that AzDO repo and branch to "General Testing"
-& darc add-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcRepoName --azdev-pat $global:azdoToken --github-pat $global:githubPAT --password $global:bartoken
+& $darc add-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcRepoName --azdev-pat $global:azdoToken --github-pat $global:githubPAT --password $global:bartoken
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
@@ -318,12 +316,12 @@ try
 {
     if($true -eq $global:pushBranchToGithub)
     {
-        & darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
+        & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
         Git-Command $global:githubRepoName push origin --delete $global:targetBranch
     }
     else
     {
-        & darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+        & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
         Git-Command $global:githubRepoName push $global:remoteName --delete $global:targetBranch
     }
 }
