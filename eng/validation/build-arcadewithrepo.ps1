@@ -166,13 +166,6 @@ function Git-Command($repoName) {
     }
 }
 
-function Update-BuildPropsForInstaller()
-{
-    $branchInfo = [xml](Get-Content .\src\CopyToLatest\targets\BranchInfo.props)
-    $branchInfo.Project.PropertyGroup.Channel = "GeneralTesting"
-    $branchInfo.Save($(Resolve-Path "src\CopyToLatest\targets\BranchInfo.props"))
-}
-
 ## Global Variables
 $global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
@@ -185,12 +178,11 @@ $global:darcRepoName = ""
 
 ## If able to retrieve the latest build, get the SHA that it was built from
 $sha = Get-LatestBuildSha
-Write-Host "Lastest Build SHA: ${sha}"
 
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
 GitHub-Clone $global:githubRepoName
- 
+
 ## Check to see if branch exists and clean it up if it does
 $branchExists = $false
 if($true -eq $global:pushBranchToGithub)
@@ -238,11 +230,6 @@ $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 Set-Location $(Get-Repo-Location $global:githubRepoName)
 & $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 
-if($global:githubRepoName -eq "installer")
-{
-    Update-BuildPropsForInstaller
-}
-
 Git-Command $global:githubRepoName commit -am "Arcade Validation test branch - version ${global:arcadeSdkVersion}"
 
 if($true -eq $global:pushBranchToGithub)
@@ -284,7 +271,7 @@ Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
 Write-Host "BAR Build ID for Arcade: ${barBuildId}"
 Write-Host "Repository Cloned: ${global:githubOrg}/${global:githubRepoName}"
 Write-Host "Branch name in repository: ${global:targetBranch}"
-Write-Host "Last Known Good build SHA: ${sha}"
+Write-Host "Latest build SHA: ${sha}"
 
 $buildLink = (Get-BuildLink -buildId $buildId)
 Write-Host "Link to view build: ${buildLink}"
