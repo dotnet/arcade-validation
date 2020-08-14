@@ -1,5 +1,6 @@
 param(
   [Parameter(Mandatory=$true)][int] $BuildId,
+  [Parameter(Mandatory=$true)][int] $PublishingInfraVersion,
   [Parameter(Mandatory=$true)][string] $AzdoToken,
   [Parameter(Mandatory=$true)][string] $MaestroToken,
   [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro-prod.westus2.cloudapp.azure.com',
@@ -50,8 +51,9 @@ try {
 
   & darc add-build-to-channel `
 	--id $buildId `
-	--default-channels `
-	--source-branch master `
+  --default-channels `
+  --publishing-infra-version $PublishingInfraVersion `
+	--source-branch publish `
 	--azdev-pat $AzdoToken `
 	--bar-uri $MaestroApiEndPoint `
 	--password $MaestroToken `
