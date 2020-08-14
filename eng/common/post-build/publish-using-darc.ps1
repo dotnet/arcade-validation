@@ -53,7 +53,7 @@ try {
 	--id $buildId `
   --default-channels `
   --publishing-infra-version $PublishingInfraVersion `
-	--source-branch "riarenas/publishing-v3" `
+	--source-branch publish `
 	--azdev-pat $AzdoToken `
 	--bar-uri $MaestroApiEndPoint `
 	--password $MaestroToken `
