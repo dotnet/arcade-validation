@@ -5,9 +5,9 @@ param(
   [Parameter(Mandatory=$true)][string] $MaestroToken,
   [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro-prod.westus2.cloudapp.azure.com',
   [Parameter(Mandatory=$true)][string] $WaitPublishingFinish,
-  [Parameter(Mandatory=$true)][string] $EnableSourceLinkValidation,
-  [Parameter(Mandatory=$true)][string] $EnableSigningValidation,
-  [Parameter(Mandatory=$true)][string] $EnableNugetValidation,
+  [Parameter(Mandatory=$false)][string] $EnableSourceLinkValidation,
+  [Parameter(Mandatory=$false)][string] $EnableSigningValidation,
+  [Parameter(Mandatory=$false)][string] $EnableNugetValidation,
   [Parameter(Mandatory=$true)][string] $PublishInstallersAndChecksums,
   [Parameter(Mandatory=$false)][string] $ArtifactsPublishingAdditionalParameters,
   [Parameter(Mandatory=$false)][string] $SigningValidationAdditionalParameters
@@ -15,7 +15,7 @@ param(
 
 try {
   . $PSScriptRoot\post-build-utils.ps1
-  . $PSScriptRoot\..\darc-init.ps1
+  . $PSScriptRoot\..\darc-init.ps1 -darcVersion "1.1.0-beta.20414.1"
 
   $optionalParams = [System.Collections.ArrayList]::new()
 
@@ -53,7 +53,7 @@ try {
 	--id $buildId `
   --default-channels `
   --publishing-infra-version $PublishingInfraVersion `
-	--source-branch publish `
+	--source-branch "riarenas/publishing-v3" `
 	--azdev-pat $AzdoToken `
 	--bar-uri $MaestroApiEndPoint `
 	--password $MaestroToken `
