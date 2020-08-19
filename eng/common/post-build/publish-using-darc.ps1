@@ -15,6 +15,7 @@ param(
 
 try {
   . $PSScriptRoot\post-build-utils.ps1
+  # Hard coding darc version till the next arcade-services roll out, cos this version has required API changes for darc add-build-to-channel
   . $PSScriptRoot\..\darc-init.ps1 -darcVersion "1.1.0-beta.20418.1"
 
   $optionalParams = [System.Collections.ArrayList]::new()
@@ -50,13 +51,13 @@ try {
   }
 
   & darc add-build-to-channel `
-	--id $buildId `
-  --default-channels `
+  --id $buildId `
   --publishing-infra-version $PublishingInfraVersion `
-	--source-branch publish `
-	--azdev-pat $AzdoToken `
-	--bar-uri $MaestroApiEndPoint `
-	--password $MaestroToken `
+  --default-channels `
+  --source-branch master `
+  --azdev-pat $AzdoToken `
+  --bar-uri $MaestroApiEndPoint `
+  --password $MaestroToken `
 	@optionalParams
 
   if ($LastExitCode -ne 0) {

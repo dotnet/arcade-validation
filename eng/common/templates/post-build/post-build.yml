@@ -8,7 +8,7 @@ parameters:
   inline: true
 
   # Only used if inline==false. When set to true will stall the current build until
-  # the Promotion Pipeline build finishes. Otherwise, the current build continue 
+  # the Promotion Pipeline build finishes. Otherwise, the current build will continue 
   # execution concurrently with the promotion build.
   waitPublishingFinish: true
 
@@ -92,7 +92,7 @@ stages:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/check-channel-consistency.ps1
           arguments: -PromoteToChannels "$(TargetChannels)"
             -AvailableChannelIds ${{parameters.NetEngLatestChannelId}},${{parameters.NetEngValidationChannelId}},${{parameters.NetDev5ChannelId}},${{parameters.NetDev6ChannelId}},${{parameters.GeneralTestingChannelId}},${{parameters.NETCoreToolingDevChannelId}},${{parameters.NETCoreToolingReleaseChannelId}},${{parameters.NETInternalToolingChannelId}},${{parameters.NETCoreExperimentalChannelId}},${{parameters.NetEngServicesIntChannelId}},${{parameters.NetEngServicesProdChannelId}},${{parameters.Net5Preview8ChannelId}},${{parameters.Net5RC1ChannelId}},${{parameters.NetCoreSDK313xxChannelId}},${{parameters.NetCoreSDK313xxInternalChannelId}},${{parameters.NetCoreSDK314xxChannelId}},${{parameters.NetCoreSDK314xxInternalChannelId}},${{parameters.VS166ChannelId}},${{parameters.VS167ChannelId}},${{parameters.VS168ChannelId}},${{parameters.VSMasterChannelId}}
-  
+
   - job:
     displayName: NuGet Validation
     dependsOn: setupMaestroVars
