@@ -13,8 +13,6 @@
 # See example YAML call for this script below. Note the use of the variable `$(dn-bot-dnceng-artifact-feeds-rw)`
 # from the AzureDevOps-Artifact-Feeds-Pats variable group.
 #
-# Any disabledPackageSources entries which start with "darc-int" will be re-enabled as part of this script executing.
-#
 #  - task: Bash@3
 #    displayName: Setup Private Feeds Credentials
 #    inputs:
@@ -65,7 +63,7 @@ if [ "$?" != "0" ]; then
     ConfigNodeHeader="<configuration>"
     PackageSourcesTemplate="${TB}<packageSources>${NL}${TB}</packageSources>"
 
-    sed -i.bak "s|$ConfigNodeHeader|$ConfigNodeHeader${NL}$PackageSourcesTemplate|" $ConfigFile
+    sed -i.bak "s|$ConfigNodeHeader|$ConfigNodeHeader${NL}$PackageSourcesTemplate|" NuGet.config
 fi
 
 # Ensure there is a <packageSourceCredentials>...</packageSourceCredentials> section. 
@@ -76,7 +74,7 @@ if [ "$?" != "0" ]; then
     PackageSourcesNodeFooter="</packageSources>"
     PackageSourceCredentialsTemplate="${TB}<packageSourceCredentials>${NL}${TB}</packageSourceCredentials>"
 
-    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourcesNodeFooter${NL}$PackageSourceCredentialsTemplate|" $ConfigFile
+    sed -i.bak "s|$PackageSourcesNodeFooter|$PackageSourcesNodeFooter${NL}$PackageSourceCredentialsTemplate|" NuGet.config
 fi
 
 PackageSources=()
@@ -148,20 +146,3 @@ for FeedName in ${PackageSources[@]} ; do
         sed -i.bak "s|$PackageSourceCredentialsNodeFooter|$NewCredential${NL}$PackageSourceCredentialsNodeFooter|" $ConfigFile
     fi
 done
-
-# Re-enable any entries in disabledPackageSources where the feed name contains darc-int
-grep -i "<disabledPackageSources>" $ConfigFile
-if [ "$?" == "0" ]; then
-    DisabledDarcIntSources=()
-    echo "Re-enabling any disabled \"darc-int\" package sources in $ConfigFile"
-    DisabledDarcIntSources+=$(grep -oh '"darc-int-[^"]*" value="true"' $ConfigFile  | tr -d '"')
-    for DisabledSourceName in ${DisabledDarcIntSources[@]} ; do
-        if [[ $DisabledSourceName == darc-int* ]]
-            then
-                OldDisableValue="add key=\"$DisabledSourceName\" value=\"true\""
-                NewDisableValue="add key=\"$DisabledSourceName\" value=\"false\""
-                sed -i.bak "s|$OldDisableValue|$NewDisableValue|" $ConfigFile
-                echo "Neutralized disablePackageSources entry for '$DisabledSourceName'"
-        fi
-    done
-fi

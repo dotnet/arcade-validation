@@ -42,7 +42,6 @@ function Build([string]$target) {
     /p:Configuration=$configuration `
     /p:RepoRoot=$RepoRoot `
     /p:BaseIntermediateOutputPath=$outputPath `
-    /v:$verbosity `
     @properties
 }
 

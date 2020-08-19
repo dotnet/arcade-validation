@@ -1,23 +1,25 @@
-parameters:
-  BARBuildId: ''
-  PromoteToChannelIds: ''
-
 jobs:
 - job: setupMaestroVars
   displayName: Setup Maestro Vars
   variables:
     - template: common-variables.yml
+    - name: BuildId
+      value: $[ coalesce(variables.BARBuildId, 0) ]
+    - name: PromoteToMaestroChannels
+      value: $[ coalesce(variables.PromoteToChannelIds, 0) ]
+    - name: PromoteToMaestroChannel 
+      value: $[ coalesce(variables.PromoteToMaestroChannelId, 0) ]
   pool:
     vmImage: 'windows-2019'
   steps:
     - checkout: none
 
-    - ${{ if eq(coalesce(parameters.PromoteToChannelIds, 0), 0) }}:
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Release Configs
-        inputs:
-          buildType: current
-          artifactName: ReleaseConfigs
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Release Configs
+      condition: and(eq(variables.PromoteToMaestroChannels, 0), eq(variables.PromoteToMaestroChannel, 0))
+      inputs:
+        buildType: current
+        artifactName: ReleaseConfigs
 
     - task: PowerShell@2
       name: setReleaseVars
@@ -26,7 +28,7 @@ jobs:
         targetType: inline
         script: |
           try {
-            if (!$Env:PromoteToMaestroChannels -or $Env:PromoteToMaestroChannels.Trim() -eq '') {
+            if ($Env:PromoteToMaestroChannels -eq 0 -and $Env:PromoteToMaestroChannel -eq 0) {
               $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
 
               $BarId = $Content | Select -Index 0
@@ -49,7 +51,7 @@ jobs:
               $BarId = $Env:BARBuildId
               $Channels = $Env:PromoteToMaestroChannels -split ","
               $Channels = $Channels -join "]["
-              $Channels = "[$Channels]"
+              $Channels = "[$Channels][$Env:PromoteToMaestroChannel]"
 
               $IsStableBuild = $buildInfo.stable
               $AzureDevOpsProject = $buildInfo.azureDevOpsProject
@@ -73,5 +75,3 @@ jobs:
           }
       env:
         MAESTRO_API_TOKEN: $(MaestroApiAccessToken)
-        BARBuildId: ${{ parameters.BARBuildId }}
-        PromoteToMaestroChannels: ${{ parameters.PromoteToChannelIds }}
