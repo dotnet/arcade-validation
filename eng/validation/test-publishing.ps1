@@ -16,7 +16,7 @@ $global:azdoToken = $azdoToken
 $global:barToken = $barToken
 $global:githubPAT = $githubPAT
 
-. .\validation-functions.ps1
+. $PSScriptRoot\validation-functions.ps1
 
 function Find-BuildInTargetChannel(
     [string] $buildId,
