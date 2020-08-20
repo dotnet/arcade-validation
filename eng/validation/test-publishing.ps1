@@ -39,8 +39,8 @@ function Find-BuildInTargetChannel(
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:githubRepoName = "arcade"
-$asset = darc get-asset --name "microsoft.dotnet.arcade.sdk" --version "5.0.0-beta.20419.21" --output-format json | convertFrom-Json
-$sha = $asset.build.commit
+$jsonAsset = & $darc get-asset --name "microsoft.dotnet.arcade.sdk" --version "5.0.0-beta.20419.21" --output-format json | convertFrom-Json
+$sha = $jsonAsset.build.commit
 $global:targetBranch = "val/" + $global:githubUser + "/arcade-" + $global:arcadeSdkVersion
 
 ## Create a branch from the repo with the given SHA.
