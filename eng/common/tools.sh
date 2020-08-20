@@ -202,7 +202,6 @@ function InstallDotNet {
   fi
   bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
-    if [ $exit_code -ne 0 ]; then  ps -exf ; fi
     echo "Failed to install dotnet SDK from public location (exit code '$exit_code')."
 
     local runtimeSourceFeed=''
