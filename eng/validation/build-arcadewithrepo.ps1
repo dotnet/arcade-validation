@@ -39,7 +39,7 @@ $global:subscribedBranchName = $subscribedBranchName
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
 
-..\validation-functions.ps1
+. .\validation-functions.ps1
 
 function Invoke-AzDOBuild()
 { 
