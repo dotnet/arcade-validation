@@ -10,6 +10,10 @@ $ErrorActionPreference = 'Stop'
 
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
+$global:azdoOrg = $azdoOrg
+$global:azdoProject = $azdoProject
+$global:buildDefinitionId = $buildDefinitionId
+$global:subscribedBranchName = $subscribedBranchName #------------ missing these 4
 $global:buildId = $buildId
 $global:targetChannel = "General Testing"
 $global:azdoToken = $azdoToken
@@ -38,7 +42,8 @@ function Find-BuildInTargetChannel(
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:githubRepoName = "arcade"
-$sha = Get-LatestBuildSha
+$asset = darc get-asset --name "microsoft.dotnet.arcade.sdk" --version "5.0.0-beta.20419.21" --output-format json | convertFrom-Json
+$sha = $asset.build.commit
 $global:targetBranch = "val/" + $global:githubUser + "/arcade-" + $global:arcadeSdkVersion
 
 ## Create a branch from the repo with the given SHA.

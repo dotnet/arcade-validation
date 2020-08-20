@@ -41,6 +41,42 @@ Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${gl
 
 . .\validation-functions.ps1
 
+# Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
+$testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
+$testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
+New-Item -Path $testRoot -ItemType Directory | Out-Null
+
+function Get-LatestBuildSha()
+{
+    ## Verified that this API gets completed builds, not in progress builds
+    $headers = Get-AzDOHeaders
+    $uri = "https://dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_apis/build/latest/${global:buildDefinitionId}?branchName=${global:subscribedBranchName}&api-version=5.1-preview.1"
+    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
+
+    ## Report non-green repos for investigation purposes. 
+    if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
+    {
+        Write-Host "##vso[task.setvariable variable=buildStatus;isOutput=true]NoLKG"
+        Write-Warning "The latest build on '${global:subscribedBranchName}' branch for the '${global:githubRepoName}' repository was not successful."
+    }
+
+    if("" -eq $response.triggerInfo)
+    {
+        return $response.sourceVersion
+    }
+    else 
+    {
+        return $response.triggerInfo.'ci.sourceSha'
+    }
+}
+
+function Get-AzDOHeaders()
+{
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${global:azdoToken}"))
+    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    return $headers
+}
+
 function Invoke-AzDOBuild()
 { 
     $uri = Get-AzDOBuildUri
