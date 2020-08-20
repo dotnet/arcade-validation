@@ -10,10 +10,6 @@ $ErrorActionPreference = 'Stop'
 
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
-$global:azdoOrg = $azdoOrg
-$global:azdoProject = $azdoProject
-$global:buildDefinitionId = $buildDefinitionId
-$global:subscribedBranchName = $subscribedBranchName #------------ missing these 4
 $global:buildId = $buildId
 $global:targetChannel = "General Testing"
 $global:azdoToken = $azdoToken

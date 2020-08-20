@@ -70,13 +70,6 @@ function Get-LatestBuildSha()
     }
 }
 
-function Get-AzDOHeaders()
-{
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${global:azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
-    return $headers
-}
-
 function Invoke-AzDOBuild()
 { 
     $uri = Get-AzDOBuildUri
@@ -96,6 +89,13 @@ function Invoke-AzDOBuild()
 
     $content = Invoke-WebRequest -Uri $uri -Headers $headers -ContentType "application/json" -Body ($body | ConvertTo-Json) -Method Post 
     return ($content | ConvertFrom-Json).id
+}
+
+function Get-AzDOHeaders()
+{
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${global:azdoToken}"))
+    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    return $headers
 }
 
 function Get-BuildStatus(
