@@ -91,13 +91,6 @@ function Invoke-AzDOBuild()
     return ($content | ConvertFrom-Json).id
 }
 
-function Get-AzDOHeaders()
-{
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${global:azdoToken}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
-    return $headers
-}
-
 function Get-BuildStatus(
     [int] $buildId)
 {
@@ -139,6 +132,13 @@ function Get-AzDOBuildUri(
     $uri += "?api-version=5.1" + $queryStringParameters
 
     return $uri
+}
+
+function Get-AzDOHeaders()
+{
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${global:azdoToken}"))
+    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    return $headers
 }
 
 function GitHub-Clone($repoName) 
