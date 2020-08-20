@@ -8,6 +8,7 @@ Param(
 set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
+. $PSScriptRoot\..\common\tools.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:buildId = $buildId
