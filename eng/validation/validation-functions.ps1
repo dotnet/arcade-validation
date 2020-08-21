@@ -35,3 +35,18 @@ function GitHub-Clone(
     & git config user.name $githubUser
     Pop-Location
 }
+
+function Cleanup-Branch(
+	$githubRepoName
+	$branch)
+{
+	Write-Host "Cleaning up ${global:targetBranch} branch."
+	try
+	{
+		Git-Command $githubRepoName push origin --delete $branch
+	}
+	catch
+	{
+		Write-Warning "Unable to delete branch when cleaning up"
+	}
+}

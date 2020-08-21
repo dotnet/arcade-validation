@@ -18,6 +18,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
@@ -38,8 +39,6 @@ $global:subscribedBranchName = $subscribedBranchName
 
 Write-Host "##vso[task.setvariable variable=arcadeVersion;isOutput=true]${global:arcadeSdkVersion}"
 Write-Host "##vso[task.setvariable variable=qualifiedRepoName;isOutput=true]${global:githubOrg}/${global:githubRepoName}"
-
-. $PSScriptRoot\validation-functions.ps1
 
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }

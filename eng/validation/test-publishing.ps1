@@ -11,6 +11,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:buildId = $buildId
@@ -22,7 +23,6 @@ $global:githubOrg = $githubOrg
 $global:barToken = $barToken
 $global:githubPAT = $githubPAT
 
-. $PSScriptRoot\validation-functions.ps1
 
 function Find-BuildInTargetChannel(
     [string] $buildId,
@@ -82,6 +82,7 @@ Write-Host "Adding build '${global:buildId}' to channel '${global:targetChannel}
 
 if ($LastExitCode -ne 0) {
     Write-Host "Problems using Darc to promote build '${global:buildId}' to channel '${global:targetChannel}'. Stopping execution..."
+	Cleanup-Branch $global:githubRepoName $global:targetBranch
     exit 1
 }
 
@@ -93,13 +94,4 @@ if(-not $postCheck)
     Write-Error "Build was not added to '${global:targetChannel}'."
 }
 
-## Clean up branch if successful
-Write-Host "Build was successful. Cleaning up ${global:targetBranch} branch."
-try
-{
-	Git-Command $global:githubRepoName push origin --delete $global:targetBranch
-}
-catch
-{
-    Write-Warning "Unable to delete branch when cleaning up"
-}
+Cleanup-Branch $global:githubRepoName $global:targetBranch
