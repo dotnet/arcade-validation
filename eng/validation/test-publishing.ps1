@@ -39,7 +39,7 @@ function Find-BuildInTargetChannel(
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:githubRepoName = "arcade"
-$jsonAsset = & $darc get-asset --name "microsoft.dotnet.arcade.sdk" --version "5.0.0-beta.20419.21" --output-format json | convertFrom-Json
+$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
 $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/" + $global:githubUser + "/arcade-" + $global:arcadeSdkVersion
 
