@@ -18,6 +18,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
@@ -139,33 +140,6 @@ function Get-AzDOHeaders()
     return $headers
 }
 
-function GitHub-Clone($repoName) 
-{
-    & git clone $global:githubUri $(Get-Repo-Location $repoName)
-    Push-Location -Path $(Get-Repo-Location $repoName)
-    & git config user.email "${global:githubUser}@test.com"
-    & git config user.name $global:githubUser
-    Pop-Location
-}
-
-function Get-Repo-Location($repoName){ "$testRoot\$repoName" }
-
-function Git-Command($repoName) {
-    Push-Location -Path $(Get-Repo-Location($repoName))
-    try {
-        $gitParams = $args
-        if ($gitParams.GetType().Name -ne "Object[]") {
-            $gitParams = $gitParams.ToString().Split(" ")
-        }
-        Write-Host "Running 'git $gitParams' from $(Get-Location)"
-        $commandOutput = & git @gitParams; if ($LASTEXITCODE -ne 0) { throw "Git exited with exit code: $LASTEXITCODE" } else { $commandOutput }
-        $commandOutput
-    }
-    finally {
-        Pop-Location
-    }
-}
-
 ## Global Variables
 $global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
@@ -181,7 +155,7 @@ $sha = Get-LatestBuildSha
 
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
-GitHub-Clone $global:githubRepoName
+GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
 
 ## Check to see if branch exists and clean it up if it does
 $branchExists = $false

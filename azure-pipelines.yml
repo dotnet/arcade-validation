@@ -245,6 +245,8 @@ stages:
           - powershell: eng\validation\test-publishing.ps1
               -buildId $(BARBuildId)
               -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+              -githubUser "dotnet-bot"
+              -githubOrg "dotnet"
               -barToken $(MaestroAccessToken)
               -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
   # Arcade validation with additional repos
