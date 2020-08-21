@@ -47,6 +47,7 @@ function Cleanup-Branch(
 	}
 	catch
 	{
-		Write-Warning "Unable to delete branch when cleaning up"
+		Write-Warning "Unable to delete branch when cleaning up:"
+		Write-Warning $_
 	}
 }
