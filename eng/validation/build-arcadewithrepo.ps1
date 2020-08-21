@@ -156,7 +156,7 @@ $sha = Get-LatestBuildSha
 
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
-GitHub-Clone $global:githubRepoName
+GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
 
 ## Check to see if branch exists and clean it up if it does
 $branchExists = $false

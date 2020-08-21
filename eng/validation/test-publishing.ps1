@@ -1,6 +1,9 @@
 Param(
   [Parameter(Mandatory=$true)][string] $buildId,
   [Parameter(Mandatory=$true)][string] $azdoToken,
+  [Parameter(Mandatory=$true)][string] $githubUser,
+  [Parameter(Mandatory=$true)][string] $githubPAT,
+  [Parameter(Mandatory=$true)][string] $githubOrg,
   [Parameter(Mandatory=$true)][string] $barToken,
   [Parameter(Mandatory=$true)][string] $githubPAT
 )
@@ -14,6 +17,9 @@ $darc = & "$PSScriptRoot\get-darc.ps1"
 $global:buildId = $buildId
 $global:targetChannel = "General Testing"
 $global:azdoToken = $azdoToken
+$global:githubUser = $githubUser
+$global:githubPAT = $githubPAT
+$global:githubOrg = $githubOrg
 $global:barToken = $barToken
 $global:githubPAT = $githubPAT
 
@@ -39,13 +45,14 @@ function Find-BuildInTargetChannel(
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:githubRepoName = "arcade"
+$global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
 $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName} from GitHub"
-GitHub-Clone $global:githubRepoName
+GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
 
 ## Create a branch from the repo with the given SHA.
 Git-Command $global:githubRepoName checkout -b $global:targetBranch $sha
