@@ -41,7 +41,7 @@ $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageNa
 $global:githubRepoName = "arcade"
 $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
 $sha = $jsonAsset.build.commit
-$global:targetBranch = "val/" + $global:githubUser + "/arcade-" + $global:arcadeSdkVersion
+$global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
 ## Create a branch from the repo with the given SHA.
 Git-Command $global:githubRepoName checkout -b $global:targetBranch $sha
