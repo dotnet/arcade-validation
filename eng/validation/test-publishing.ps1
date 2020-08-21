@@ -43,6 +43,10 @@ $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $gl
 $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
+## Clone the repo from git
+Write-Host "Cloning '${global:githubRepoName} from GitHub"
+GitHub-Clone $global:githubRepoName
+
 ## Create a branch from the repo with the given SHA.
 Git-Command $global:githubRepoName checkout -b $global:targetBranch $sha
 

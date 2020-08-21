@@ -23,3 +23,12 @@ function Git-Command($repoName) {
         Pop-Location
     }
 }
+
+function GitHub-Clone($repoName) 
+{
+    & git clone $global:githubUri $(Get-Repo-Location $repoName)
+    Push-Location -Path $(Get-Repo-Location $repoName)
+    & git config user.email "${global:githubUser}@test.com"
+    & git config user.name $global:githubUser
+    Pop-Location
+}

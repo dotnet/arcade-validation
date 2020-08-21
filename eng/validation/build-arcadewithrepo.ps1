@@ -141,15 +141,6 @@ function Get-AzDOHeaders()
     return $headers
 }
 
-function GitHub-Clone($repoName) 
-{
-    & git clone $global:githubUri $(Get-Repo-Location $repoName)
-    Push-Location -Path $(Get-Repo-Location $repoName)
-    & git config user.email "${global:githubUser}@test.com"
-    & git config user.name $global:githubUser
-    Pop-Location
-}
-
 ## Global Variables
 $global:githubUri = "https://${global:githubUser}:${global:githubPAT}@github.com/${global:githubOrg}/${global:githubRepoName}"
 $global:azdoUri = "https://${global:githubUser}:${global:azdoToken}@dev.azure.com/${global:azdoOrg}/${global:azdoProject}/_git/${global:azdoRepoName}"
