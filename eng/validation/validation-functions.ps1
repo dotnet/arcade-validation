@@ -37,7 +37,7 @@ function GitHub-Clone(
 }
 
 function Cleanup-Branch(
-	$githubRepoName
+	$githubRepoName,
 	$branch)
 {
 	Write-Host "Cleaning up ${global:targetBranch} branch."
