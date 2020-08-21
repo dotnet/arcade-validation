@@ -246,7 +246,6 @@ stages:
               -buildId $(BARBuildId)
               -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
               -githubUser "dotnet-bot"
-              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
               -githubOrg "dotnet"
               -barToken $(MaestroAccessToken)
               -githubPAT $(BotAccount-dotnet-bot-repo-PAT)

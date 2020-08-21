@@ -2,7 +2,6 @@ Param(
   [Parameter(Mandatory=$true)][string] $buildId,
   [Parameter(Mandatory=$true)][string] $azdoToken,
   [Parameter(Mandatory=$true)][string] $githubUser,
-  [Parameter(Mandatory=$true)][string] $githubPAT,
   [Parameter(Mandatory=$true)][string] $githubOrg,
   [Parameter(Mandatory=$true)][string] $barToken,
   [Parameter(Mandatory=$true)][string] $githubPAT
