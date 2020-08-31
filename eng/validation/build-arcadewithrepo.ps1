@@ -204,6 +204,7 @@ $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 Set-Location $(Get-Repo-Location $global:githubRepoName)
 & $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
 
+Git-Command $global:githubRepoName add -A
 Git-Command $global:githubRepoName commit -am "Arcade Validation test branch - version ${global:arcadeSdkVersion}"
 
 if($true -eq $global:pushBranchToGithub)
