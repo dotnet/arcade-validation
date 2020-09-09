@@ -3,11 +3,8 @@ variables:
     value: DotNetCore
   - name: _PublishUsingPipelines
     value: true
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCoreValidation
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: AzureDevOps-Artifact-Feeds-Pats
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
@@ -17,10 +14,10 @@ variables:
       value: NetCoreInternal-Pool
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
-      value: NetCorePublicInt-Pool
+      value: NetCorePublic-Int-Pool
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
-      value: NetCoreInternalInt-Pool
+      value: NetCoreInternal-Int-Pool
 
 trigger:
   batch: true
@@ -28,6 +25,10 @@ trigger:
     include:
       - master
       - release/3.x
+pr:
+  branches:
+    include:
+    - '*'
 
 schedules:
 - cron: "0 0 * * *"
@@ -59,43 +60,44 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Windows.10.Amd64.VS2017.Open
+            queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
         variables:
         - _InternalBuildArgs: ''
 
         # Only enable publishing in non-public, non PR scenarios.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-          - group: DotNet-Blob-Feed
-          - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/arcade-validation/index.json
-          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) 
+              /p:TeamName=$(_TeamName)
               /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-              /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
         strategy:
           matrix:
-            Build_Debug:
-              _BuildConfig: Debug
-              _SignType: test
-              _DotNetPublishToBlobFeed : false
             Build_Release:
               _BuildConfig: Release
               # PRs or external builds are not signed.
               ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
                 _SignType: test
-                _DotNetPublishToBlobFeed : false
               ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
                 _SignType: real
-                _DotNetPublishToBlobFeed : true
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              Build_Debug:
+                _BuildConfig: Debug
+                _SignType: test
         steps:
         - checkout: self
           clean: true
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         # Use utility script to run script command dependent on agent OS.
         - script: eng\common\cibuild.cmd
             -configuration $(_BuildConfig) 
@@ -106,24 +108,31 @@ stages:
       - job: Linux
         container: LinuxContainer
         pool:
-          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Ubuntu.1604.Amd64.Open
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+            queue: BuildPool.Ubuntu.1604.Amd64.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Ubuntu.1604.Amd64
+            name: Hosted Ubuntu 1604
         strategy:
           matrix:
             Build_Debug:
               _BuildConfig: Debug
               _SignType: none
-              _DotNetPublishToBlobFeed : false
             Build_Release:
               _BuildConfig: Release
               _SignType: none
-              _DotNetPublishToBlobFeed : false
         steps:
         - checkout: self
           clean: true
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            condition: ne(variables['Agent.OS'], 'Windows_NT')
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
@@ -148,12 +157,12 @@ stages:
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
+              HelixTargetQueues: Windows.10.Amd64.Arcade.Open;Debian.9.Amd64.Arcade.Open
               HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
               IsExternal: true
               Creator: arcade-validation
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64;Debian.9.Amd64
+              HelixTargetQueues: Windows.10.Amd64.Arcade;Debian.9.Amd64.Arcade
               HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
               HelixAccessToken: $(HelixApiAccessToken)
         displayName: Validate Helix
@@ -163,7 +172,7 @@ stages:
         - job: Validate_Signing
           pool: 
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2017.Arcade
           strategy:
             matrix:
               Test_Signing:
@@ -213,29 +222,85 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-
-  - stage: Push_to_latest_channel
-    displayName: Push build to 'Latest' channel
-    dependsOn:
-      # This will run only after all the publishing stages have run.
-      # These stages are introduced in the eng/common/templates/post-build/channels YAML templates
-      - NetCore_Dev5_Publish
-      - NetCore_Tools_Latest_Publish
-      - PVR_Publish
-      - General_Testing_Publish
-      - NETCore_Tooling_Dev_Publishing
-      - NETCore_Tooling_Release_Publishing
-    jobs:
+  - stage: Validate_Publishing
+    displayName: Validate Publishing
+    jobs: 
+    - template: /eng/common/templates/post-build/setup-maestro-vars.yml
     - template: /eng/common/templates/job/job.yml
       parameters:
-        name: Push_to_latest_channel
-        displayName: Push Builds to 'Latest' channel
+        name: Validate_Publishing
+        displayName: Validate Publishing
+        dependsOn: setupMaestroVars
+        timeoutInMinutes: 240
+        pool: 
+          vmImage: vs2017-win2016
         variables:
           - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+          - name: BARBuildId
+            value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
         steps:
           - checkout: self
             clean: true
-          - powershell: eng/validation/update-channel.ps1
-              -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+          - powershell: eng\validation\test-publishing.ps1
+              -buildId $(BARBuildId)
+              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+              -githubUser "dotnet-bot"
+              -githubOrg "dotnet"
               -barToken $(MaestroAccessToken)
-            displayName: Move build to 'Latest' channel 
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+  # Arcade validation with additional repos
+  - stage: Validate_Arcade_With_Consumer_Repositories
+    displayName: Validate Arcade with Consumer Repositories
+    condition: eq(variables['RunBellwetherRepoBuilds'], 'true')
+    jobs:
+      - template: /eng/common/templates/job/job.yml
+        parameters:
+          name: Validate_Arcade_With_Consumer_Repositories
+          displayName: Validate Arcade with Consumer Repositories
+          timeoutInMinutes: 240
+          variables:
+            - group: Publish-Build-Assets
+            - group: DotNetBot-GitHub
+            - group: DotNet-Blob-Feed
+            - group: DotNet-Symbol-Server-Pats
+            - group: DotNet-VSTS-Infra-Access
+          strategy:
+            matrix:
+              ValidateWithRuntime:
+                _azdoOrg: "dnceng"
+                _azdoProject: "internal"
+                _buildDefinitionId: 679
+                _githubRepoName: "runtime"
+                _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+                _optionalParameters: "-azdoRepoName 'dotnet-runtime' -subscribedBranchName 'master'"
+              ValidateWithASPNETCore:
+                _azdoOrg: "dnceng"
+                _azdoProject: "internal"
+                _buildDefinitionId: 21
+                _githubRepoName: "aspnetcore"
+                _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+                _optionalParameters: "-azdoRepoName 'dotnet-aspnetcore' -subscribedBranchName 'master'"
+              ValidateWithInstaller:
+                _azdoOrg: "dnceng"
+                _azdoProject: "internal"
+                _buildDefinitionId: 286
+                _githubRepoName: "installer"
+                _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+                _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'master'"
+          steps:
+            - checkout: self
+              clean: true
+            - powershell: eng\validation\build-arcadewithrepo.ps1
+                -azdoOrg $(_azdoOrg)
+                -azdoProject $(_azdoProject)
+                -buildDefinitionId $(_buildDefinitionId)
+                -azdoToken $(_azdoToken)
+                -githubUser "dotnet-bot"
+                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+                -githubOrg "dotnet"
+                -githubRepoName $(_githubRepoName)
+                -barToken $(MaestroAccessToken)
+                $(_optionalParameters)
+              displayName: Build Bellwether Repo With Arcade
+              name: Build_Bellwether_Repo_With_Arcade

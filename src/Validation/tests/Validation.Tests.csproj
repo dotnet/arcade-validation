@@ -2,6 +2,5 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 </Project>
