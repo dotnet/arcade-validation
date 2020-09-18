@@ -76,7 +76,7 @@ if($preCheck)
 }
 
 Write-Host "Adding build '${global:buildId}' to channel '${global:targetChannel}'"
-& $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --source-branch $global:targetBranch --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:barToken
+& $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --source-branch $global:targetBranch --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:barToken --publishing-infra-version 3
 
 if ($LastExitCode -ne 0) {
     Write-Host "Problems using Darc to promote build '${global:buildId}' to channel '${global:targetChannel}'. Stopping execution..."
