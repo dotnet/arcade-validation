@@ -2,9 +2,7 @@ Param(
   [string] $maestroEndpoint,
   [string] $barToken,
   [string] $apiVersion = "2018-07-16",
-  [string] $targetChannelName = ".NET 5 Eng",
-  [string] $azdoToken,
-  [string] $githubToken
+  [string] $targetChannelName = ".NET 5 Eng"
 )
 
 . $PSScriptRoot\..\common\tools.ps1
@@ -47,7 +45,7 @@ try {
 
     $darc = & "$PSScriptRoot\get-darc.ps1"
 
-    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
+    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --bar-uri "$maestroEndpoint" --password $barToken --skip-assets-publishing
     
     if ($LastExitCode -ne 0) {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
@@ -61,29 +59,8 @@ try {
     if ($DarcOutput -match "has already been assigned to") {
         Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
     }
-    else {
-        $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
 
-        $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
-        $waitIntervalsInSeconds = 60
-        $build = $null
-
-        do {
-            Write-Host "Waiting ${waitIntervalsInSeconds} seconds for promotion build to complete... https://dnceng.visualstudio.com/internal/_build/results?buildId=${azdoBuildId}"
-
-            Start-Sleep -Seconds $waitIntervalsInSeconds
-
-            $build = Get-AzDO-Build -token $azdoToken -azdoBuildId $azdoBuildId
-        } while ($build.status -ne "completed")
-
-        if ($build.result -eq "succeeded") {
-            Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
-        }
-        else {
-            Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
-            exit 1
-        }    
-    }
+    Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
 }
 catch {
     Write-Host $_
