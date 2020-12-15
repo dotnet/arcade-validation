@@ -94,7 +94,6 @@ namespace Validation.Tests
         /// if it is not set at all (default behavior), and there are no items to sign in post build signing
         /// </summary>
         /// <param name="propertyIsSet">Is the property set or are we using the expecte default?</param>
-        [ActiveIssue("https://github.com/dotnet/runtime/issues/17845")]
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
