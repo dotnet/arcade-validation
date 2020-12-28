@@ -45,7 +45,7 @@ namespace Validation.Tests
                     "src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
-                builder.Build("-configuration", "Release", "-restore", "-sign", "-ci", "-projects", "src/FooPackage/FooPackage.csproj")
+                builder.Build("-configuration", "Release", "-restore", "-sign", "-projects", "src/FooPackage/FooPackage.csproj")
                     .Should().NotThrow();
             }
         }
@@ -84,7 +84,7 @@ namespace Validation.Tests
                     "src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
-                builder.Build("-configuration", "Release", "-restore", "-sign", "-ci", "-projects", "src/FooPackage/FooPackage.csproj")
+                builder.Build("-configuration", "Release", "-restore", "-sign", "-projects", "src/FooPackage/FooPackage.csproj")
                     .Should().Throw<Exception>().WithMessage("*error : List of files to sign is empty. Make sure that ItemsToSign is configured correctly*");
             }
         }
@@ -131,7 +131,7 @@ namespace Validation.Tests
                     "src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
-                builder.Build("-configuration", "Release", "-restore", "-ci", "-pack", "-publish",
+                builder.Build("-configuration", "Release", "-restore", "-pack", "-publish",
                     "-sign", "-projects", "src/FooPackage/FooPackage.csproj", "/p:AutoGenerateSymbolPackages=false", "/p:PostBuildSign=true")
                     .Should().Throw<Exception>($"build of repo {builder.TestRepoRoot} is post build signed")
                     .WithMessage("*error: List of files to sign post-build is empty. Make sure that ItemsToSignPostBuild is configured correctly.*");
