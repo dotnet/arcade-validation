@@ -134,7 +134,7 @@ namespace Validation.Tests
                 builder.Build("-configuration", "Release", "-restore", "-pack", "-publish",
                     "-sign", "-projects", "src/FooPackage/FooPackage.csproj", "/p:AutoGenerateSymbolPackages=false", "/p:PostBuildSign=true")
                     .Should().Throw<Exception>($"build of repo {builder.TestRepoRoot} is post build signed")
-                    .WithMessage("*error: List of files to sign post-build is empty. Make sure that ItemsToSignPostBuild is configured correctly.*");
+                    .WithMessage("*error : List of files to sign post-build is empty. Make sure that ItemsToSignPostBuild is configured correctly.*");
             }
         }
     }
