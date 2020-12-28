@@ -394,14 +394,17 @@ namespace HelloWorld
 
         public Action Build(params string[] args)
         {
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var allArgs = new List<string>()
             {
-                "eng/common/build.ps1",
+                (isWindows ? "eng/common/build.ps1" : "eng/common/build.sh"),
             };
             allArgs.AddRange(args);
 
+            string executable = isWindows ? "powershell" : "sh";
+
             // Invokes eng/common/build.ps1 with provided options
-            return () => Command.Create("powershell", allArgs)
+            return () => Command.Create(executable, allArgs)
                     .EnvironmentVariable("DOTNET_INSTALL_DIR", RepoResources.CommonDotnetRoot)
                     .EnvironmentVariable("NUGET_PACKAGES", RepoResources.CommonPackagesRoot)
                     .EnvironmentVariable("BUILD_REPOSITORY_URI", "https://localhost")
