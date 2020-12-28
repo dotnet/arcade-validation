@@ -408,6 +408,7 @@ namespace HelloWorld
                     .EnvironmentVariable("BUILD_SOURCEBRANCH", "whatsabranch")
                     .EnvironmentVariable("BUILD_BUILDNUMBER", "20200101.1")
                     .EnvironmentVariable("BUILD_SOURCEVERSION", "aaaabbbbccccddddeeeeffffeeeeddddccccbbcc")
+                    .EnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "1")
                     .WorkingDirectory(TestRepoRoot)
                     .CaptureStdErr()
                     .CaptureStdOut()
