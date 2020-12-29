@@ -421,7 +421,8 @@ namespace HelloWorld
             }
             else
             {
-                executable = "./eng/common/build.sh";
+                executable = "bash";
+                allArgs.Add("./eng/common/build.sh");
             }
 
             allArgs.AddRange(args);
