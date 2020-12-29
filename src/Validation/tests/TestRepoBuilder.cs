@@ -15,6 +15,18 @@ namespace Validation.Tests
 {
     public class TestRepoUtils
     {
+        /// <summary>
+        /// Calculates a build argument to build.sh/build.ps1.
+        /// Arguments (non msbuild ones) have -- in sh, and - in ps1.
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        public static string BuildArg(string arg)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                $"-{arg}" : "--{arg}";
+        }
+
         public static string CreateUniqueTempDir(string dirName)
         {
             string repoRoot;
@@ -126,7 +138,11 @@ namespace Validation.Tests
                         "src/FooPackage/FooPackage.csproj");
                     await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
-                    builder.Build("-restore", "-ci", "-projects", "src/FooPackage/FooPackage.csproj")();
+                    builder.Build(
+                        TestRepoUtils.BuildArg("restore"),
+                        TestRepoUtils.BuildArg("ci"),
+                        TestRepoUtils.BuildArg("projects"),
+                        "src/FooPackage/FooPackage.csproj")();
 
                     commonRoot = builder.TestRepoRoot;
                     dotnetRoot = Path.Combine(builder.TestRepoRoot, ".dotnet");
@@ -397,7 +413,7 @@ namespace HelloWorld
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var allArgs = new List<string>()
             {
-                (isWindows ? "eng/common/build.ps1" : "eng/common/build.sh"),
+                (isWindows ? "./eng/common/build.ps1" : "./eng/common/build.sh"),
             };
             allArgs.AddRange(args);
 
