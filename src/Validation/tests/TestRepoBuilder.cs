@@ -24,7 +24,7 @@ namespace Validation.Tests
         public static string BuildArg(string arg)
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                $"-{arg}" : "--{arg}";
+                $"-{arg}" : $"--{arg}";
         }
 
         public static string CreateUniqueTempDir(string dirName)
