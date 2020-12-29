@@ -411,13 +411,20 @@ namespace HelloWorld
         public Action Build(params string[] args)
         {
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            var allArgs = new List<string>()
-            {
-                (isWindows ? "./eng/common/build.ps1" : "./eng/common/build.sh"),
-            };
-            allArgs.AddRange(args);
+            var allArgs = new List<string>();
+            string executable;
 
-            string executable = isWindows ? "powershell" : "sh";
+            if (isWindows)
+            {
+                executable = "powershell";
+                allArgs.Add("./eng/common/build.ps1");
+            }
+            else
+            {
+                executable = "./eng/common/build.sh";
+            }
+
+            allArgs.AddRange(args);
 
             // Invokes eng/common/build.ps1 with provided options
             return () => Command.Create(executable, allArgs)
