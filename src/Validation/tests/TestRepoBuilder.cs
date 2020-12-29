@@ -142,7 +142,7 @@ namespace Validation.Tests
                         TestRepoUtils.BuildArg("restore"),
                         TestRepoUtils.BuildArg("ci"),
                         TestRepoUtils.BuildArg("projects"),
-                        "./src/FooPackage/FooPackage.csproj")();
+                        Path.Combine(builder.TestRepoRoot, "src/FooPackage/FooPackage.csproj"))();
 
                     commonRoot = builder.TestRepoRoot;
                     dotnetRoot = Path.Combine(builder.TestRepoRoot, ".dotnet");

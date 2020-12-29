@@ -5,6 +5,7 @@
 using FluentAssertions;
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -51,7 +52,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("restore"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "./src/FooPackage/FooPackage.csproj")
+                    Path.Combine(builder.TestRepoRoot, "src/FooPackage/FooPackage.csproj"))
                     .Should().NotThrow();
             }
         }
@@ -96,7 +97,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("restore"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "./src/FooPackage/FooPackage.csproj")
+                    Path.Combine(builder.TestRepoRoot, "src/FooPackage/FooPackage.csproj"))
                     .Should().Throw<Exception>().WithMessage("*error : List of files to sign is empty. Make sure that ItemsToSign is configured correctly*");
             }
         }
@@ -151,7 +152,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("publish"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "./src/FooPackage/FooPackage.csproj",
+                    Path.Combine(builder.TestRepoRoot, "src/FooPackage/FooPackage.csproj"),
                     "/p:AutoGenerateSymbolPackages=false",
                     "/p:PostBuildSign=true")
                     .Should().Throw<Exception>($"build of repo {builder.TestRepoRoot} is post build signed")
