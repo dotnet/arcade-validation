@@ -42,7 +42,7 @@ namespace Validation.Tests
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true"),
-                    "src/FooPackage/FooPackage.csproj");
+                    "./src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
                 builder.Build(
@@ -51,7 +51,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("restore"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "src/FooPackage/FooPackage.csproj")
+                    "./src/FooPackage/FooPackage.csproj")
                     .Should().NotThrow();
             }
         }
@@ -87,7 +87,7 @@ namespace Validation.Tests
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true"),
-                    "src/FooPackage/FooPackage.csproj");
+                    "./src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
                 builder.Build(
@@ -96,7 +96,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("restore"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "src/FooPackage/FooPackage.csproj")
+                    "./src/FooPackage/FooPackage.csproj")
                     .Should().Throw<Exception>().WithMessage("*error : List of files to sign is empty. Make sure that ItemsToSign is configured correctly*");
             }
         }
@@ -140,7 +140,7 @@ namespace Validation.Tests
                         .PropertyGroup()
                         .Property("IsPackable", "true")
                         .Property("EnableSourceLink", "false"),
-                    "src/FooPackage/FooPackage.csproj");
+                    "./src/FooPackage/FooPackage.csproj");
                 await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
 
                 builder.Build(
@@ -151,7 +151,7 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("publish"),
                     TestRepoUtils.BuildArg("sign"),
                     TestRepoUtils.BuildArg("projects"),
-                    "src/FooPackage/FooPackage.csproj",
+                    "./src/FooPackage/FooPackage.csproj",
                     "/p:AutoGenerateSymbolPackages=false",
                     "/p:PostBuildSign=true")
                     .Should().Throw<Exception>($"build of repo {builder.TestRepoRoot} is post build signed")

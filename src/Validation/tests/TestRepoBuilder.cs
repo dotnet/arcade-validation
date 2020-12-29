@@ -135,14 +135,14 @@ namespace Validation.Tests
                             .SdkCsproj(
                                 targetFramework: "net5.0",
                                 outputType: "Exe"),
-                        "src/FooPackage/FooPackage.csproj");
-                    await builder.AddSimpleCSFile("src/FooPackage/Program.cs");
+                        "./src/FooPackage/FooPackage.csproj");
+                    await builder.AddSimpleCSFile("./src/FooPackage/Program.cs");
 
                     builder.Build(
                         TestRepoUtils.BuildArg("restore"),
                         TestRepoUtils.BuildArg("ci"),
                         TestRepoUtils.BuildArg("projects"),
-                        "src/FooPackage/FooPackage.csproj")();
+                        "./src/FooPackage/FooPackage.csproj")();
 
                     commonRoot = builder.TestRepoRoot;
                     dotnetRoot = Path.Combine(builder.TestRepoRoot, ".dotnet");
