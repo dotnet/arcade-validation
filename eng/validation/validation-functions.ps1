@@ -16,7 +16,8 @@ function Git-Command($repoName) {
             $gitParams = $gitParams.ToString().Split(" ")
         }
         Write-Host "Running 'git $gitParams' from $(Get-Location)"
-        $commandOutput = & git @gitParams; if ($LASTEXITCODE -ne 0) { throw "Git exited with exit code: $LASTEXITCODE" } else { $commandOutput }
+        $commandOutput = & git @gitParams; if ($LASTEXITCODE -ne 0) { throw "Git exited with exit code: $LASTEXITCODE - $commandOutput " } else { $commandOutput }
+
         $commandOutput
     }
     finally {
