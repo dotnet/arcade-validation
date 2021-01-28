@@ -20,21 +20,21 @@ stages:
               _azdoProject: "internal"
               _buildDefinitionId: 679
               _githubRepoName: "runtime"
-              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _azdoToken: $(dn-bot-dotnet-build-rw-code-rw)
               _optionalParameters: "-azdoRepoName 'dotnet-runtime' -subscribedBranchName 'master'"
             ValidateWithASPNETCore:
               _azdoOrg: "dnceng"
               _azdoProject: "internal"
               _buildDefinitionId: 21
               _githubRepoName: "aspnetcore"
-              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _azdoToken: $(dn-bot-dotnet-build-rw-code-rw)
               _optionalParameters: "-azdoRepoName 'dotnet-aspnetcore' -subscribedBranchName 'master'"
             ValidateWithInstaller:
               _azdoOrg: "dnceng"
               _azdoProject: "internal"
               _buildDefinitionId: 286
               _githubRepoName: "installer"
-              _azdoToken: $(dn-bot-dnceng-build-rw-code-rw)
+              _azdoToken: $(dn-bot-dotnet-build-rw-code-rw)
               _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'master'"
         steps:
           - checkout: self
