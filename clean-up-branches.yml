@@ -23,7 +23,7 @@ jobs:
         - powershell: eng\validation\remove-oldbranches.ps1
             -azdoOrg "dnceng"
             -azdoProject "internal"
-            -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
             -user "dotnet-bot"
             -barToken $(MaestroAccessToken)
             -azdoRepoName $(_azdoRepoName)

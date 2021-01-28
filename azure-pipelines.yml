@@ -247,7 +247,7 @@ stages:
               clean: true
             - powershell: eng\validation\test-publishing.ps1
                 -buildId $(BARBuildId)
-                -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
                 -githubUser "dotnet-bot"
                 -githubOrg "dotnet"
                 -barToken $(MaestroAccessToken)
