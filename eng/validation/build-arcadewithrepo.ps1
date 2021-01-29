@@ -45,6 +45,8 @@ $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([S
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
 New-Item -Path $testRoot -ItemType Directory | Out-Null
 
+Write-Output "Working inside $testRoot"
+
 function Get-LatestBuildSha()
 {
     ## Verified that this API gets completed builds, not in progress builds
@@ -154,7 +156,7 @@ $global:darcRepoName = ""
 $sha = Get-LatestBuildSha
 
 ## Clone the repo from git
-Write-Host "Cloning '${global:githubRepoName} from GitHub"
+Write-Host "Cloning '${global:githubRepoName}' from GitHub"
 GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
 
 ## Check to see if branch exists and clean it up if it does
@@ -202,7 +204,15 @@ $barBuildId = ([regex]"\d+").Match($barBuildIdString).Value
 
 ## Make the changes to that branch to update Arcade - use darc
 Set-Location $(Get-Repo-Location $global:githubRepoName)
-& $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+
+$darcOutput = & $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+Write-Output $darcOutput
+if ($darcOutput -eq "Found no dependencies to update.")
+{
+   ## This needs investigation; fail fast 
+   Write-Host "##vso[task.logissue type=error]Darc returned no dependencies to update for this repo, please investigate why."
+   exit 1
+}
 
 Git-Command $global:githubRepoName add -A
 Git-Command $global:githubRepoName commit -am "Arcade Validation test branch - version ${global:arcadeSdkVersion}"

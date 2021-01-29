@@ -50,7 +50,7 @@ $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
 ## Clone the repo from git
-Write-Host "Cloning '${global:githubRepoName} from GitHub"
+Write-Host "Cloning '${global:githubRepoName}' from GitHub"
 GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
 
 ## Create a branch from the repo with the given SHA.
