@@ -209,9 +209,9 @@ $darcOutput = & $darc update-dependencies --id $barBuildId --github-pat $global:
 Write-Output $darcOutput
 if ($darcOutput -eq "Found no dependencies to update.")
 {
-   ## Log a warning so this isn't hidden, but it's not necessarily a problem either, just exit.
-   Write-Host "##vso[task.logissue type=warning]Darc returned no dependencies to update for this repo"
-   exit 0
+   ## This needs investigation; fail fast 
+   Write-Host "##vso[task.logissue type=error]Darc returned no dependencies to update for this repo, please investigate why."
+   exit 1
 }
 
 Git-Command $global:githubRepoName add -A
