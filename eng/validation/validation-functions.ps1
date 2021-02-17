@@ -30,7 +30,7 @@ function GitHub-Clone(
 	$githubUser,
 	$githubUri) 
 {
-    & git clone $githubUri $(Get-Repo-Location $repoName)
+    & git clone -c core.longpaths=true $githubUri $(Get-Repo-Location $repoName)
     Push-Location -Path $(Get-Repo-Location $repoName)
     & git config user.email "${githubUser}@test.com"
     & git config user.name $githubUser
