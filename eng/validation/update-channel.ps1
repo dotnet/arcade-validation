@@ -8,6 +8,7 @@ Param(
 )
 
 . $PSScriptRoot\..\common\tools.ps1
+$darc = & "$PSScriptRoot\get-darc.ps1"
 
 function Get-Headers([string]$accept, [string]$barToken) {
     $headers = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
@@ -45,9 +46,7 @@ try {
 
     $buildId = $assets[0].'buildId'
 
-    $darc = & "$PSScriptRoot\get-darc.ps1"
-
-    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --bar-uri "$maestroEndpoint" --password $barToken
+    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
     
     if ($LastExitCode -ne 0) {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
@@ -82,7 +81,7 @@ try {
         else {
             Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
             exit 1
-        }    
+        }
     }
 }
 catch {

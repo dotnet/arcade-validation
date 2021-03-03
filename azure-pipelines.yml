@@ -263,12 +263,11 @@ stages:
           name: Validate_Arcade_With_Consumer_Repositories
           displayName: Validate Arcade with Consumer Repositories
           timeoutInMinutes: 240
+          pool: 
+            vmImage: vs2017-win2016
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
-            - group: DotNet-Blob-Feed
-            - group: DotNet-Symbol-Server-Pats
-            - group: DotNet-VSTS-Infra-Access
           strategy:
             matrix:
               ValidateWithRuntime:
@@ -308,3 +307,21 @@ stages:
                 $(_optionalParameters)
               displayName: Build Bellwether Repo With Arcade
               name: Build_Bellwether_Repo_With_Arcade
+  - stage: Promote_Arcade_To_Latest
+    displayName: Promote Arcade to '.NET Eng - Latest' channel
+    dependsOn:
+      - Validate_Publishing
+      - Validate_Arcade_With_Consumer_Repositories
+    timeoutInMinutes: 180
+    variables: 
+      - group: Publish-Build-Assets
+      - group: DotNetBot-GitHub
+    steps: 
+      - checkout: self
+        clean: True
+      - powershell: eng/validation/update-channel.ps1
+              -barToken $(MaestroAccessToken)
+              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+              -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+        displayName: Promote Arcade to 'Latest' channel 
+
