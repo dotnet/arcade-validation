@@ -247,9 +247,10 @@ stages:
               clean: true
             - powershell: eng\validation\test-publishing.ps1
                 -buildId $(BARBuildId)
-                -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                -githubUser "dotnet-bot"
-                -githubOrg "dotnet"
+                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+                -azdoUser "dotnet-bot"
+                -azdoOrg "dnceng"
+                -azdoProject "internal"
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
   - stage: Push_to_net5_eng_channel
