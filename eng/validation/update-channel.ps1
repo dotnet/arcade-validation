@@ -25,12 +25,66 @@ function Get-AzDO-Build([string]$token, [int]$azdoBuildId) {
     return $content | ConvertFrom-Json
 }
 
+function Get-AzDOHeaders()
+{
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${azdoToken}"))
+    $headers = @{"Authorization"="Basic $base64AuthInfo"}
+    return $headers
+}
+
+function Get-LatestBuildSha([PSObject]$repoData)
+{
+    ## Verified that this API gets completed builds, not in progress builds
+    $headers = Get-AzDOHeaders
+    $uri = "https://dev.azure.com/$($repoData.azdoOrg)/$($repoData.azdoProject)/_apis/build/latest/$($repoData.buildDefinitionId)?branchName=$($repoData.subscribedBranchName)&api-version=5.1-preview.1"
+    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
+
+    ## Report non-green repos for investigation purposes. 
+    if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
+    {
+        Write-Error "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful."
+    }
+
+    if("" -eq $response.triggerInfo)
+    {
+        return $response.sourceVersion
+    }
+    else 
+    {
+        return $response.triggerInfo.'ci.sourceSha'
+    }
+}
+
+$runtimeRepo = @{
+    azdoOrg = 'dnceng';
+    azdoProject = 'internal';
+    buildDefinitionId = 679;
+    subscribedBranchName = 'main'
+}
+$aspnetcoreRepo = @{
+    azdoOrg = 'dnceng';
+    azdoProject = 'internal';
+    buildDefinitionId = 21;
+    subscribedBranchName = 'main'
+}
+$installerRepo = @{
+    azdoOrg = 'dnceng';
+    azdoProject = 'internal';
+    buildDefinitionId = 286;
+    subscribedBranchName = 'master'
+}
+
+$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo)
+
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
 $getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
 $headers = Get-Headers 'text/plain' $barToken
 
 try {
+    # Validate that the "bellwether" repos (runtime, installer, aspnetcore) are green on their main branches
+    $bellwetherRepos | ForEach-Object { Get-LatestBuildSha -repoData $_ }
+
     # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
     $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
 
