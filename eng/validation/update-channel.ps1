@@ -44,6 +44,7 @@ function Get-LatestBuildResult([PSObject]$repoData)
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
         Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "warning"
+        Write-PipelineSetResult -result "SucceededWithIssues" -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful."
         return $false
     }
 
