@@ -257,16 +257,21 @@ stages:
     displayName: Promote Arcade to '.NET Eng - Latest' channel
     dependsOn:
       - Validate_Publishing
-    timeoutInMinutes: 180
-    variables: 
-      - group: Publish-Build-Assets
-      - group: DotNetBot-GitHub
-    steps: 
-      - checkout: self
-        clean: True
-      - powershell: eng/validation/update-channel.ps1
-              -barToken $(MaestroAccessToken)
-              -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-              -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-        displayName: Promote Arcade to 'Latest' channel 
+    jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Promote_Arcade_To_Latest
+        displayName: Promote Arcade to '.NET Eng - Latest' channel
+        timeoutInMinutes: 180
+        variables: 
+          - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+        steps: 
+          - checkout: self
+            clean: True
+          - powershell: eng/validation/update-channel.ps1
+                  -barToken $(MaestroAccessToken)
+                  -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                  -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+            displayName: Promote Arcade to 'Latest' channel 
 

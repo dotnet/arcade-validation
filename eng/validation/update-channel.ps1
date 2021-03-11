@@ -43,7 +43,7 @@ function Get-LatestBuildResult([PSObject]$repoData)
     ## Report non-green repos for investigation purposes. 
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
-        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful."
+        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "warning"
         return $false
     }
 
