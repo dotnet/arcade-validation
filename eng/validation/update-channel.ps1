@@ -8,6 +8,7 @@ Param(
 )
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\..\common\pipeline-logging-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 function Get-Headers([string]$accept, [string]$barToken) {
@@ -32,7 +33,7 @@ function Get-AzDOHeaders()
     return $headers
 }
 
-function Get-LatestBuildSha([PSObject]$repoData)
+function Get-LatestBuildResult([PSObject]$repoData)
 {
     ## Verified that this API gets completed builds, not in progress builds
     $headers = Get-AzDOHeaders
@@ -42,39 +43,43 @@ function Get-LatestBuildSha([PSObject]$repoData)
     ## Report non-green repos for investigation purposes. 
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
-        Write-Error "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful."
+        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful."
+        return $false
     }
 
-    if("" -eq $response.triggerInfo)
-    {
-        return $response.sourceVersion
-    }
-    else 
-    {
-        return $response.triggerInfo.'ci.sourceSha'
-    }
+    return $true
 }
 
 $runtimeRepo = @{
     azdoOrg = 'dnceng';
     azdoProject = 'internal';
     buildDefinitionId = 679;
+    githubRepoName = 'runtime';
     subscribedBranchName = 'main'
 }
 $aspnetcoreRepo = @{
     azdoOrg = 'dnceng';
     azdoProject = 'internal';
     buildDefinitionId = 21;
+    githubRepoName = 'aspnetcore';
     subscribedBranchName = 'main'
 }
 $installerRepo = @{
     azdoOrg = 'dnceng';
     azdoProject = 'internal';
     buildDefinitionId = 286;
+    githubRepoName = 'installer';
+    subscribedBranchName = 'master'
+}
+$inception = @{
+    azdoOrg = 'dnceng';
+    azdoProject = 'internal';
+    buildDefinitionId = 838;
+    githubRepoName = 'arcade-validation';
     subscribedBranchName = 'master'
 }
 
-$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo)
+$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo, $inception)
 
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
@@ -83,59 +88,64 @@ $headers = Get-Headers 'text/plain' $barToken
 
 try {
     # Validate that the "bellwether" repos (runtime, installer, aspnetcore) are green on their main branches
-    $bellwetherRepos | ForEach-Object { Get-LatestBuildSha -repoData $_ }
+    $results = ($bellwetherRepos | ForEach-Object { Get-LatestBuildResult -repoData $_ })
 
-    # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-    $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
+    if(-not ($results -contains $false))
+    {
+write-host "nope"
 
-    if (!$assets) {
-        Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
-        exit 1
-    }
+        <# # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
+        $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
 
-    if ($assets.Count -ne 1) {
-        Write-Host "More than 1 asset matched the version '$arcadeSdkVersion' of Microsoft.DotNet.Arcade.Sdk. This is not normal. Stopping execution..."
-        exit 1
-    }
-
-    $buildId = $assets[0].'buildId'
-
-    $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
-    
-    if ($LastExitCode -ne 0) {
-        Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
-        Write-Host $DarcOutput
-        exit 1
-    }
-
-    # Consider re-working or removing the code below once this issue is closed:
-    # https://github.com/dotnet/arcade/issues/4863
-
-    if ($DarcOutput -match "has already been assigned to") {
-        Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
-    }
-    else {
-        $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
-
-        $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
-        $waitIntervalsInSeconds = 60
-        $build = $null
-
-        do {
-            Write-Host "Waiting ${waitIntervalsInSeconds} seconds for promotion build to complete... https://dnceng.visualstudio.com/internal/_build/results?buildId=${azdoBuildId}"
-
-            Start-Sleep -Seconds $waitIntervalsInSeconds
-
-            $build = Get-AzDO-Build -token $azdoToken -azdoBuildId $azdoBuildId
-        } while ($build.status -ne "completed")
-
-        if ($build.result -eq "succeeded") {
-            Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
-        }
-        else {
-            Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
+        if (!$assets) {
+            Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
             exit 1
         }
+
+        if ($assets.Count -ne 1) {
+            Write-Host "More than 1 asset matched the version '$arcadeSdkVersion' of Microsoft.DotNet.Arcade.Sdk. This is not normal. Stopping execution..."
+            exit 1
+        }
+
+        $buildId = $assets[0].'buildId'
+
+        $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
+        
+        if ($LastExitCode -ne 0) {
+            Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
+            Write-Host $DarcOutput
+            exit 1
+        }
+
+        # Consider re-working or removing the code below once this issue is closed:
+        # https://github.com/dotnet/arcade/issues/4863
+
+        if ($DarcOutput -match "has already been assigned to") {
+            Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
+        }
+        else {
+            $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
+
+            $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
+            $waitIntervalsInSeconds = 60
+            $build = $null
+
+            do {
+                Write-Host "Waiting ${waitIntervalsInSeconds} seconds for promotion build to complete... https://dnceng.visualstudio.com/internal/_build/results?buildId=${azdoBuildId}"
+
+                Start-Sleep -Seconds $waitIntervalsInSeconds
+
+                $build = Get-AzDO-Build -token $azdoToken -azdoBuildId $azdoBuildId
+            } while ($build.status -ne "completed")
+
+            if ($build.result -eq "succeeded") {
+                Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
+            }
+            else {
+                Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
+                exit 1
+            }
+        } #>
     }
 }
 catch {
