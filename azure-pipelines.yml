@@ -44,38 +44,8 @@ resources:
     image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
 stages:
-- stage: Validate_Publishing
-  displayName: Validate Publishing
-  jobs: 
-  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
-  - template: /eng/common/templates/job/job.yml
-    parameters:
-      name: Validate_Publishing
-      displayName: Validate Publishing
-      dependsOn: setupMaestroVars
-      timeoutInMinutes: 240
-      pool: 
-        vmImage: vs2017-win2016
-      variables:
-        - group: Publish-Build-Assets
-        - group: DotNetBot-GitHub
-        - name: BARBuildId
-          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-      steps:
-        - checkout: self
-          clean: true
-        - powershell: eng\validation\test-publishing.ps1
-            -buildId $(BARBuildId)
-            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-            -azdoUser "dotnet-bot"
-            -azdoOrg "dnceng"
-            -azdoProject "internal"
-            -barToken $(MaestroAccessToken)
-            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)  
 - stage: Promote_Arcade_To_Latest
   displayName: Promote Arcade to '.NET Eng - Latest' channel
-  dependsOn:
-    - Validate_Publishing
   jobs:
   - template: /eng/common/templates/job/job.yml
     parameters:
