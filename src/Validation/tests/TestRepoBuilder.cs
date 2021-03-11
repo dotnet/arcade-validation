@@ -133,7 +133,7 @@ namespace Validation.Tests
                     builder.AddProject(ProjectCreator
                             .Templates
                             .SdkCsproj(
-                                targetFramework: "net5.0",
+                                targetFramework: "net6.0",
                                 outputType: "Exe"),
                         "./src/FooPackage/FooPackage.csproj");
                     await builder.AddSimpleCSFile("./src/FooPackage/Program.cs");
