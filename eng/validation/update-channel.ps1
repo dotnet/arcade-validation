@@ -44,7 +44,6 @@ function Get-LatestBuildResult([PSObject]$repoData)
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
         Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "warning"
-        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
         return $false
     }
 
@@ -84,8 +83,7 @@ try {
     # Validate that the "bellwether" repos (runtime, installer, aspnetcore) are green on their main branches
     $results = ($bellwetherRepos | ForEach-Object { Get-LatestBuildResult -repoData $_ })
 
-    if(-not ($results -contains $false))
-    {
+    if(-not ($results -contains $false)) {
         # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
         $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
 
@@ -138,6 +136,9 @@ try {
                 exit 1
             }
         }
+    }
+    else {
+        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
     }
 }
 catch {
