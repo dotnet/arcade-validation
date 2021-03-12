@@ -43,7 +43,7 @@ function Get-LatestBuildResult([PSObject]$repoData)
     ## Report non-green repos for investigation purposes. 
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
     {
-        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "error"        
+        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "warning"
         Write-Host "##vso[task.complete result=SucceededWithIssues;]"
         return $false
     }
@@ -72,15 +72,8 @@ $installerRepo = @{
     githubRepoName = 'installer';
     subscribedBranchName = 'master'
 }
-$inception = @{
-    azdoOrg = 'dnceng';
-    azdoProject = 'internal';
-    buildDefinitionId = 838;
-    githubRepoName = 'arcade-validation';
-    subscribedBranchName = 'master'
-}
 
-$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo, $inception)
+$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo)
 
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
@@ -93,9 +86,7 @@ try {
 
     if(-not ($results -contains $false))
     {
-write-host "nope"
-
-        <# # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
+        # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
         $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
 
         if (!$assets) {
@@ -146,7 +137,7 @@ write-host "nope"
                 Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
                 exit 1
             }
-        } #>
+        }
     }
 }
 catch {
