@@ -99,42 +99,11 @@ try {
 
         $buildId = $assets[0].'buildId'
 
-        $DarcOutput = & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
+        & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
         
         if ($LastExitCode -ne 0) {
             Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
-            Write-Host $DarcOutput
             exit 1
-        }
-
-        # Consider re-working or removing the code below once this issue is closed:
-        # https://github.com/dotnet/arcade/issues/4863
-
-        if ($DarcOutput -match "has already been assigned to") {
-            Write-Host "Build '$buildId' is already in channel '$targetChannelName'. This is most likely an arcade-validation internal build"
-        }
-        else {
-            $buildUrlRegex = "https://dnceng.visualstudio.com/internal/_build/results\?buildId=(?<buildId>[0-9]*)"
-
-            $azdoBuildId = $DarcOutput | select-string -Pattern $buildUrlRegex -AllMatches | % { $_.Matches.Groups[1].Value } 
-            $waitIntervalsInSeconds = 60
-            $build = $null
-
-            do {
-                Write-Host "Waiting ${waitIntervalsInSeconds} seconds for promotion build to complete... https://dnceng.visualstudio.com/internal/_build/results?buildId=${azdoBuildId}"
-
-                Start-Sleep -Seconds $waitIntervalsInSeconds
-
-                $build = Get-AzDO-Build -token $azdoToken -azdoBuildId $azdoBuildId
-            } while ($build.status -ne "completed")
-
-            if ($build.result -eq "succeeded") {
-                Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
-            }
-            else {
-                Write-Host "Error trying to promote build. The promotion build finished with this result: $($build.result)"
-                exit 1
-            }
         }
     }
     else {
