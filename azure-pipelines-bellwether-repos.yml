@@ -35,7 +35,7 @@ stages:
               _buildDefinitionId: 286
               _githubRepoName: "installer"
               _azdoToken: $(dn-bot-dotnet-build-rw-code-rw)
-              _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'master'"
+              _optionalParameters: "-azdoRepoName 'dotnet-installer' -subscribedBranchName 'main'"
         steps:
           - checkout: self
             clean: true
