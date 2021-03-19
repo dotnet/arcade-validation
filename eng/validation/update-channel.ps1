@@ -69,7 +69,7 @@ $installerRepo = @{
     azdoProject = 'internal';
     buildDefinitionId = 286;
     githubRepoName = 'installer';
-    subscribedBranchName = 'master'
+    subscribedBranchName = 'main'
 }
 
 $bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo)
