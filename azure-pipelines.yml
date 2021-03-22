@@ -23,7 +23,7 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - main
       - release/3.x
 pr:
   branches:
@@ -35,7 +35,7 @@ schedules:
   displayName: Once a day build using Staging pools (at midnight)
   branches:
     include:
-    - master
+    - main
   always: true
 
 resources:
@@ -224,7 +224,7 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs: 
