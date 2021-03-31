@@ -7,6 +7,7 @@ Param(
   [string] $githubToken
 )
 
+$ci = $true
 . $PSScriptRoot\..\common\tools.ps1
 . $PSScriptRoot\..\common\pipeline-logging-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
