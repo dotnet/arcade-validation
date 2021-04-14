@@ -104,6 +104,8 @@ stages:
             -prepareMachine
             $(_InternalBuildArgs)
           displayName: Windows Build / Publish
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: Component Governance scan
 
       - job: Linux
         container: LinuxContainer
@@ -137,6 +139,8 @@ stages:
             --configuration $(_BuildConfig)
             --prepareMachine
           displayName: Unix Build / Publish
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: Component Governance scan
 
       - job: Validate_Helix
         variables:
@@ -144,6 +148,8 @@ stages:
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - group: DotNet-HelixApi-Access
         - _BuildConfig: Release
+        - name: skipComponentGovernanceDetection
+          value: true
         steps:
         - template: /eng/common/templates/steps/send-to-helix.yml
           parameters:
@@ -242,6 +248,8 @@ stages:
             - group: DotNetBot-GitHub
             - name: BARBuildId
               value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+            - name: skipComponentGovernanceDetection
+              value: true
           steps:
             - checkout: self
               clean: true
@@ -263,10 +271,12 @@ stages:
           name: Promote_Arcade_To_Latest
           displayName: Promote Arcade to '.NET Eng - Latest' channel
           timeoutInMinutes: 180
-          variables: 
+          variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
-          steps: 
+            - name: skipComponentGovernanceDetection
+              value: true
+          steps:
             - checkout: self
               clean: True
             - powershell: eng/validation/update-channel.ps1
