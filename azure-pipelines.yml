@@ -160,7 +160,7 @@ stages:
             XUnitPublishTargetFramework: net6.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
-            DotNetCliVersion: 6.0.100-preview.2.21155.3
+            DotNetCliVersion: 6.0.100-preview.3.21202.5
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
