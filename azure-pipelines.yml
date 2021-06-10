@@ -68,7 +68,7 @@ stages:
 
         # Only enable publishing in non-public, non PR scenarios.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) 
+          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
               /p:TeamName=$(_TeamName)
               /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
@@ -100,7 +100,7 @@ stages:
               Token: $(dn-bot-dnceng-artifact-feeds-rw)
         # Use utility script to run script command dependent on agent OS.
         - script: eng\common\cibuild.cmd
-            -configuration $(_BuildConfig) 
+            -configuration $(_BuildConfig)
             -prepareMachine
             $(_InternalBuildArgs)
           displayName: Windows Build / Publish
@@ -160,7 +160,7 @@ stages:
             XUnitPublishTargetFramework: net6.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
-            DotNetCliVersion: 6.0.100-preview.3.21202.5
+            DotNetCliVersion: 6.0.100-preview.4.21255.9
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
@@ -177,7 +177,7 @@ stages:
   # Jobs that should only run as part of internal builds.
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
-          pool: 
+          pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             queue: BuildPool.Server.Amd64.VS2017.Arcade
           strategy:
@@ -231,7 +231,7 @@ stages:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
-      jobs: 
+      jobs:
       - template: /eng/common/templates/post-build/setup-maestro-vars.yml
       - template: /eng/common/templates/job/job.yml
         parameters:
@@ -239,7 +239,7 @@ stages:
           displayName: Validate Publishing
           dependsOn: setupMaestroVars
           timeoutInMinutes: 240
-          pool: 
+          pool:
             vmImage: vs2017-win2016
           variables:
             - group: Publish-Build-Assets
@@ -258,7 +258,7 @@ stages:
                 -azdoOrg "dnceng"
                 -azdoProject "internal"
                 -barToken $(MaestroAccessToken)
-                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)  
+                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
     - stage: Promote_Arcade_To_Latest
       displayName: Promote Arcade to '.NET Eng - Latest' channel
       dependsOn:
@@ -282,4 +282,4 @@ stages:
                     -barToken $(MaestroAccessToken)
                     -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                     -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-              displayName: Promote Arcade to 'Latest' channel 
+              displayName: Promote Arcade to 'Latest' channel
