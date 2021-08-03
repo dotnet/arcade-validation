@@ -8,16 +8,10 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCorePublic-Pool
+      value: NetCore1ESHostedPool-Svc-Public-Int
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCoreInternal-Pool
-  - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
-    - name: PoolProvider
-      value: NetCorePublic-Int-Pool
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
-    - name: PoolProvider
-      value: NetCoreInternal-Int-Pool
+      value: NetCore1ESHostedPool-Svc-Internal-Int
 
 trigger:
   batch: true
@@ -60,9 +54,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Server.Amd64.VS2017.Arcade
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
 
@@ -112,7 +106,7 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            queue: BuildPool.Ubuntu.1604.Amd64.Arcade.Open
+            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: Hosted Ubuntu 1604
         strategy:
@@ -179,7 +173,7 @@ stages:
         - job: Validate_Signing
           pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2017.Arcade
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017
           strategy:
             matrix:
               Test_Signing:
