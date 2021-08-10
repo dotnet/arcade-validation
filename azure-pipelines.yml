@@ -8,10 +8,10 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCore1ESHostedPool-Svc-Public-Int
+      value: NetCore1ESPool-Svc-Public-Int
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCore1ESHostedPool-Svc-Internal-Int
+      value: NetCore1ESPool-Svc-Internal-Int
 
 trigger:
   batch: true
