@@ -8,7 +8,7 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Svc-Public-Int
+      value: NetCore1ESPool-Svc-Public-PR125
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
       value: NetCore1ESPool-Svc-Internal-Int
@@ -53,10 +53,7 @@ stages:
       - job: Windows_NT
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017.Open
-          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017
+          demands: ImageOverride -equals Build.Windows.10.Amd64.VS2019.Open-PR125
         variables:
         - _InternalBuildArgs: ''
 
@@ -100,73 +97,6 @@ stages:
           displayName: Windows Build / Publish
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
-
-      - job: Linux
-        container: LinuxContainer
-        pool:
-          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
-          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: Hosted Ubuntu 1604
-        strategy:
-          matrix:
-            Build_Debug:
-              _BuildConfig: Debug
-              _SignType: none
-            Build_Release:
-              _BuildConfig: Release
-              _SignType: none
-        steps:
-        - checkout: self
-          clean: true
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - task: Bash@3
-            displayName: Setup Private Feeds Credentials
-            inputs:
-              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-            condition: ne(variables['Agent.OS'], 'Windows_NT')
-            env:
-              Token: $(dn-bot-dnceng-artifact-feeds-rw)
-        - script: eng/common/cibuild.sh
-            --configuration $(_BuildConfig)
-            --prepareMachine
-          displayName: Unix Build / Publish
-        - task: ComponentGovernanceComponentDetection@0
-          displayName: Component Governance scan
-
-      - job: Validate_Helix
-        variables:
-        - HelixApiAccessToken: ''
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: DotNet-HelixApi-Access
-        - _BuildConfig: Release
-        - name: skipComponentGovernanceDetection
-          value: true
-        steps:
-        - template: /eng/common/templates/steps/send-to-helix.yml
-          parameters:
-            HelixType: test/product/
-            XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-            XUnitTargetFramework: netcoreapp2.0
-            XUnitRunnerVersion: 2.4.1
-            XUnitPublishTargetFramework: net6.0
-            IncludeDotNetCli: true
-            DotNetCliPackageType: sdk
-            DotNetCliVersion: 6.0.100-rc.1.21379.2
-            EnableXUnitReporter: true
-            WaitForWorkItemCompletion: true
-            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;Debian.9.Amd64.Open
-              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
-              IsExternal: true
-              Creator: arcade-validation
-            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64;Debian.9.Amd64
-              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
-              HelixAccessToken: $(HelixApiAccessToken)
-        displayName: Validate Helix
 
   # Jobs that should only run as part of internal builds.
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
