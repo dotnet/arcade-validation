@@ -8,10 +8,10 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Svc-Public-PR125
+      value: NetCore1ESPool-Svc-Public
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Svc-Internal-Int
+      value: NetCore1ESPool-Svc-Internal
 
 trigger:
   batch: true
@@ -53,7 +53,7 @@ stages:
       - job: Windows_NT
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-          demands: ImageOverride -equals Build.Windows.10.Amd64.VS2019.Open-PR125
+          demands: ImageOverride -equals Build.Windows.10.Amd64.VS2019.Open
         variables:
         - _InternalBuildArgs: ''
 
