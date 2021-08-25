@@ -143,6 +143,8 @@ stages:
           displayName: Component Governance scan
 
       - job: Validate_Helix
+        pool:
+          vmImage: windows-2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
