@@ -8,10 +8,10 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCorePublic-Pool
+      value: BuildPool.Server.Amd64.VS2019.Open
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: NetCoreInternal-Pool
+      value: BuildPool.Server.Amd64.VS2019
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
       value: NetCorePublic-Int-Pool
@@ -179,7 +179,7 @@ stages:
         - job: Validate_Signing
           pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2017.Arcade
+            queue: BuildPool.Server.Amd64.VS2019
           strategy:
             matrix:
               Test_Signing:
