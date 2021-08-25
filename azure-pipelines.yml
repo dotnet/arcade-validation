@@ -8,10 +8,10 @@ variables:
     - group: SDL_Settings
   - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: BuildPool.Server.Amd64.VS2019.Open
+      value: NetCorePublic-Pool
   - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
     - name: PoolProvider
-      value: BuildPool.Server.Amd64.VS2019
+      value: NetCoreInternal-Pool
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
       value: NetCorePublic-Int-Pool
@@ -143,6 +143,12 @@ stages:
           displayName: Component Governance scan
 
       - job: Validate_Helix
+        pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            queue: BuildPool.Server.Amd64.VS2019.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            queue: BuildPool.Server.Amd64.VS2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
