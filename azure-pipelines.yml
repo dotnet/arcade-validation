@@ -60,9 +60,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
+            queue: BuildPool.Server.Amd64.VS2019.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Server.Amd64.VS2017.Arcade
+            queue: BuildPool.Server.Amd64.VS2019
         variables:
         - _InternalBuildArgs: ''
 
