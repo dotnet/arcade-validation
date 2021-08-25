@@ -144,7 +144,7 @@ stages:
 
       - job: Validate_Helix
         pool:
-          name: windows-2019
+          vmImage: windows-2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
