@@ -42,7 +42,7 @@ schedules:
 resources:
   containers:
   - container: LinuxContainer
-    image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
 
 stages:
 - stage: build
@@ -247,9 +247,10 @@ stages:
               clean: true
             - powershell: eng\validation\test-publishing.ps1
                 -buildId $(BARBuildId)
-                -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                -githubUser "dotnet-bot"
-                -githubOrg "dotnet"
+                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+                -azdoUser "dotnet-bot"
+                -azdoOrg "dnceng"
+                -azdoProject "internal"
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
   - stage: Push_to_net5_eng_channel
