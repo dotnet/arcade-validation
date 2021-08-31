@@ -6,10 +6,10 @@ variables:
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
     - group: SDL_Settings
-  - ${{ if and(eq(variables.PoolProvider, ''), eq(variables['System.TeamProject'], 'public')) }}:
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
       value: NetCore1ESPool-Svc-Public
-  - ${{ if and(ne(variables.PoolProvider, ''), ne(variables['System.TeamProject'], 'public')) }}:
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
       value: NetCore1ESPool-Svc-Internal
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
