@@ -14,14 +14,6 @@ function Get-Headers([string]$accept, [string]$barToken) {
     return $headers
 }
 
-function Get-AzDO-Build([string]$token, [int]$azdoBuildId) {
-    $uri = "https://dev.azure.com/dnceng/internal/_apis/build/builds/${azdoBuildId}?api-version=5.1"
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${token}"))
-    $headers = @{"Authorization"="Basic $base64AuthInfo"}
-    $content = Invoke-WebRequest -Uri $uri -Headers $headers -Method Get 
-    return $content | ConvertFrom-Json
-}
-
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
 $getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
