@@ -232,7 +232,7 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
@@ -263,15 +263,15 @@ stages:
                 -azdoProject "internal"
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-    - stage: Promote_Arcade_To_Latest
-      displayName: Promote Arcade to '.NET Eng - Latest' channel
+    - stage: Push_to_net6_eng_channel
+      displayName: Promote Arcade to '.NET 6 Eng' channel
       dependsOn:
         - Validate_Publishing
       jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
-          name: Promote_Arcade_To_Latest
-          displayName: Promote Arcade to '.NET Eng - Latest' channel
+          name: Push_to_net6_eng_channel
+          displayName: Promote Arcade to '.NET 6 Eng' channel
           timeoutInMinutes: 180
           variables:
             - group: Publish-Build-Assets
@@ -286,4 +286,4 @@ stages:
                     -barToken $(MaestroAccessToken)
                     -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                     -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-              displayName: Promote Arcade to 'Latest' channel
+              displayName: Promote Arcade to '.NET 6 Eng' channel
