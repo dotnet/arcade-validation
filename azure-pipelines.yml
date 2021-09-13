@@ -263,14 +263,14 @@ stages:
                 -azdoProject "internal"
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-    - stage: Push_to_net6_eng_channel
+    - stage: Promote_to_net6_eng_channel
       displayName: Promote Arcade to '.NET 6 Eng' channel
       dependsOn:
         - Validate_Publishing
       jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
-          name: Push_to_net6_eng_channel
+          name: Promote_to_net6_eng_channel
           displayName: Promote Arcade to '.NET 6 Eng' channel
           timeoutInMinutes: 180
           variables:
