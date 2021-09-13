@@ -34,23 +34,6 @@ function Get-AzDOHeaders()
     return $headers
 }
 
-function Get-LatestBuildResult([PSObject]$repoData)
-{
-    ## Verified that this API gets completed builds, not in progress builds
-    $headers = Get-AzDOHeaders
-    $uri = "https://dev.azure.com/$($repoData.azdoOrg)/$($repoData.azdoProject)/_apis/build/latest/$($repoData.buildDefinitionId)?branchName=$($repoData.subscribedBranchName)&api-version=5.1-preview.1"
-    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
-
-    ## Report non-green repos for investigation purposes. 
-    if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
-    {
-        Write-PipelineTaskError -message "The latest build on '$($repoData.subscribedBranchName)' branch for the '$($repoData.githubRepoName)' repository was not successful." -type "warning"
-        return $false
-    }
-
-    return $true
-}
-
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
 $getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
