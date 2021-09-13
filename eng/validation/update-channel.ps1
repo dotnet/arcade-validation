@@ -51,65 +51,35 @@ function Get-LatestBuildResult([PSObject]$repoData)
     return $true
 }
 
-$runtimeRepo = @{
-    azdoOrg = 'dnceng';
-    azdoProject = 'internal';
-    buildDefinitionId = 679;
-    githubRepoName = 'runtime';
-    subscribedBranchName = 'main'
-}
-$aspnetcoreRepo = @{
-    azdoOrg = 'dnceng';
-    azdoProject = 'internal';
-    buildDefinitionId = 21;
-    githubRepoName = 'aspnetcore';
-    subscribedBranchName = 'main'
-}
-$installerRepo = @{
-    azdoOrg = 'dnceng';
-    azdoProject = 'internal';
-    buildDefinitionId = 286;
-    githubRepoName = 'installer';
-    subscribedBranchName = 'main'
-}
-
-$bellwetherRepos = @($runtimeRepo, $aspnetcoreRepo, $installerRepo)
-
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
 $getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
 $headers = Get-Headers 'text/plain' $barToken
 
 try {
-    # Validate that the "bellwether" repos (runtime, installer, aspnetcore) are green on their main branches
-    $results = ($bellwetherRepos | ForEach-Object { Get-LatestBuildResult -repoData $_ })
+    # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
+    $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
 
-    if(-not ($results -contains $false)) {
-        # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-        $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
+    if (!$assets) {
+        Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
+        exit 1
+    }
 
-        if (!$assets) {
-            Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
-            exit 1
-        }
+    if ($assets.Count -ne 1) {
+        Write-Host "More than 1 asset matched the version '$arcadeSdkVersion' of Microsoft.DotNet.Arcade.Sdk. This is not normal. Stopping execution..."
+        exit 1
+    }
 
-        if ($assets.Count -ne 1) {
-            Write-Host "More than 1 asset matched the version '$arcadeSdkVersion' of Microsoft.DotNet.Arcade.Sdk. This is not normal. Stopping execution..."
-            exit 1
-        }
+    $buildId = $assets[0].'buildId'
 
-        $buildId = $assets[0].'buildId'
-
-        & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
+    & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
         
-        if ($LastExitCode -ne 0) {
-            Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
-            exit 1
-        }
+    if ($LastExitCode -ne 0) {
+        Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
+        exit 1
     }
-    else {
-        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
-    }
+
+    Write-Host "Build '$buildId' was successfully added to channel '$targetChannelName'"
 }
 catch {
     Write-Host $_
