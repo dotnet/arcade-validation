@@ -39,11 +39,11 @@ stages:
       - job: Windows_NT
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017.Open
+            name: NetCore1ESPool-Svc-Public
+            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            name: NetCore1ESPool-Svc-Internal
+            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
 
@@ -98,11 +98,11 @@ stages:
         container: LinuxContainer
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCorePublic-Pool
-            queue: BuildPool.Ubuntu.1604.Amd64.Open
+            name: NetCore1ESPool-Svc-Public
+            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: NetCoreInternal-Pool
-            queue: BuildPool.Ubuntu.1604.Amd64
+            name: NetCore1ESPool-Svc-Internal
+            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
         strategy:
           matrix:
             Build_Debug:
@@ -163,8 +163,8 @@ stages:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
           pool: 
-            name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            name: NetCore1ESPool-Svc-Internal
+            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
           strategy:
             matrix:
               Test_Signing:
