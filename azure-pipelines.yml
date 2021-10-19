@@ -116,7 +116,7 @@ stages:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: Hosted Ubuntu 1604
+            vmImage: ubuntu-latest
         strategy:
           matrix:
             Build_Debug:
