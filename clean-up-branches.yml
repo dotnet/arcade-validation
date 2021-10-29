@@ -6,7 +6,7 @@ jobs:
       displayName: Clean Up Arcade Branches On Consumer Repositories
       timeoutInMinutes: 240
       pool: 
-        vmImage: vs2017-win2016
+        vmImage: windows-2019
       variables:
         - group: Publish-Build-Assets
       strategy:

@@ -60,9 +60,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017.Open
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
         variables:
         - _InternalBuildArgs: ''
 
@@ -181,7 +181,7 @@ stages:
         - job: Validate_Signing
           pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
           strategy:
             matrix:
               Test_Signing:
@@ -242,7 +242,7 @@ stages:
           dependsOn: setupMaestroVars
           timeoutInMinutes: 240
           pool:
-            vmImage: vs2017-win2016
+            vmImage: windows-2019
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
