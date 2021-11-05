@@ -269,6 +269,8 @@ stages:
       - template: /eng/common/templates/job/job.yml
         parameters:
           name: Promote_Arcade_To_Latest
+          pool:
+            vmImage: windows-2019
           displayName: Promote Arcade to '.NET Eng - Latest' channel
           timeoutInMinutes: 180
           variables:
