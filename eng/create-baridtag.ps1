@@ -23,3 +23,9 @@ $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $gl
 $barBuildId = $jsonAsset.build.id
 
 Write-Host "##vso[build.addbuildtag]ValidatingBarIds $barBuildId"
+
+
+
+
+Write-Host $global:azdoToken
+Write-Error $global:azdoToken
