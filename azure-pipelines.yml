@@ -49,6 +49,8 @@ stages:
   jobs:
   - template: /eng/common/templates/job/job.yml
     parameters:
+      name: Create_BAR_ID_Tag
+      displayName: Create BAR ID Tag
       timeoutInMinutes: 240
       pool: 
         vmImage: windows-2019
@@ -58,7 +60,7 @@ stages:
       steps:
         - checkout: self
           clean: true
-        - powershell: /eng/create-baridtag.ps1
+        - powershell: eng/create-baridtag.ps1
             -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
             -barToken $(MaestroAccessToken)
             -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
