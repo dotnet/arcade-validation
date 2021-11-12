@@ -7,9 +7,9 @@ Param(
 set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
-. $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\common\tools.ps1
 #. $PSScriptRoot\validation-functions.ps1
-$darc = & "$PSScriptRoot\get-darc.ps1"
+$darc = & "$PSScriptRoot\validation\get-darc.ps1"
 
 $global:azdoToken = $azdoToken
 $global:githubPAT = $githubPAT
