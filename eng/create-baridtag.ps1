@@ -8,7 +8,6 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\common\tools.ps1
-#. $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\validation\get-darc.ps1"
 
 $global:azdoToken = $azdoToken
@@ -23,4 +22,4 @@ $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $gl
 ## Get the BAR Build ID for the version of Arcade we are validating
 $barBuildId = $jsonAsset.build.id
 
-Write-Host "##vso[build.addbuildtag]ValidatingBarIds: $barBuildId"
+Write-Host "##vso[build.addbuildtag]ValidatingBarIds $barBuildId"
