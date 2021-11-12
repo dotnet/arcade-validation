@@ -47,26 +47,22 @@ stages:
 - stage: Create_BAR_ID_Tag
   displayName: Create BAR ID Tag
   jobs:
-  - template: /eng/common/templates/post-build/setup-maestro-vars.yml
   - template: /eng/common/templates/job/job.yml
     parameters:
       name: Create_BAR_ID_Tag
       displayName: Create BAR ID Tag
-      dependsOn: setupMaestroVars
       timeoutInMinutes: 240
-      pool:
+      pool: 
         vmImage: windows-2019
       variables:
         - group: Publish-Build-Assets
         - group: DotNetBot-GitHub
-        - name: BARBuildId
-          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-        - name: skipComponentGovernanceDetection
-          value: true
       steps:
         - checkout: self
           clean: true
         - powershell: create-baridtag.ps1
-            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-            -barToken $(MaestroAccessToken)
-            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+          -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+          -barToken $(MaestroAccessToken)
+          -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+          displayName: Build Bellwether Repo With Arcade
+          name: Build_Bellwether_Repo_With_Arcade
