@@ -49,8 +49,6 @@ stages:
   jobs:
   - template: /eng/common/templates/job/job.yml
     parameters:
-      name: Create_BAR_ID_Tag
-      displayName: Create BAR ID Tag
       timeoutInMinutes: 240
       pool: 
         vmImage: windows-2019
@@ -60,9 +58,9 @@ stages:
       steps:
         - checkout: self
           clean: true
-        - powershell: create-baridtag.ps1
+        - powershell: /eng/create-baridtag.ps1
             -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
             -barToken $(MaestroAccessToken)
             -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-          displayName: Build Bellwether Repo With Arcade
-          name: Build_Bellwether_Repo_With_Arcade
+          displayName: Create BAR ID Tag
+          name: Create_BAR_ID_Tag
