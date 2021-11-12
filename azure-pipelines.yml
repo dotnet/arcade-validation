@@ -61,8 +61,8 @@ stages:
         - checkout: self
           clean: true
         - powershell: create-baridtag.ps1
-          -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-          -barToken $(MaestroAccessToken)
-          -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+            -barToken $(MaestroAccessToken)
+            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
           displayName: Build Bellwether Repo With Arcade
           name: Build_Bellwether_Repo_With_Arcade
