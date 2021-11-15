@@ -51,7 +51,6 @@ stages:
     parameters:
       name: Create_BAR_ID_Tag
       displayName: Create BAR ID Tag
-      timeoutInMinutes: 240
       pool: 
         vmImage: windows-2019
       variables:

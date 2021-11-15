@@ -16,7 +16,6 @@ $global:barToken = $barToken
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
-$global:azdoRepoName = "dotnet-arcade"
 $jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
 
 ## Get the BAR Build ID for the version of Arcade we are validating
