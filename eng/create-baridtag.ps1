@@ -10,15 +10,11 @@ $ErrorActionPreference = 'Stop'
 . $PSScriptRoot\common\tools.ps1
 $darc = & "$PSScriptRoot\validation\get-darc.ps1"
 
-$global:azdoToken = $azdoToken
-$global:githubPAT = $githubPAT
-$global:barToken = $barToken
-
-$global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
-$global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
-$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
+$arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
+$arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
+$assetData = & $darc get-asset --name $arcadeSdkPackageName --version $arcadeSdkVersion --github-pat $githubPAT --azdev-pat $azdoToken --password $bartoken --output-format json | convertFrom-Json
 
 ## Get the BAR Build ID for the version of Arcade we are validating
-$barBuildId = $jsonAsset.build.id
+$barBuildId = $assetData.build.id
 
 Write-Host "##vso[build.addbuildtag]ValidatingBarIds $barBuildId"
