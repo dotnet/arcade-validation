@@ -210,6 +210,28 @@ stages:
               displayName: Sign packages
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - stage: Create_BAR_ID_Tag
+    displayName: Create BAR ID Tag
+    condition: succeededOrFailed()
+    jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Create_BAR_ID_Tag
+        displayName: Create BAR ID Tag
+        pool: 
+          vmImage: windows-2019
+        variables:
+          - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng/create-baridtag.ps1
+              -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+              -barToken $(MaestroAccessToken)
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+            displayName: Create BAR ID Tag
+            name: Create_BAR_ID_Tag
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
       publishingInfraVersion: 3
