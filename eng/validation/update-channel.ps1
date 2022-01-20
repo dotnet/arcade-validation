@@ -23,7 +23,7 @@ function Get-AzDO-Build([string]$token, [int]$azdoBuildId) {
     $uri = "https://dev.azure.com/dnceng/internal/_apis/build/builds/${azdoBuildId}?api-version=5.1"
     $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":${token}"))
     $headers = @{"Authorization"="Basic $base64AuthInfo"}
-    $content = Invoke-WebRequest -Uri $uri -Headers $headers -Method Get 
+    $content = Invoke-WebRequest -Uri $uri -Headers $headers -UseBasicParsing -Method Get
     return $content | ConvertFrom-Json
 }
 
@@ -39,7 +39,7 @@ function Get-LatestBuildResult([PSObject]$repoData)
     ## Verified that this API gets completed builds, not in progress builds
     $headers = Get-AzDOHeaders
     $uri = "https://dev.azure.com/$($repoData.azdoOrg)/$($repoData.azdoProject)/_apis/build/latest/$($repoData.buildDefinitionId)?branchName=$($repoData.subscribedBranchName)&api-version=5.1-preview.1"
-    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get) | ConvertFrom-Json
+    $response = (Invoke-WebRequest -Uri $uri -Headers $headers -Method Get -UseBasicParsing) | ConvertFrom-Json
 
     ## Report non-green repos for investigation purposes. 
     if(($response.result -ne "succeeded") -and ($response.result -ne "partiallySucceeded"))
@@ -86,7 +86,7 @@ try {
 
     if(-not ($results -contains $false)) {
         # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-        $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
+        $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
 
         if (!$assets) {
             Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
