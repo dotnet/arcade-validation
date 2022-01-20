@@ -146,8 +146,12 @@ stages:
 
       - job: Validate_Helix
         pool:
-          name: $(PoolProvider)
-          demands: ImageOverride -equals build.windows.10.amd64.vs2019
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider) 
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider)
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
