@@ -115,7 +115,7 @@ stages:
             demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: $(PoolProvider)
-          demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
         strategy:
           matrix:
@@ -256,7 +256,7 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
