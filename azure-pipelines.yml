@@ -114,7 +114,9 @@ stages:
             name: $(PoolProvider)  # This is a queue-time parameter; Public default is NetCore1ESPool-Public; Internal default is NetCore1ESPool-Internal
             demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            vmImage: ubuntu-latest
+            name: $(PoolProvider)
+          demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+
         strategy:
           matrix:
             Build_Debug:
@@ -144,7 +146,8 @@ stages:
 
       - job: Validate_Helix
         pool:
-          vmImage: windows-2019
+          name: $(PoolProvider)
+          demands: ImageOverride -equals build.windows.10.amd64.vs2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -219,7 +222,8 @@ stages:
         name: Create_BAR_ID_Tag
         displayName: Create BAR ID Tag
         pool: 
-          vmImage: windows-2019
+          name: $(PoolProvider)
+          demands: ImageOverride -equals build.windows.10.amd64.vs2019
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
@@ -262,7 +266,8 @@ stages:
           displayName: Validate Publishing
           timeoutInMinutes: 240
           pool:
-            vmImage: windows-2019
+            name: $(PoolProvider)
+            demands: ImageOverride -equals build.windows.10.amd64.vs2019
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
@@ -291,7 +296,8 @@ stages:
         parameters:
           name: Promote_Arcade_To_Latest
           pool:
-            vmImage: windows-2019
+            name: $(PoolProvider)
+            demands: ImageOverride -equals build.windows.10.amd64.vs2019
           displayName: Promote Arcade to '.NET Eng - Latest' channel
           timeoutInMinutes: 180
           variables:
