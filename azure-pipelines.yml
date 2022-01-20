@@ -116,7 +116,9 @@ stages:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
             demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            vmImage: ubuntu-latest
+            name: $(PoolProvider)
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+
         strategy:
           matrix:
             Build_Debug:
@@ -146,7 +148,12 @@ stages:
 
       - job: Validate_Helix
         pool:
-          vmImage: windows-2019
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider) 
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider)
+            demands: ImageOverride -equals Build.Server.Amd64.VS2019
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -236,15 +243,14 @@ stages:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
-      - template: /eng/common/templates/post-build/setup-maestro-vars.yml
       - template: /eng/common/templates/job/job.yml
         parameters:
           name: Validate_Publishing
           displayName: Validate Publishing
-          dependsOn: setupMaestroVars
           timeoutInMinutes: 240
           pool:
-            vmImage: vs2017-win2016
+            name: $(PoolProvider)
+            demands: ImageOverride -equals build.windows.10.amd64.vs2019
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
@@ -253,6 +259,7 @@ stages:
             - name: skipComponentGovernanceDetection
               value: true
           steps:
+            - template: /eng/common/templates/post-build/setup-maestro-vars.yml
             - checkout: self
               clean: true
             - powershell: eng\validation\test-publishing.ps1
@@ -271,6 +278,9 @@ stages:
       - template: /eng/common/templates/job/job.yml
         parameters:
           name: Promote_to_net6_eng_channel
+          pool:
+            name: $(PoolProvider)
+            demands: ImageOverride -equals build.windows.10.amd64.vs2019
           displayName: Promote Arcade to '.NET 6 Eng' channel
           timeoutInMinutes: 180
           variables:
