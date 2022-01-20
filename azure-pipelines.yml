@@ -256,12 +256,10 @@ stages:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
-      - template: /eng/common/templates/post-build/setup-maestro-vars.yml
       - template: /eng/common/templates/job/job.yml
         parameters:
           name: Validate_Publishing
           displayName: Validate Publishing
-          dependsOn: setupMaestroVars
           timeoutInMinutes: 240
           pool:
             vmImage: windows-2019
@@ -273,6 +271,7 @@ stages:
             - name: skipComponentGovernanceDetection
               value: true
           steps:
+            - template: /eng/common/templates/post-build/setup-maestro-vars.yml
             - checkout: self
               clean: true
             - powershell: eng\validation\test-publishing.ps1
