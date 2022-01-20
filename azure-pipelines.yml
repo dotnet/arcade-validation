@@ -256,7 +256,7 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
