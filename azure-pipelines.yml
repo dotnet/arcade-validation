@@ -291,7 +291,7 @@ stages:
           steps:
             - checkout: self
               clean: True
-            - powershell: eng/validation/update-channel.ps1
+            - pwsh: eng/validation/update-channel.ps1
                     -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
                     -barToken $(MaestroAccessToken)
                     -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
