@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+ 
 source="${BASH_SOURCE[0]}"
 
 manifest_dir=$1
