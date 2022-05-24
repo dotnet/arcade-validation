@@ -131,6 +131,13 @@ stages:
           displayName: Unix Build / Publish
 
       - job: Validate_Helix
+        pool:
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: NetCore1ESPool-Svc-Public
+            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            name: NetCore1ESPool-Svc-Internal
+            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
