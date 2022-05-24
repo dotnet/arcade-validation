@@ -148,8 +148,9 @@ stages:
           parameters:
             HelixType: test/product/
             XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-            XUnitTargetFramework: netcoreapp3.1
-            XUnitRunnerVersion: 2.4.2-pre.9
+            XUnitTargetFramework: netcoreapp2.0
+            XUnitRunnerVersion: 2.4.1
+            XUnitPublishTargetFramework: netcoreapp3.1
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
             DotNetCliVersion: 3.1.409
