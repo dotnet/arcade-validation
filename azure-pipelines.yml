@@ -227,7 +227,7 @@ stages:
         displayName: Create BAR ID Tag
         pool: 
           name: $(PoolProvider)
-          demands: ImageOverride -equals build.windows.10.amd64.vs2019
+          demands: ImageOverride -equals build.server.amd64.vs2019
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
@@ -271,7 +271,7 @@ stages:
           timeoutInMinutes: 240
           pool:
             name: $(PoolProvider)
-            demands: ImageOverride -equals build.windows.10.amd64.vs2019
+            demands: ImageOverride -equals build.server.amd64.vs2019
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
@@ -301,7 +301,7 @@ stages:
           name: Promote_Arcade_To_Latest
           pool:
             name: $(PoolProvider)
-            demands: ImageOverride -equals build.windows.10.amd64.vs2019
+            demands: ImageOverride -equals build.server.amd64.vs2019
           displayName: Promote Arcade to '.NET Eng - Latest' channel
           timeoutInMinutes: 180
           variables:
