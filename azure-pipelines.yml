@@ -258,6 +258,9 @@ stages:
       parameters:
         name: Push_to_3x_channel
         displayName: Push Builds to '.NET 3 Tools' channel
+        pool:
+          name: NetCore1ESPool-Svc-Internal
+          demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
         steps:
           - checkout: self
             clean: true
