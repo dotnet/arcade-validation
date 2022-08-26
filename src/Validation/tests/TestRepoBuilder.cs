@@ -50,23 +50,20 @@ namespace Validation.Tests
 
         public static void KillSpecificExecutable(string fileName)
         {
-            try
-            {
-                System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcesses();
+            string justProcessName = Path.GetFileNameWithoutExtension(Path.GetFileName(fileName));
+            System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName(justProcessName);
 
-                foreach (var process in processes)
+            foreach (var process in processes)
+            {
+                try
                 {
-                    try
+                    if (process.MainModule.FileName == fileName)
                     {
-                        if (process.MainModule.FileName == fileName)
-                        {
-                            process.Kill(true);
-                        }
+                        process.Kill(true);
                     }
-                    catch { }
                 }
+                catch { } // Ignored
             }
-            catch { }
         }
 
         public static string DotNetHostExecutableName
