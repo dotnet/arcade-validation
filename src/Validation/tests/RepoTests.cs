@@ -427,8 +427,8 @@ namespace Validation.Tests
             // artifacts/log/**/AssetManifests/*. There should only be one.
             string logsDirectory = Path.Combine(builder.TestRepoRoot, "artifacts", "log");
             string[] logFiles = Directory.GetFiles(logsDirectory, "*.xml", SearchOption.AllDirectories);
-            string escapedDirSeperator = Regex.Escape($"{Path.DirectorySeparatorChar}");
-            Regex assetManifestRegex = new Regex(@$".*{escapedDirSeperator}AssetManifest{escapedDirSeperator}.*\.xml");
+            string escapedDirSeparator = Regex.Escape($"{Path.DirectorySeparatorChar}");
+            Regex assetManifestRegex = new Regex(@$".*{escapedDirSeparator}AssetManifest{escapedDirSeparator}.*\.xml");
             var assetManifests = logFiles.Where(am => assetManifestRegex.IsMatch(am)).ToArray();
             assetManifests.Length.Should().Be(1);
             string assetManifestText = File.ReadAllText(assetManifests[0]);
