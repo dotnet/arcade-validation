@@ -5,6 +5,7 @@
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -454,25 +455,18 @@ namespace HelloWorld
 
             if (DeleteOnDispose)
             {
-                try
+                var sw = Stopwatch.StartNew();
+                while (true)
                 {
-                    Directory.Delete(TestRepoRoot, true);
-                }
-                catch (Exception e)
-                {
-                    var sb = new StringBuilder();
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    try
                     {
-                        sb.AppendLine($"Cant delete it. Enum folder: {TestRepoRoot}");
-                        var files = Directory.GetFiles(TestRepoRoot, "*.*", searchOption: SearchOption.AllDirectories);
-                        foreach (var file in files)
-                        {
-
-                            sb.AppendLine($"{file} : locked by {LockCheck.GetProcessesLockingFile(file)}");
-                        }
+                        Directory.Delete(TestRepoRoot, true);
+                        break;
                     }
-                    Console.Write(sb.ToString());
-                    throw new InvalidOperationException(sb.ToString(), e);
+                    catch (Exception) when (sw.ElapsedMilliseconds < 60_000)
+                    {
+                        // retry
+                    }
                 }
             }
         }
