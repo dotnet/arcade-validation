@@ -6,9 +6,11 @@ using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Validation.Tests
@@ -452,7 +454,26 @@ namespace HelloWorld
 
             if (DeleteOnDispose)
             {
-                Directory.Delete(TestRepoRoot, true);
+                try
+                {
+                    Directory.Delete(TestRepoRoot, true);
+                }
+                catch (Exception e)
+                {
+                    var sb = new StringBuilder();
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        sb.AppendLine($"Cant delete it. Enum folder: {TestRepoRoot}");
+                        var files = Directory.GetFiles(TestRepoRoot, "*.*", searchOption: SearchOption.AllDirectories);
+                        foreach (var file in files)
+                        {
+
+                            sb.AppendLine($"{file} : locked by {LockCheck.GetProcessesLockingFile(file)}");
+                        }
+                    }
+                    Console.Write(sb.ToString());
+                    throw new InvalidOperationException(sb.ToString(), e);
+                }
             }
         }
 
