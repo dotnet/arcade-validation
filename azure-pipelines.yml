@@ -8,13 +8,13 @@ variables:
     - group: SDL_Settings
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Svc-Public
+      value: NetCore-Svc-Public
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
       value: NetCore1ESPool-Svc-Internal
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Svc-Public-Int
+      value: NetCore-Svc-Public-Int
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
       value: NetCore1ESPool-Svc-Internal-Int
