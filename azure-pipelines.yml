@@ -62,7 +62,7 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride windows.vs2019.amd64.open
+            demands: ImageOverride -equals windows.vs2019.amd64.open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             demands: ImageOverride -equals windows.vs2019.amd64
         variables:
