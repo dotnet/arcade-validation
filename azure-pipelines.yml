@@ -250,7 +250,7 @@ stages:
           timeoutInMinutes: 240
           pool:
             name: $(PoolProvider)
-            demands: ImageOverride -equals build.windows.10.amd64.vs2019
+            demands: ImageOverride -equals build.windows.amd64.vs2022
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
