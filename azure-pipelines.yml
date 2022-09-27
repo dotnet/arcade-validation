@@ -41,7 +41,7 @@ schedules:
 resources:
   containers:
   - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-20210714125435-9b5bbc2
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-latest
 
 stages:
 - stage: build
@@ -173,12 +173,12 @@ stages:
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;(Debian.10.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64-20220511124228-fbf2f29
+              HelixTargetQueues: Windows.10.Amd64.Open;(Debian.10.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64-latest
               HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
               IsExternal: true
               Creator: arcade-validation
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64-20220511124228-fbf2f29
+              HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64-latest
               HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
               HelixAccessToken: $(HelixApiAccessToken)
         displayName: Validate Helix
