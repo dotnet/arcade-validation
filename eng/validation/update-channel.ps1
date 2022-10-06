@@ -20,7 +20,7 @@ $getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&
 $headers = Get-Headers 'text/plain' $barToken
 
 # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-$assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
+$assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
 
 if (!$assets) {
     Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
@@ -38,7 +38,7 @@ $buildId = $assets[0].'buildId'
 # was already validated and added to $targetChannelName. So we need to check if the build is already in $targetChannelName so we don't fail trying to
 # update the channel each time
 $getBuildApiEndpoint = "$maestroEndpoint/api/builds/$buildId/?api-version=$apiVersion"
-$build = Invoke-WebRequest -Uri $getBuildApiEndpoint -Headers $headers | ConvertFrom-Json
+$build = Invoke-WebRequest -Uri $getBuildApiEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
 $buildInChannel = $($build.channels | Where-Object -Property "name" -Value "${targetChannelName}" -EQ)
 
 if ($buildInChannel) {
@@ -47,7 +47,7 @@ if ($buildInChannel) {
 }
 
 $getChannelsEndpoint = "$maestroEndpoint/api/channels?api-version=2018-07-16"
-$channels = Invoke-WebRequest -Uri $getChannelsEndpoint -Headers $headers | ConvertFrom-Json
+$channels = Invoke-WebRequest -Uri $getChannelsEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
 $matchedChannel = $($channels | Where-Object -Property "name" -Value "${targetChannelName}" -EQ | Select-Object -Property id)
 
 if (!$matchedChannel) {
@@ -62,7 +62,7 @@ try {
     $headers = Get-Headers 'application/json' $barToken
         
     Write-Host "POSTing to $postBuildIntoChannelApiEndpoint..."
-    $postResponse = Invoke-WebRequest -Uri $postBuildIntoChannelApiEndpoint -Headers $headers -Method Post
+    $postResponse = Invoke-WebRequest -Uri $postBuildIntoChannelApiEndpoint -Headers $headers -Method Post -UseBasicParsing
     Write-Host "Build '$buildId' was successfully added to channel '$channelId'"
 }
 catch {
