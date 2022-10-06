@@ -234,7 +234,7 @@ stages:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/5.0') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
-      jobs: 
+      jobs:
       - template: /eng/common/templates/post-build/setup-maestro-vars.yml
       - template: /eng/common/templates/job/job.yml
         parameters:
@@ -242,9 +242,9 @@ stages:
           displayName: Validate Publishing
           dependsOn: setupMaestroVars
           timeoutInMinutes: 240
-          pool: 
+          pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals windows.2017.amd64
+            demands: ImageOverride -equals windows.vs2019.amd64
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
@@ -267,7 +267,10 @@ stages:
       - group: Publish-Build-Assets
     jobs:
     - template: /eng/common/templates/job/job.yml
-      parameters: 
+      parameters:
+        pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          demands: ImageOverride -equals windows.vs2019.amd64
         name: Push_to_net5_eng_channel
         displayname: Add build to '.NET 5 Eng'
         steps:
