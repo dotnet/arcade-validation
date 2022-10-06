@@ -21,7 +21,7 @@ $headers = Get-Headers 'text/plain' $barToken
 
 try {
     # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-    $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers | ConvertFrom-Json
+    $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
 
     if (!$assets) {
         Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
