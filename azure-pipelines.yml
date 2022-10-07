@@ -40,10 +40,10 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCore-Svc-Public
-            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
+            demands: ImageOverride -equals windows.vs2017.amd64.open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
+            demands: ImageOverride -equals windows.vs2017.amd64
         variables:
         - _InternalBuildArgs: ''
 
@@ -134,10 +134,10 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCore-Svc-Public
-            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
+            demands: ImageOverride -equals windows.vs2017.amd64.open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
+            demands: ImageOverride -equals windows.vs2017.amd64
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -172,7 +172,7 @@ stages:
         - job: Validate_Signing
           pool: 
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
+            demands: ImageOverride -equals windows.vs2017.amd64
           strategy:
             matrix:
               Test_Signing:
@@ -260,7 +260,7 @@ stages:
         displayName: Push Builds to '.NET 3 Tools' channel
         pool:
           name: NetCore1ESPool-Svc-Internal
-          demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
+          demands: ImageOverride -equals windows.vs2017.amd64
         steps:
           - checkout: self
             clean: true
