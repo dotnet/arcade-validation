@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "3.1.423",
+    "dotnet": "3.1.424",
     "runtimes": {
       "dotnet": [
         "3.1.25"
@@ -12,7 +12,7 @@
     "cmake-test": "3.11.1"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.22510.3",
-    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.22510.3"
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.22512.2",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.22512.2"
   }
 }
