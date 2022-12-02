@@ -5,9 +5,10 @@
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
     <XUnitVersion>2.4.1-pre.build.4059</XUnitVersion>
     <XUnitVSRunnerVersion>2.4.1-pre.build.4059</XUnitVSRunnerVersion>
-    <NuGetVersion>5.8.0</NuGetVersion>
+    <NuGetVersion>6.4.0</NuGetVersion>
     <MicrosoftBuildVersion>16.6.0</MicrosoftBuildVersion>
     <MSBuildProjectCreationVersion>1.4.6</MSBuildProjectCreationVersion>
     <FluentAssertionsVersion>5.10.3</FluentAssertionsVersion>
+    <SystemDrawingCommonVersion>4.7.2</SystemDrawingCommonVersion>
   </PropertyGroup>
 </Project>
