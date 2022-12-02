@@ -4,4 +4,11 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+    <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesVersion)" />
+  </ItemGroup>
+
 </Project>
