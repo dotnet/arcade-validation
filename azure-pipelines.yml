@@ -166,10 +166,10 @@ stages:
             XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
             XUnitTargetFramework: netcoreapp2.0
             XUnitRunnerVersion: 2.4.2-pre.9
-            XUnitPublishTargetFramework: net7.0
+            XUnitPublishTargetFramework: net8.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
-            DotNetCliVersion: 7.0.100
+            DotNetCliVersion: 8.0.100-alpha.1.23055.1
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
