@@ -8,9 +8,6 @@ variables:
     - group: SDL_Settings
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
-      value: NetCore-Public
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - name: PoolProvider
       value: NetCore1ESPool-Internal
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
@@ -111,9 +108,6 @@ stages:
         container: LinuxContainer
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: $(PoolProvider)  # This is a queue-time parameter; Public default is NetCore-Public; Internal default is NetCore1ESPool-Internal
-            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
-          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: $(PoolProvider)
             demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
@@ -128,7 +122,7 @@ stages:
         steps:
         - checkout: self
           clean: true
-        - task: Bash@3
+       - task: Bash@3
           displayName: Setup Private Feeds Credentials
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
@@ -142,6 +136,43 @@ stages:
           displayName: Unix Build / Publish
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
+
+      - job: Validate_Helix
+        pool:
+          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            name: $(PoolProvider)
+            demands: ImageOverride -equals windows.vs2019.amd64
+        variables:
+        - HelixApiAccessToken: ''
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - group: DotNet-HelixApi-Access
+        - _BuildConfig: Release
+        - name: skipComponentGovernanceDetection
+          value: true
+        steps:
+        - template: /eng/common/templates/steps/send-to-helix.yml
+          parameters:
+            HelixType: test/product/
+            XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
+            XUnitTargetFramework: netcoreapp2.0
+            XUnitRunnerVersion: 2.4.2-pre.9
+            XUnitPublishTargetFramework: net8.0
+            IncludeDotNetCli: true
+            DotNetCliPackageType: sdk
+            DotNetCliVersion: 8.0.100-alpha.1.23061.8
+            EnableXUnitReporter: true
+            WaitForWorkItemCompletion: true
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64.Open;(Debian.10.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64
+              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
+              IsExternal: true
+              Creator: arcade-validation
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64
+              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
+              HelixAccessToken: $(HelixApiAccessToken)
+        displayName: Validate Helix
+
   # Jobs that should only run as part of internal builds.
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
@@ -175,29 +206,30 @@ stages:
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
 
-- stage: Create_BAR_ID_Tag
-  displayName: Create BAR ID Tag
-  condition: succeededOrFailed()
-  jobs:
-  - template: /eng/common/templates/job/job.yml
-    parameters:
-      name: Create_BAR_ID_Tag
-      displayName: Create BAR ID Tag
-      pool: 
-        name: $(PoolProvider)
-        demands: ImageOverride -equals windows.vs2019.amd64
-      variables:
-        - group: Publish-Build-Assets
-        - group: DotNetBot-GitHub
-      steps:
-        - checkout: self
-          clean: true
-        - powershell: eng/create-baridtag.ps1
-            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-            -barToken $(MaestroAccessToken)
-            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-          displayName: Create BAR ID Tag
-          name: Create_BAR_ID_Tag
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - stage: Create_BAR_ID_Tag
+    displayName: Create BAR ID Tag
+    condition: succeededOrFailed()
+    jobs:
+    - template: /eng/common/templates/job/job.yml
+      parameters:
+        name: Create_BAR_ID_Tag
+        displayName: Create BAR ID Tag
+        pool: 
+          name: $(PoolProvider)
+          demands: ImageOverride -equals windows.vs2019.amd64
+        variables:
+          - group: Publish-Build-Assets
+          - group: DotNetBot-GitHub
+        steps:
+          - checkout: self
+            clean: true
+          - powershell: eng/create-baridtag.ps1
+              -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+              -barToken $(MaestroAccessToken)
+              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+            displayName: Create BAR ID Tag
+            name: Create_BAR_ID_Tag
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
       publishingInfraVersion: 3
