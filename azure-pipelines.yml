@@ -128,15 +128,14 @@ stages:
         steps:
         - checkout: self
           clean: true
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - task: Bash@3
-            displayName: Setup Private Feeds Credentials
-            inputs:
-              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-            condition: ne(variables['Agent.OS'], 'Windows_NT')
-            env:
-              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+          condition: ne(variables['Agent.OS'], 'Windows_NT')
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
@@ -146,16 +145,11 @@ stages:
 
       - job: Validate_Helix
         pool:
-          ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: $(PoolProvider) 
-            demands: ImageOverride -equals windows.vs2019.amd64.open
-          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
+          name: $(PoolProvider) 
+          demands: ImageOverride -equals windows.vs2019.amd64.open
         variables:
         - HelixApiAccessToken: ''
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: DotNet-HelixApi-Access
+        - group: DotNet-HelixApi-Access
         - _BuildConfig: Release
         - name: skipComponentGovernanceDetection
           value: true
@@ -172,15 +166,9 @@ stages:
             DotNetCliVersion: 8.0.100-alpha.1.23061.8
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
-            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64.Open;(Debian.10.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64
-              HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
-              IsExternal: true
-              Creator: arcade-validation
-            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64
-              HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
-              HelixAccessToken: $(HelixApiAccessToken)
+            HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64
+            HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
+            HelixAccessToken: $(HelixApiAccessToken)
         displayName: Validate Helix
 
   # Jobs that should only run as part of internal builds.
@@ -216,105 +204,103 @@ stages:
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
               displayName: Sign packages
 
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - stage: Create_BAR_ID_Tag
-    displayName: Create BAR ID Tag
-    condition: succeededOrFailed()
-    jobs:
-    - template: /eng/common/templates/job/job.yml
-      parameters:
-        name: Create_BAR_ID_Tag
-        displayName: Create BAR ID Tag
-        pool: 
-          name: $(PoolProvider)
-          demands: ImageOverride -equals windows.vs2019.amd64
-        variables:
-          - group: Publish-Build-Assets
-          - group: DotNetBot-GitHub
-        steps:
-          - checkout: self
-            clean: true
-          - powershell: eng/create-baridtag.ps1
-              -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-              -barToken $(MaestroAccessToken)
-              -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-            displayName: Create BAR ID Tag
-            name: Create_BAR_ID_Tag
-  - template: eng\common\templates\post-build\post-build.yml
+- stage: Create_BAR_ID_Tag
+  displayName: Create BAR ID Tag
+  condition: succeededOrFailed()
+  jobs:
+  - template: /eng/common/templates/job/job.yml
     parameters:
-      publishingInfraVersion: 3
-      # Symbol validation isn't being very reliable lately. This should be enabled back
-      # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
-      enableSymbolValidation: false
-      enableSourceLinkValidation: true
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: true
-        params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Arcade-Validation"
-        -TsaCodebaseName "Arcade-Validation"
-        -TsaPublish $True'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-    - stage: Validate_Publishing
+      name: Create_BAR_ID_Tag
+      displayName: Create BAR ID Tag
+      pool: 
+        name: $(PoolProvider)
+        demands: ImageOverride -equals windows.vs2019.amd64
+      variables:
+        - group: Publish-Build-Assets
+        - group: DotNetBot-GitHub
+      steps:
+        - checkout: self
+          clean: true
+        - powershell: eng/create-baridtag.ps1
+            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+            -barToken $(MaestroAccessToken)
+            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+          displayName: Create BAR ID Tag
+          name: Create_BAR_ID_Tag
+- template: eng\common\templates\post-build\post-build.yml
+  parameters:
+    publishingInfraVersion: 3
+    # Symbol validation isn't being very reliable lately. This should be enabled back
+    # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
+    enableSymbolValidation: false
+    enableSourceLinkValidation: true
+    # This is to enable SDL runs part of Post-Build Validation Stage
+    SDLValidationParameters:
+      enable: true
+      params: ' -SourceToolsList @("policheck","credscan")
+      -TsaInstanceURL $(_TsaInstanceURL)
+      -TsaProjectName $(_TsaProjectName)
+      -TsaNotificationEmail $(_TsaNotificationEmail)
+      -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+      -TsaBugAreaPath $(_TsaBugAreaPath)
+      -TsaIterationPath $(_TsaIterationPath)
+      -TsaRepositoryName "Arcade-Validation"
+      -TsaCodebaseName "Arcade-Validation"
+      -TsaPublish $True'
+- stage: Validate_Publishing
+  displayName: Validate Publishing
+  jobs:
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      name: Validate_Publishing
       displayName: Validate Publishing
-      jobs:
-      - template: /eng/common/templates/job/job.yml
-        parameters:
-          name: Validate_Publishing
-          displayName: Validate Publishing
-          timeoutInMinutes: 240
-          pool:
-            name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
-          variables:
-            - group: Publish-Build-Assets
-            - group: DotNetBot-GitHub
-            - name: BARBuildId
-              value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-            - name: skipComponentGovernanceDetection
-              value: true
-          steps:
-            - template: /eng/common/templates/post-build/setup-maestro-vars.yml
-            - checkout: self
-              clean: true
-            - powershell: eng\validation\test-publishing.ps1
-                -buildId $(BARBuildId)
-                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                -azdoUser "dotnet-bot"
-                -azdoOrg "dnceng"
-                -azdoProject "internal"
-                -barToken $(MaestroAccessToken)
-                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-    - stage: Promote_Arcade_To_Latest
+      timeoutInMinutes: 240
+      pool:
+        name: $(PoolProvider)
+        demands: ImageOverride -equals windows.vs2019.amd64
+      variables:
+        - group: Publish-Build-Assets
+        - group: DotNetBot-GitHub
+        - name: BARBuildId
+          value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+        - name: skipComponentGovernanceDetection
+          value: true
+      steps:
+        - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+        - checkout: self
+          clean: true
+        - powershell: eng\validation\test-publishing.ps1
+            -buildId $(BARBuildId)
+            -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+            -azdoUser "dotnet-bot"
+            -azdoOrg "dnceng"
+            -azdoProject "internal"
+            -barToken $(MaestroAccessToken)
+            -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+- stage: Promote_Arcade_To_Latest
+  displayName: Promote Arcade to '.NET Eng - Latest' channel
+  dependsOn:
+    - Validate_Publishing
+  jobs:
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      name: Promote_Arcade_To_Latest
+      pool:
+        name: $(PoolProvider)
+        demands: ImageOverride -equals windows.vs2019.amd64
       displayName: Promote Arcade to '.NET Eng - Latest' channel
-      dependsOn:
-        - Validate_Publishing
-      jobs:
-      - template: /eng/common/templates/job/job.yml
-        parameters:
-          name: Promote_Arcade_To_Latest
-          pool:
-            name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
-          displayName: Promote Arcade to '.NET Eng - Latest' channel
-          timeoutInMinutes: 180
-          variables:
-            - group: Publish-Build-Assets
-            - group: DotNetBot-GitHub
-            - name: skipComponentGovernanceDetection
-              value: true
-          steps:
-            - checkout: self
-              clean: True
-            - powershell: eng/validation/update-channel.ps1
-                    -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-                    -barToken $(MaestroAccessToken)
-                    -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                    -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-              displayName: Promote Arcade to 'Latest' channel
+      timeoutInMinutes: 180
+      variables:
+        - group: Publish-Build-Assets
+        - group: DotNetBot-GitHub
+        - name: skipComponentGovernanceDetection
+          value: true
+      steps:
+        - checkout: self
+          clean: True
+        - powershell: eng/validation/update-channel.ps1
+                -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+                -barToken $(MaestroAccessToken)
+                -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+          displayName: Promote Arcade to 'Latest' channel
