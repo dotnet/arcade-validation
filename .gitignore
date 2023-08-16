@@ -332,3 +332,6 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+
+# Ignore dotnet tool manifest changes; keep dotnet-tools.json empty.
+.config/
