@@ -3,10 +3,8 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
-    <NuGetVersion>6.4.2</NuGetVersion>
-    <MicrosoftBuildVersion>16.11.0</MicrosoftBuildVersion>
-    <MSBuildProjectCreationVersion>1.4.6</MSBuildProjectCreationVersion>
     <FluentAssertionsVersion>5.10.3</FluentAssertionsVersion>
-    <SystemDrawingCommonVersion>4.7.2</SystemDrawingCommonVersion>
+    <MicrosoftBuildVersion>17.7.0</MicrosoftBuildVersion>
+    <MSBuildProjectCreationVersion>10.0.0</MSBuildProjectCreationVersion>
   </PropertyGroup>
 </Project>
