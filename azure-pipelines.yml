@@ -60,9 +60,9 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCore-Public; Internal default is NetCore1ESPool-Internal
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals windows.vs2019.amd64.open
+            demands: ImageOverride -equals windows.vs2022.amd64.open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022.amd64
         variables:
         - _InternalBuildArgs: ''
 
@@ -148,10 +148,10 @@ stages:
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             name: $(PoolProvider) 
-            demands: ImageOverride -equals windows.vs2019.amd64.open
+            demands: ImageOverride -equals windows.vs2022.amd64.open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022.amd64
         variables:
         - HelixApiAccessToken: ''
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -188,7 +188,7 @@ stages:
         - job: Validate_Signing
           pool:
             name: $(PoolProvider)  # This is a queue-time parameter; Public default is NetCore-Public; Internal default is NetCore1ESPool-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022.amd64
           strategy:
             matrix:
               Test_Signing:
@@ -227,7 +227,7 @@ stages:
         displayName: Create BAR ID Tag
         pool: 
           name: $(PoolProvider)
-          demands: ImageOverride -equals windows.vs2019.amd64
+          demands: ImageOverride -equals windows.vs2022.amd64
         variables:
           - group: Publish-Build-Assets
           - group: DotNetBot-GitHub
@@ -271,7 +271,7 @@ stages:
           timeoutInMinutes: 240
           pool:
             name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022.amd64
           variables:
             - group: Publish-Build-Assets
             - group: DotNetBot-GitHub
@@ -301,7 +301,7 @@ stages:
           name: Promote_Arcade_To_Latest
           pool:
             name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022.amd64
           displayName: Promote Arcade to '.NET Eng - Latest' channel
           timeoutInMinutes: 180
           variables:
