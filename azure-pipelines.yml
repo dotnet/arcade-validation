@@ -25,6 +25,7 @@ trigger:
     include:
       - main
       - release/3.x
+      - release/8.0
 pr:
   branches:
     include:
@@ -260,7 +261,7 @@ stages:
         -TsaRepositoryName "Arcade-Validation"
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0') }}:
     - stage: Validate_Publishing
       displayName: Validate Publishing
       jobs:
@@ -292,7 +293,7 @@ stages:
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
     - stage: Promote_Arcade_To_Latest
-      displayName: Promote Arcade to '.NET Eng - Latest' channel
+      displayName: Promote Arcade to '.NET 8 Eng' channel
       dependsOn:
         - Validate_Publishing
       jobs:
@@ -302,7 +303,7 @@ stages:
           pool:
             name: $(PoolProvider)
             demands: ImageOverride -equals windows.vs2019.amd64
-          displayName: Promote Arcade to '.NET Eng - Latest' channel
+          displayName: Promote Arcade to '.NET 8 Eng' channel
           timeoutInMinutes: 180
           variables:
             - group: Publish-Build-Assets
