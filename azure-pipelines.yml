@@ -292,7 +292,7 @@ stages:
                 -barToken $(MaestroAccessToken)
                 -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
     - stage: Promote_Arcade_To_Latest
-      displayName: Promote Arcade to '.NET 8 Eng' channel
+      displayName: Promote Arcade
       dependsOn:
         - Validate_Publishing
       jobs:
@@ -302,7 +302,7 @@ stages:
           pool:
             name: $(PoolProvider)
             demands: ImageOverride -equals windows.vs2019.amd64
-          displayName: Promote Arcade to '.NET 8 Eng' channel
+          displayName: Promote Arcade
           timeoutInMinutes: 180
           variables:
             - group: Publish-Build-Assets
@@ -317,4 +317,5 @@ stages:
                     -barToken $(MaestroAccessToken)
                     -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                     -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-              displayName: Promote Arcade to 'Latest' channel
+                    -targetChannelName '.NET 8 Eng'
+              displayName: Promote Arcade to channel
