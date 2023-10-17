@@ -24,7 +24,7 @@ trigger:
   branches:
     include:
       - main
-      - release/3.x
+      - release/*
 pr:
   branches:
     include:
