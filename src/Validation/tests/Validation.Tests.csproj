@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>
-    <IsPackable>false</IsPackable>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +12,7 @@
 
   <ItemGroup>
     <!-- Include the eng/common directory to get the files for tests. -->
-    <None Include="$(RepoRoot)eng\common\**" Link="inputs\eng\common\%(RecursiveDir)%(Filename)%(Extension)">
+    <None Include="$(RepositoryEngineeringDir)common\**" Link="inputs\eng\common\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <!-- Include global.json to be able to read the arcade version -->
@@ -21,4 +20,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>
