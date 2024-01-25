@@ -54,6 +54,7 @@ stages:
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
+      enableSourceBuild: true
       helixRepo: dotnet/arcade-validation
       jobs:
       - job: Windows_NT
