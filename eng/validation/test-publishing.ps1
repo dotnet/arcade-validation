@@ -16,6 +16,7 @@ $ErrorActionPreference = 'Stop'
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:buildId = $buildId
+$global:sourceChannel = ".NET Eng - Validation"
 $global:targetChannel = "General Testing"
 $global:azdoToken = $azdoToken
 $global:azdoUser = $azdoUser
@@ -45,7 +46,7 @@ $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:azdoRepoName = "dotnet-arcade"
 $global:azdoRepoUri = "https://unused:$azdoToken@${global:azdoOrg}.visualstudio.com/${global:azdoProject}/_git/${global:azdoRepoName}"
-$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
+$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --channel "$sourceChannel" --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
 $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
