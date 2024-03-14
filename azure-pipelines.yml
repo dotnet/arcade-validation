@@ -64,16 +64,13 @@ extends:
           - job: Windows_NT
 
             variables:
+            - _BuildConfig: Release
+            - _SignType: real
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
                 /p:TeamName=$(_TeamName)
                 /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-
-            strategy:
-              matrix:
-                Build_Release:
-                  _BuildConfig: Release
-                  _SignType: real
+                
             steps:
             - checkout: self
               clean: true
