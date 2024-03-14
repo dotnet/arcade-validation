@@ -8,7 +8,7 @@ variables:
   - ${{ if notin(variables['Build.Reason'], 'Schedule') }}:
     - name: PoolProvider
       value: NetCore1ESPool-Internal
-  - ${{ if in(variables['Build.Reason'], 'Schedule') }}:
+  - ${{ else }}:
     - name: PoolProvider
       value: NetCore1ESPool-Internal-Int
 
@@ -46,8 +46,6 @@ extends:
       name: $(PoolProvider)
       image: windows.vs2022.amd64
       os: windows
-    featureFlags:
-      autoBaseline: true
       
     stages:
     - stage: build
@@ -86,6 +84,7 @@ extends:
                 arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
               env:
                 Token: $(dn-bot-dnceng-artifact-feeds-rw)
+            # Use utility script to run script command dependent on agent OS.
             - script: eng\common\cibuild.cmd
                 -configuration $(_BuildConfig)
                 -prepareMachine
@@ -98,7 +97,7 @@ extends:
             container: LinuxContainer
             pool:
               name: $(PoolProvider)
-              image: 1es-ubuntu-2204-pt
+              image: 1es-ubuntu-2204
               os: linux
 
             strategy:
