@@ -201,26 +201,26 @@ extends:
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: true
-      - stage: Promote_Arcade_To_Latest
-        displayName: Promote Arcade
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Promote_Arcade_To_Latest
-            displayName: Promote Arcade
-            timeoutInMinutes: 180
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: skipComponentGovernanceDetection
-                value: true
-            steps:
-              - checkout: self
-                clean: True
-              - powershell: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-                      -barToken $(MaestroAccessToken)
-                      -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-                      -targetChannelName '.NET 8 Eng'
-                displayName: Promote Arcade to channel
+    - stage: Promote_Arcade_To_Latest
+      displayName: Promote Arcade
+      jobs:
+      - template: /eng/common/templates-official/job/job.yml@self
+        parameters:
+          name: Promote_Arcade_To_Latest
+          displayName: Promote Arcade
+          timeoutInMinutes: 180
+          variables:
+            - group: Publish-Build-Assets
+            - group: DotNetBot-GitHub
+            - name: skipComponentGovernanceDetection
+              value: true
+          steps:
+            - checkout: self
+              clean: True
+            - powershell: eng/validation/update-channel.ps1
+                    -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+                    -barToken $(MaestroAccessToken)
+                    -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                    -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+                    -targetChannelName '.NET 8 Eng'
+              displayName: Promote Arcade to channel
