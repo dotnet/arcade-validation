@@ -5,3 +5,6 @@ This repository contains testing and validation scenarios for [Arcade](https://g
 
 ## Build and Test Status
  [![Build Status](https://dnceng.visualstudio.com/public/_apis/build/status/dotnet/arcade-validation/arcade-validation-ci)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=269)
+
+
+[TESTING]
