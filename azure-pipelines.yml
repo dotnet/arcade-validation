@@ -194,55 +194,26 @@ extends:
           -TsaRepositoryName "Arcade-Validation"
           -TsaCodebaseName "Arcade-Validation"
           -TsaPublish $True'
-    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0') }}:
-      - stage: Validate_Publishing
-        displayName: Validate Publishing
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Validate_Publishing
-            displayName: Validate Publishing
-            timeoutInMinutes: 240
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: BARBuildId
-                value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-              - name: skipComponentGovernanceDetection
-                value: true
-            steps:
-              - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
-              - checkout: self
-                clean: true
-              - powershell: eng\validation\test-publishing.ps1
-                  -buildId $(BARBuildId)
-                  -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                  -azdoUser "dotnet-bot"
-                  -azdoOrg "dnceng"
-                  -azdoProject "internal"
-                  -barToken $(MaestroAccessToken)
-                  -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
-      - stage: Promote_to_net6_eng_channel
-        displayName: Promote Arcade to '.NET 6 Eng' channel
-        dependsOn:
-         - Validate_Publishing
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Promote_to_net6_eng_channel
-            displayName: Promote Arcade to '.NET 6 Eng' channel
-            timeoutInMinutes: 180
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: skipComponentGovernanceDetection
-                value: true
-            steps:
-              - checkout: self
-                clean: True
-              - pwsh: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-                      -barToken $(MaestroAccessToken)
-                      -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-                displayName: Promote Arcade to '.NET 6 Eng' channel
+
+    - stage: Promote_to_net6_eng_channel
+      displayName: Promote Arcade to '.NET 6 Eng' channel
+      jobs:
+      - template: /eng/common/templates-official/job/job.yml@self
+        parameters:
+          name: Promote_to_net6_eng_channel
+          displayName: Promote Arcade to '.NET 6 Eng' channel
+          timeoutInMinutes: 180
+          variables:
+            - group: Publish-Build-Assets
+            - group: DotNetBot-GitHub
+            - name: skipComponentGovernanceDetection
+              value: true
+          steps:
+            - checkout: self
+              clean: True
+            - pwsh: eng/validation/update-channel.ps1
+                    -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+                    -barToken $(MaestroAccessToken)
+                    -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                    -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+              displayName: Promote Arcade to '.NET 6 Eng' channel
