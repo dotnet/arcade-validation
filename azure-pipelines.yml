@@ -262,40 +262,10 @@ stages:
         -TsaCodebaseName "Arcade-Validation"
         -TsaPublish $True'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/7.0') }}:
-    - stage: Validate_Publishing
-      displayName: Validate Publishing
-      jobs:
-      - template: /eng/common/templates/job/job.yml
-        parameters:
-          name: Validate_Publishing
-          displayName: Validate Publishing
-          timeoutInMinutes: 240
-          pool:
-            name: $(PoolProvider)
-            demands: ImageOverride -equals windows.vs2019.amd64
-          variables:
-            - group: Publish-Build-Assets
-            - group: DotNetBot-GitHub
-            - name: BARBuildId
-              value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-            - name: skipComponentGovernanceDetection
-              value: true
-          steps:
-            - template: /eng/common/templates/post-build/setup-maestro-vars.yml
-            - checkout: self
-              clean: true
-            - powershell: eng\validation\test-publishing.ps1
-                -buildId $(BARBuildId)
-                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                -azdoUser "dotnet-bot"
-                -azdoOrg "dnceng"
-                -azdoProject "internal"
-                -barToken $(MaestroAccessToken)
-                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
     - stage: Promote_Arcade_To_Latest
       displayName: Promote Arcade to '.NET 7 Eng' channel
       dependsOn:
-        - Validate_Publishing
+        - publish_using_darc
       jobs:
       - template: /eng/common/templates/job/job.yml
         parameters:
