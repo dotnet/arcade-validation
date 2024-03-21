@@ -201,8 +201,8 @@ extends:
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: true
-    - stage: Promote_Arcade_To_Latest to '.NET 8 Eng' channel
-      displayName: Promote Arcade
+    - stage: Promote_Arcade_To_Latest 
+      displayName: Promote Arcade to '.NET 8 Eng' channel
       dependsOn:
         - publish_using_darc
       jobs:
