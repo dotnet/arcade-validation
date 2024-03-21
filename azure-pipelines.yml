@@ -143,7 +143,7 @@ extends:
                 DotNetCliVersion: 6.0.100
                 EnableXUnitReporter: true
                 WaitForWorkItemCompletion: true
-                HelixTargetQueues: Windows.10.Amd64;(Debian.10.Amd64)Ubuntu.2004.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-10-helix-amd64-20220511124228-fbf2f29
+                HelixTargetQueues: Windows.10.Amd64;(Debian.11.Amd64)Ubuntu.2204.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64
                 HelixSource: official/dotnet/arcade-validation/$(Build.SourceBranch)
                 HelixAccessToken: $(HelixApiAccessToken)
             displayName: Validate Helix
