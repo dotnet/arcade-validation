@@ -73,7 +73,6 @@ extends:
               clean: true
             - task: PowerShell@2
               displayName: Setup Private Feeds Credentials
-              condition: eq(variables['Agent.OS'], 'Windows_NT')
               inputs:
                 filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
                 arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
@@ -110,7 +109,6 @@ extends:
               inputs:
                 filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
                 arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-              condition: ne(variables['Agent.OS'], 'Windows_NT')
               env:
                 Token: $(dn-bot-dnceng-artifact-feeds-rw)
             - script: eng/common/cibuild.sh
@@ -203,16 +201,6 @@ extends:
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: true
-          params: ' -SourceToolsList @("policheck","credscan")
-          -TsaInstanceURL $(_TsaInstanceURL)
-          -TsaProjectName $(_TsaProjectName)
-          -TsaNotificationEmail $(_TsaNotificationEmail)
-          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-          -TsaBugAreaPath $(_TsaBugAreaPath)
-          -TsaIterationPath $(_TsaIterationPath)
-          -TsaRepositoryName "Arcade-Validation"
-          -TsaCodebaseName "Arcade-Validation"
-          -TsaPublish $True'
     - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0') }}:
       - stage: Validate_Publishing
         displayName: Validate Publishing
