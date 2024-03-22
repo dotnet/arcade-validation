@@ -195,37 +195,10 @@ extends:
           -TsaCodebaseName "Arcade-Validation"
           -TsaPublish $True'
     - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0') }}:
-      - stage: Validate_Publishing
-        displayName: Validate Publishing
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Validate_Publishing
-            displayName: Validate Publishing
-            timeoutInMinutes: 240
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: BARBuildId
-                value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-              - name: skipComponentGovernanceDetection
-                value: true
-            steps:
-              - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
-              - checkout: self
-                clean: true
-              - powershell: eng\validation\test-publishing.ps1
-                  -buildId $(BARBuildId)
-                  -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                  -azdoUser "dotnet-bot"
-                  -azdoOrg "dnceng"
-                  -azdoProject "internal"
-                  -barToken $(MaestroAccessToken)
-                  -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
       - stage: Promote_to_net6_eng_channel
         displayName: Promote Arcade to '.NET 6 Eng' channel
-        dependsOn:
-         - Validate_Publishing
+        dependsOn: 
+          - publish_using_darc
         jobs:
         - template: /eng/common/templates-official/job/job.yml@self
           parameters:
