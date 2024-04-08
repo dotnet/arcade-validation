@@ -103,7 +103,7 @@ stages:
             DotNetCliVersion: 9.0.100-preview.1.24101.2
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
-            HelixTargetQueues: Windows.10.Amd64.Open;(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64
+            HelixTargetQueues: windows.amd64.server2022.open;(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64
             HelixSource: pr/dotnet/arcade-validation/$(Build.SourceBranch)
             IsExternal: true
             Creator: arcade-validation
