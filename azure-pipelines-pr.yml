@@ -1,7 +1,7 @@
 variables:
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
-      value: NetCore-Public
+      value: NetCore-Public-int
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
     - name: PoolProvider
       value: NetCore1ESPool-Internal
