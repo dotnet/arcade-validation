@@ -7,7 +7,7 @@ variables:
   - group: SDL_Settings
   - ${{ if notin(variables['Build.Reason'], 'Schedule') }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Internal
+      value: NetCore1ESPool-Internal-Int
   - ${{ else }}:
     - name: PoolProvider
       value: NetCore1ESPool-Internal-Int
