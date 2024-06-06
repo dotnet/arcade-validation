@@ -263,7 +263,7 @@ extends:
               - checkout: self
                 clean: True
               - powershell: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
+                      -maestroEndpoint https://maestro.dot.net
                       -barToken $(MaestroAccessToken)
                       -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                       -githubToken $(BotAccount-dotnet-bot-repo-PAT)
