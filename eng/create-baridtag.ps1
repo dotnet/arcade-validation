@@ -16,7 +16,7 @@ $assetData = & $darc get-asset `
   --version $arcadeSdkVersion `
   --channel "$sourceChannelName" `
   --password $bartoken `
-  --disable-interactive-auth `
+  --ci `
   --output-format json `
   | convertFrom-Json
 
