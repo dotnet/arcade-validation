@@ -658,7 +658,7 @@ function GetNuGetPackageCachePath() {
         # Set the NUGET_PACKAGES environment variable to match the configured globalPackagesFolder. If there is no
         # global packages folder, this expression will evaluate to the empty string which will effectively leave the
         # environment variable set to null.
-        $env:NUGET_PACKAGES = $nugetConfigXml.SelectSingleNode("//configuration/config/add[@key='globalPackagesFolder']").value + "\"
+        $env:NUGET_PACKAGES = $nugetConfigXml.SelectSingleNode("//configuration/config/add[@key='globalPackagesFolder']").value
       }
 
       if ($env:NUGET_PACKAGES -eq $null) {
