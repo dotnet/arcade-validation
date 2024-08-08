@@ -1,7 +1,7 @@
 Param(
   [string] $maestroEndpoint,
   [string] $barToken,
-  [string] $apiVersion = "2018-07-16",
+  [string] $apiVersion = "2020-02-20",
   [string] $targetChannelName = ".NET Eng - Latest",
   [string] $azdoToken,
   [string] $githubToken
