@@ -100,7 +100,7 @@ stages:
             XUnitPublishTargetFramework: net9.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
-            DotNetCliVersion: 9.0.100-preview.6.24328.19
+            DotNetCliVersion: 9.0.100-preview.7.24407.12
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             HelixTargetQueues: Windows.Amd64.Server2022.Open;(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64
