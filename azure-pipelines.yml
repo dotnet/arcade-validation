@@ -267,4 +267,5 @@ extends:
                       -barToken $(MaestroAccessToken)
                       -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                       -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+                      -targetChannelName '.NET 9 Eng'
                 displayName: Promote Arcade to 'Latest' channel
