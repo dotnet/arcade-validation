@@ -1,6 +1,6 @@
 Param(
   [Parameter(Mandatory=$true)][string] $barToken,
-  [string] $sourceChannelName = '.NET Eng - Validation'
+  [string] $sourceChannelName = '.NET 9 Eng'
 )
 
 set-strictmode -version 2.0
