@@ -220,7 +220,7 @@ extends:
       - stage: Promote_Arcade_To_Latest
         displayName: Promote Arcade to '.NET 9 Eng' channel
         dependsOn:
-          - Validate_Publishing
+          - publish_using_darc
         jobs:
         - template: /eng/common/templates-official/job/job.yml@self
           parameters:
