@@ -216,43 +216,16 @@ extends:
           -TsaRepositoryName "Arcade-Validation"
           -TsaCodebaseName "Arcade-Validation"
           -TsaPublish $True'
-    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      - stage: Validate_Publishing
-        displayName: Validate Publishing
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Validate_Publishing
-            displayName: Validate Publishing
-            timeoutInMinutes: 240
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: BARBuildId
-                value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-              - name: skipComponentGovernanceDetection
-                value: true
-            steps:
-              - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
-              - checkout: self
-                clean: true
-              - powershell: eng\validation\test-publishing.ps1
-                  -buildId $(BARBuildId)
-                  -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                  -azdoUser "dotnet-bot"
-                  -azdoOrg "dnceng"
-                  -azdoProject "internal"
-                  -barToken $(MaestroAccessToken)
-                  -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+    - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release/9.0') }}:
       - stage: Promote_Arcade_To_Latest
-        displayName: Promote Arcade to '.NET Eng - Latest' channel
+        displayName: Promote Arcade to '.NET 9 Eng' channel
         dependsOn:
-          - Validate_Publishing
+          - publish_using_darc
         jobs:
         - template: /eng/common/templates-official/job/job.yml@self
           parameters:
             name: Promote_Arcade_To_Latest
-            displayName: Promote Arcade to '.NET Eng - Latest' channel
+            displayName: Promote Arcade to '.NET 9 Eng' channel
             timeoutInMinutes: 180
             variables:
               - group: Publish-Build-Assets
@@ -267,4 +240,5 @@ extends:
                       -barToken $(MaestroAccessToken)
                       -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
                       -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+                      -targetChannelName '.NET 9 Eng'
                 displayName: Promote Arcade to 'Latest' channel
