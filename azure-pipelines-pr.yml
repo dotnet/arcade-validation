@@ -77,6 +77,7 @@ stages:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
+            --sign
           displayName: Unix Build / Publish
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
