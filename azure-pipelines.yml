@@ -54,6 +54,7 @@ extends:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
           enableMicrobuild: true
+          enableMicrobuildForMacAndLinux: true
           enablePublishBuildArtifacts: true
           enablePublishBuildAssets: true
           enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
@@ -100,14 +101,18 @@ extends:
               image: 1es-ubuntu-2204
               os: linux
 
+            variables:
+            - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
+                /p:TeamName=$(_TeamName)
+                /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
             strategy:
               matrix:
-                Build_Debug:
-                  _BuildConfig: Debug
-                  _SignType: none
+                # No test signing - it's not supported on Linux and macOS
                 Build_Release:
                   _BuildConfig: Release
-                  _SignType: none
+                  _SignType: real
             steps:
             - checkout: self
               clean: true
@@ -119,9 +124,12 @@ extends:
               condition: ne(variables['Agent.OS'], 'Windows_NT')
               env:
                 Token: $(dn-bot-dnceng-artifact-feeds-rw)
+            # Remove --sign from the script command with https://github.com/dotnet/source-build/issues/4064
             - script: eng/common/cibuild.sh
                 --configuration $(_BuildConfig)
                 --prepareMachine
+                --sign
+                $(_InternalBuildArgs)
               displayName: Unix Build / Publish
             - task: ComponentGovernanceComponentDetection@0
               displayName: Component Governance scan
@@ -151,7 +159,7 @@ extends:
                 HelixAccessToken: $(HelixApiAccessToken)
             displayName: Validate Helix
 
-          - job: Validate_Signing
+          - job: Validate_Signing_Windows
             strategy:
               matrix:
                 Test_Signing:
@@ -177,7 +185,40 @@ extends:
                   /p:DotNetSignType=$(_SignType)
                   /p:TeamName=DotNetCore
                   /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-            displayName: Sign packages
+
+          - job: Validate_Signing_Linux
+            container: LinuxContainer
+            pool:
+              name: $(PoolProvider)
+              image: 1es-ubuntu-2204
+              os: linux
+
+            variables:
+            - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
+                /p:TeamName=$(_TeamName)
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
+            strategy:
+              matrix:
+                # No test signing - it's not supported on Linux and macOS
+                Real_Signing:
+                  _BuildConfig: Release
+                  _SignType: real
+            steps:
+              - checkout: self
+                clean: true
+              - task: CopyFiles@2
+                displayName: Copy test packages to artifacts directory
+                inputs:
+                  sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources
+                  targetFolder: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)/NonShipping
+              - script: eng/common/build.sh
+                  --configuration $(_BuildConfig)
+                  --restore
+                  --prepareMachine
+                  --sign
+                  --ci
+                  $(_InternalBuildArgs)
 
     - stage: Create_BAR_ID_Tag
       displayName: Create BAR ID Tag
