@@ -8,11 +8,7 @@
 
   <!-- Set package ID for official signed builds. Needed to publish both Windows and Linux signed packages to build asset registry. -->
   <PropertyGroup Condition="'$(DotNetSignType)' == 'real'">
-    <BuildRid Condition="'$(BuildRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</TargetArchitecture>
-    <TargetOS Condition="'$(TargetOS)' == ''">$(BuildRid.Substring(0, $(BuildRid.LastIndexOf('-'))))</TargetOS>
-    <TargetRid Condition="'$(TargetRid)' == ''">$(TargetOS)-$(TargetArchitecture)</TargetRid>
-    <PackageId>Validation.$(TargetRid)</PackageId>
+    <PackageId>Validation.$(OS)</PackageId>
   </PropertyGroup>
   
 </Project>
