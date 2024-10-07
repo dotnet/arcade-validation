@@ -67,10 +67,10 @@ stages:
           matrix:
             Build_Debug:
               _BuildConfig: Debug
-              _SignType: none
+              _SignType: none # Test signing is not supported on Linux and macOS.
             Build_Release:
               _BuildConfig: Release
-              _SignType: none
+              _SignType: none # Test signing is not supported on Linux and macOS.
         steps:
         - checkout: self
           clean: true

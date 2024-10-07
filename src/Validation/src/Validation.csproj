@@ -4,7 +4,11 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>$(NetCurrent)</TargetFrameworks>
     <IsPackable>true</IsPackable>
-    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
+  <!-- Set package ID for official signed builds. Needed to publish both Windows and Linux signed packages to build asset registry. -->
+  <PropertyGroup Condition="'$(DotNetSignType)' == 'real'">
+    <PackageId>Validation.$(OS)</PackageId>
   </PropertyGroup>
   
 </Project>
