@@ -82,6 +82,29 @@ stages:
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
 
+      - job: MacOS
+        pool:
+          vmImage: macos-12
+
+        strategy:
+          matrix:
+            Build_Debug:
+              _BuildConfig: Debug
+              _SignType: none # Test signing is not supported on Linux and macOS.
+            Build_Release:
+              _BuildConfig: Release
+              _SignType: none # Test signing is not supported on Linux and macOS.
+        steps:
+        - checkout: self
+          clean: true
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+            --sign
+          displayName: Unix Build / Publish
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: Component Governance scan
+
       - job: Validate_Helix
         pool:
           name: $(PoolProvider) 
