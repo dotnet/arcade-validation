@@ -136,7 +136,9 @@ extends:
 
           - job: MacOS
             pool:
-              vmImage: macos-12
+              name: Azure Pipelines
+              image: macos-12
+              os: macOS
 
             variables:
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
@@ -259,7 +261,9 @@ extends:
 
           - job: Validate_Signing_MacOS
             pool:
-              vmImage: macos-12
+              name: Azure Pipelines
+              image: macos-12
+              os: macOS
 
             variables:
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
