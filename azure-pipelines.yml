@@ -134,6 +134,45 @@ extends:
             - task: ComponentGovernanceComponentDetection@0
               displayName: Component Governance scan
 
+          - job: MacOS
+            pool:
+              name: Azure Pipelines
+              image: macos-12
+              os: macOS
+
+            variables:
+            - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
+                /p:TeamName=$(_TeamName)
+                /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
+            strategy:
+              matrix:
+                # No test signing - it's not supported on Linux and macOS
+                Build_Release:
+                  _BuildConfig: Release
+                  _SignType: real
+            steps:
+            - checkout: self
+              clean: true
+            - task: Bash@3
+              displayName: Setup Private Feeds Credentials
+              inputs:
+                filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+                arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+              condition: ne(variables['Agent.OS'], 'Windows_NT')
+              env:
+                Token: $(dn-bot-dnceng-artifact-feeds-rw)
+            # Remove --sign from the script command with https://github.com/dotnet/source-build/issues/4064
+            - script: eng/common/cibuild.sh
+                --configuration $(_BuildConfig)
+                --prepareMachine
+                --sign
+                $(_InternalBuildArgs)
+              displayName: Unix Build / Publish
+            - task: ComponentGovernanceComponentDetection@0
+              displayName: Component Governance scan
+
           - job: Validate_Helix
             variables:
             - HelixApiAccessToken: ''
@@ -192,6 +231,39 @@ extends:
               name: $(PoolProvider)
               image: 1es-ubuntu-2204
               os: linux
+
+            variables:
+            - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
+                /p:TeamName=$(_TeamName)
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
+            strategy:
+              matrix:
+                # No test signing - it's not supported on Linux and macOS
+                Real_Signing:
+                  _BuildConfig: Release
+                  _SignType: real
+            steps:
+              - checkout: self
+                clean: true
+              - task: CopyFiles@2
+                displayName: Copy test packages to artifacts directory
+                inputs:
+                  sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources
+                  targetFolder: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)/NonShipping
+              - script: eng/common/build.sh
+                  --configuration $(_BuildConfig)
+                  --restore
+                  --prepareMachine
+                  --sign
+                  --ci
+                  $(_InternalBuildArgs)
+
+          - job: Validate_Signing_MacOS
+            pool:
+              name: Azure Pipelines
+              image: macos-12
+              os: macOS
 
             variables:
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
