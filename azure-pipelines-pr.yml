@@ -82,6 +82,29 @@ stages:
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
 
+      - job: MacOS
+        pool:
+          vmImage: macos-12
+
+        strategy:
+          matrix:
+            Build_Debug:
+              _BuildConfig: Debug
+              _SignType: none # Test signing is not supported on Linux and macOS.
+            Build_Release:
+              _BuildConfig: Release
+              _SignType: none # Test signing is not supported on Linux and macOS.
+        steps:
+        - checkout: self
+          clean: true
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+            --sign
+          displayName: Unix Build / Publish
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: Component Governance scan
+
       - job: Validate_Helix
         pool:
           name: $(PoolProvider) 
@@ -101,7 +124,7 @@ stages:
             XUnitPublishTargetFramework: net9.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
-            DotNetCliVersion: 9.0.100-rc.2.24474.11
+            DotNetCliVersion: 9.0.100
             EnableXUnitReporter: true
             WaitForWorkItemCompletion: true
             HelixTargetQueues: Windows.Amd64.Server2022.Open;(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64
