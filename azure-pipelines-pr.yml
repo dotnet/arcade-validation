@@ -84,7 +84,7 @@ stages:
 
       - job: MacOS
         pool:
-          vmImage: macos-12
+          vmImage: macos-latest
 
         strategy:
           matrix:
