@@ -121,7 +121,7 @@ stages:
             XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
             XUnitTargetFramework: netcoreapp2.0
             XUnitRunnerVersion: 2.5.1
-            XUnitPublishTargetFramework: net9.0
+            XUnitPublishTargetFramework: net10.0
             IncludeDotNetCli: true
             DotNetCliPackageType: sdk
             DotNetCliVersion: 10.0.100-alpha.1.24573.1
