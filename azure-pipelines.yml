@@ -262,7 +262,7 @@ extends:
           - job: Validate_Signing_MacOS
             pool:
               name: Azure Pipelines
-              image: macos-12
+              image: macos-latest
               os: macOS
 
             variables:
