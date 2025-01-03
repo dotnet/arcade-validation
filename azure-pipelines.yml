@@ -7,10 +7,10 @@ variables:
   - group: SDL_Settings
   - ${{ if notin(variables['Build.Reason'], 'Schedule') }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Internal
+      value: NetCore1ESPool-Svc-Internal
   - ${{ else }}:
     - name: PoolProvider
-      value: NetCore1ESPool-Internal-Int
+      value: NetCore1ESPool-Svc-Internal-Int
 
 trigger:
   batch: true
@@ -46,10 +46,10 @@ extends:
       name: $(PoolProvider)
       image: windows.vs2022.amd64
       os: windows
-      
+
     stages:
     - stage: build
-      displayName: Build 
+      displayName: Build
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
