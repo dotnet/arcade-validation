@@ -159,7 +159,8 @@ namespace Validation.Tests
                     TestRepoUtils.BuildArg("projects"),
                     Path.Combine(builder.TestRepoRoot, "src/FooPackage/FooPackage.csproj"),
                     "/p:AutoGenerateSymbolPackages=false",
-                    "/p:PostBuildSign=true")
+                    "/p:PostBuildSign=true",
+                    "/p:DotNetPublishUsingPipelines=true")
                     .Should().Throw<Exception>($"build of repo {builder.TestRepoRoot} is post build signed")
                     .WithMessage("*error : List of files to sign post-build is empty. Make sure that ItemsToSignPostBuild is configured correctly.*");
             }
