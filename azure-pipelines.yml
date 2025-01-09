@@ -30,9 +30,6 @@ schedules:
   always: true
 
 resources:
-  containers:
-  - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
   repositories:
   - repository: 1ESPipelineTemplates
     type: git
@@ -46,6 +43,9 @@ extends:
       name: $(PoolProvider)
       image: windows.vs2022.amd64
       os: windows
+    containers:
+      LinuxContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
       
     stages:
     - stage: build
