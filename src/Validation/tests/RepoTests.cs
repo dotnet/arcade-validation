@@ -158,7 +158,7 @@ namespace Validation.Tests
 
                 // Now, go find the Round0 signing project and ensure that the certificate names were set properly.
                 // The arcade default for an exe is Microsoft400
-                string round0FilePath = Path.Combine(builder.TestRepoRoot, "artifacts", "tmp", "Release", "Signing", "SigningRound0.proj");
+                string round0FilePath = Path.Combine(builder.TestRepoRoot, "artifacts", "tmp", "Release", "Signing", "Round0-Sign.proj");
                 string round0ProjectText = File.ReadAllText(round0FilePath);
                 string expectedCert = useDotNetCert.GetValueOrDefault() ? DotNetCertificate : MicrosoftCertificate;
 
@@ -220,7 +220,7 @@ namespace Validation.Tests
 
                 // Now, go find the Round0 signing project and ensure that the certificate names were set properly.
                 // The arcade default for an exe is Microsoft400
-                string round0FilePath = Path.Combine(builder.TestRepoRoot, "artifacts", "tmp", "Release", "Signing", "SigningRound0.proj");
+                string round0FilePath = Path.Combine(builder.TestRepoRoot, "artifacts", "tmp", "Release", "Signing", "Round0-Sign.proj");
                 string round0ProjectText = File.ReadAllText(round0FilePath);
 
                 Regex authenticodeRegex = new Regex("<Authenticode>(.*)</Authenticode>");
