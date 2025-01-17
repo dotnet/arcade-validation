@@ -170,9 +170,13 @@ namespace Validation.Tests
 
         public void Dispose()
         {
-            if (!string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonRoot))
+            if (!string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonDotnetRoot))
             {
                 TestRepoUtils.KillSpecificExecutable(Path.Combine(CommonDotnetRoot, TestRepoUtils.DotNetHostExecutableName));
+            }
+
+            if (!string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonRoot))
+            {
                 // Delete the main root
                 Directory.Delete(Directory.GetParent(CommonRoot).FullName, true);
             }
