@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements. 
+// Licensed to the .NET Foundation under one or more agreements. 
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -170,13 +170,9 @@ namespace Validation.Tests
 
         public void Dispose()
         {
-            if (!string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonDotnetRoot))
+            if (string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonRoot))
             {
                 TestRepoUtils.KillSpecificExecutable(Path.Combine(CommonDotnetRoot, TestRepoUtils.DotNetHostExecutableName));
-            }
-
-            if (!string.IsNullOrEmpty(CommonRoot) && Directory.Exists(CommonRoot))
-            {
                 // Delete the main root
                 Directory.Delete(Directory.GetParent(CommonRoot).FullName, true);
             }
