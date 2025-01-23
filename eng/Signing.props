@@ -8,6 +8,7 @@
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.tar.gz" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.mpack" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.pkg" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\EmptyPKT.dll" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\CustomTargetFrameworkAttribute.dll" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\SignedLibrary.dll" />
