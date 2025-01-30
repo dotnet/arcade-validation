@@ -6,9 +6,17 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <!-- Don't rely on the `$(OS)` properties as that returns Unix on non-Windows platforms
+       which would cause duplicate assets during publishing. -->
+  <PropertyGroup>
+    <BuildOS>linux</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">windows</BuildOS>
+  </PropertyGroup>
+
   <!-- Set package ID for official signed builds. Needed to publish both Windows and Linux signed packages to build asset registry. -->
   <PropertyGroup Condition="'$(DotNetSignType)' == 'real'">
-    <PackageId>Validation.$(OS)</PackageId>
+    <PackageId>Validation.$(BuildOS)</PackageId>
   </PropertyGroup>
   
 </Project>
