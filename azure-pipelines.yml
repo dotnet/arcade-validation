@@ -305,10 +305,14 @@ extends:
           steps:
             - checkout: self
               clean: true
-            - powershell: eng/create-baridtag.ps1
-                -barToken $(MaestroAccessToken)
+            - task: AzureCLI@2
               displayName: Create BAR ID Tag
-              name: Create_BAR_ID_Tag
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: ps
+                scriptLocation: scriptPath
+                scriptPath: $(Build.SourcesDirectory)/eng/create-baridtag.ps1
+
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
         publishingInfraVersion: 3
@@ -349,14 +353,21 @@ extends:
               - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
               - checkout: self
                 clean: true
-              - powershell: eng\validation\test-publishing.ps1
-                  -buildId $(BARBuildId)
-                  -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                  -azdoUser "dotnet-bot"
-                  -azdoOrg "dnceng"
-                  -azdoProject "internal"
-                  -barToken $(MaestroAccessToken)
-                  -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+              
+              - task: AzureCLI@2
+                displayName: Test Publishing
+                inputs:
+                  azureSubscription: "Darc: Maestro Production"
+                  scriptType: ps
+                  scriptLocation: scriptPath
+                  scriptPath: $(Build.SourcesDirectory)/eng/validation/test-publishing.ps1
+                  arguments: -buildId $(BARBuildId)
+                    -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
+                    -azdoUser "dotnet-bot"
+                    -azdoOrg "dnceng"
+                    -azdoProject "internal"
+                    -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+                  
       - stage: Promote_Arcade_To_Latest
         displayName: Promote Arcade to '.NET Eng - Latest' channel
         dependsOn:
@@ -375,9 +386,12 @@ extends:
             steps:
               - checkout: self
                 clean: True
-              - powershell: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro.dot.net
-                      -barToken $(MaestroAccessToken)
-                      -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)
+              - task: AzureCLI@2
                 displayName: Promote Arcade to 'Latest' channel
+                inputs:
+                  azureSubscription: "Darc: Maestro Production"
+                  scriptType: ps
+                  scriptLocation: scriptPath
+                  scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
+                  arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)

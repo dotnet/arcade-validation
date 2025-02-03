@@ -1,10 +1,8 @@
 Param(
   [string] $maestroEndpoint,
-  [string] $barToken,
   [string] $apiVersion = "2020-02-20",
   [string] $targetChannelName = ".NET Eng - Latest",
-  [string] $azdoToken,
-  [string] $githubToken
+  [string] $azdoToken
 )
 
 $ci = $true
@@ -40,7 +38,7 @@ try {
 
     $buildId = $assets[0].'buildId'
 
-    & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --github-pat $githubToken --azdev-pat $azdoToken --password $barToken --skip-assets-publishing
+    & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --azdev-pat $azdoToken --ci --skip-assets-publishing
     
     if ($LastExitCode -ne 0) {
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."

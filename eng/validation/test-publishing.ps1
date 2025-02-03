@@ -23,14 +23,13 @@ $global:azdoUser = $azdoUser
 $global:azdoOrg = $azdoOrg
 $global:azdoProject = $azdoProject
 $global:githubPAT = $githubPAT
-$global:barToken = $barToken
 
 function Find-BuildInTargetChannel(
     [string] $buildId,
     [string] $targetChannelName
 )
 {
-    $buildJson = & $darc get-build --id $buildId --azdev-pat $global:azdoToken --password $global:barToken --output-format json
+    $buildJson = & $darc get-build --id $buildId --ci --output-format json
     $build = ($buildJson | ConvertFrom-Json)
 
     $channels = ($build | Select-Object -ExpandProperty channels)
@@ -38,7 +37,7 @@ function Find-BuildInTargetChannel(
     {
         return $true
     }
-
+$
     return $false
 }
 
@@ -46,7 +45,7 @@ $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $global:arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$global:arcadeSdkPackageName
 $global:azdoRepoName = "dotnet-arcade"
 $global:azdoRepoUri = "https://unused:$azdoToken@${global:azdoOrg}.visualstudio.com/${global:azdoProject}/_git/${global:azdoRepoName}"
-$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --channel "$sourceChannel" --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken --output-format json | convertFrom-Json
+$jsonAsset = & $darc get-asset --name $global:arcadeSdkPackageName --version $global:arcadeSdkVersion --channel "$sourceChannel" --ci --output-format json | convertFrom-Json
 $sha = $jsonAsset.build.commit
 $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 
@@ -62,7 +61,7 @@ $barBuildId = $jsonAsset.build.id
 
 ## Make the changes to that branch to update Arcade - use darc
 Set-Location $(Get-Repo-Location $global:azdoRepoName)
-& $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:bartoken
+& $darc update-dependencies --id $barBuildId --github-pat $global:githubPAT --ci
 
 Git-Command $global:azdoRepoName commit -am "Arcade branch - version ${global:arcadeSdkVersion}"
 
@@ -77,7 +76,7 @@ if($preCheck)
 }
 
 Write-Host "Adding build '${global:buildId}' to channel '${global:targetChannel}'"
-& $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --source-branch $global:targetBranch --github-pat $global:githubPAT --azdev-pat $global:azdoToken --password $global:barToken --publishing-infra-version 3
+& $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --source-branch $global:targetBranch --azdev-pat $global:azdoToken --ci --publishing-infra-version 3
 
 if ($LastExitCode -ne 0) {
     Write-Host "Problems using Darc to promote build '${global:buildId}' to channel '${global:targetChannel}'. Stopping execution..."
