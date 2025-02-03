@@ -1,5 +1,4 @@
 Param(
-  [Parameter(Mandatory=$true)][string] $barToken,
   [string] $sourceChannelName = '.NET Eng - Validation'
 )
 
@@ -15,7 +14,6 @@ $assetData = & $darc get-asset `
   --name $arcadeSdkPackageName `
   --version $arcadeSdkVersion `
   --channel "$sourceChannelName" `
-  --password $bartoken `
   --ci `
   --output-format json `
   | convertFrom-Json
