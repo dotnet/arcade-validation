@@ -311,7 +311,7 @@ extends:
                 azureSubscription: "Darc: Maestro Production"
                 scriptType: ps
                 scriptLocation: scriptPath
-                scriptPath: $(Build.SourcesDirectory)/eng/eng/create-baridtag.ps1
+                scriptPath: $(Build.SourcesDirectory)/eng/create-baridtag.ps1
 
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
