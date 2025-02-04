@@ -1,7 +1,5 @@
 Param(
-  [string] $maestroEndpoint,
-  [string] $apiVersion = "2020-02-20",
-  [string] $targetChannelName = ".NET Eng - Latest",
+  [string] $targetChannelName = ".NET 9 Eng",
   [string] $azdoToken
 )
 
@@ -10,21 +8,12 @@ $ci = $true
 . $PSScriptRoot\..\common\pipeline-logging-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
-function Get-Headers([string]$accept, [string]$barToken) {
-    $headers = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
-    $headers.Add('Accept',$accept)
-    $headers.Add('Authorization',"Bearer $barToken")
-    return $headers
-}
-
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
 $arcadeSdkVersion = $GlobalJson.'msbuild-sdks'.$arcadeSdkPackageName
-$getAssetsApiEndpoint = "$maestroEndpoint/api/assets?name=$arcadeSdkPackageName&version=$arcadeSdkVersion&api-version=$apiVersion"
-$headers = Get-Headers 'text/plain' $barToken
 
 try {
     # Get the Microsoft.DotNet.Arcade.Sdk with the version $arcadeSdkVersion so we can get the id of the build
-    $assets = Invoke-WebRequest -Uri $getAssetsApiEndpoint -Headers $headers -UseBasicParsing | ConvertFrom-Json
+    $assets = & $darc get-asset --name $arcadeSdkPackageName --version $arcadeSdkVersion --ci --output-format json | ConvertFrom-Json
 
     if (!$assets) {
         Write-Host "Asset '$arcadeSdkPackageName' with version $arcadeSdkVersion was not found"
@@ -36,7 +25,7 @@ try {
         exit 1
     }
 
-    $buildId = $assets[0].'buildId'
+    $buildId = $assets[0].build.id
 
     & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --azdev-pat $azdoToken --ci --skip-assets-publishing
     
