@@ -185,12 +185,13 @@ extends:
           steps:
             - checkout: self
               clean: true
-            - powershell: eng/create-baridtag.ps1
-                -azdoToken $(dn-bot-dotnet-build-rw-code-rw)
-                -barToken $(MaestroAccessToken)
-                -githubPAT $(BotAccount-dotnet-bot-repo-PAT)
+            - task: AzureCLI@2
               displayName: Create BAR ID Tag
-              name: Create_BAR_ID_Tag
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: ps
+                scriptLocation: scriptPath
+                scriptPath: $(Build.SourcesDirectory)/eng/create-baridtag.ps1
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
         publishingInfraVersion: 3
@@ -220,10 +221,12 @@ extends:
             steps:
               - checkout: self
                 clean: True
-              - powershell: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-                      -barToken $(MaestroAccessToken)
-                      -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)
-                      -targetChannelName '.NET 8 Eng'
                 displayName: Promote Arcade to channel
+              - task: AzureCLI@2
+                displayName: Promote Arcade to 'Latest' channel
+                inputs:
+                  azureSubscription: "Darc: Maestro Production"
+                  scriptType: ps
+                  scriptLocation: scriptPath
+                  scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
+                  arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
