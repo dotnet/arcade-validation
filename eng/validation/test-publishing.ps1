@@ -36,7 +36,7 @@ function Find-BuildInTargetChannel(
     {
         return $true
     }
-$
+
     return $false
 }
 
