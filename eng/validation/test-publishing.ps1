@@ -4,7 +4,6 @@ Param(
   [Parameter(Mandatory=$true)][string] $azdoUser,
   [Parameter(Mandatory=$true)][string] $azdoOrg,
   [Parameter(Mandatory=$true)][string] $azdoProject,
-  [Parameter(Mandatory=$true)][string] $barToken,
   [Parameter(Mandatory=$true)][string] $githubPAT
 )
 

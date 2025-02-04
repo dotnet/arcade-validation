@@ -394,4 +394,3 @@ extends:
                   scriptLocation: scriptPath
                   scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
                   arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -maestroEndpoint https://maestro.dot.net
