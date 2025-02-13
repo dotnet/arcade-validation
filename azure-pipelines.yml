@@ -217,6 +217,12 @@ extends:
                 inputs:
                   sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
                   targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+              - task: CopyFiles@2
+                displayName: Copy .vsix test packages to VS directory
+                inputs:
+                  sourceFolder: $(Build.SourcesDirectory)\src\validation\resources\
+                  targetFolder: $(Build.SourcesDirectory)\artifacts\VSSetup\$(_BuildConfig)
+                  contents: '*.vsix'
               - powershell: eng\common\build.ps1
                   -configuration $(_BuildConfig)
                   -restore
@@ -253,6 +259,12 @@ extends:
                 inputs:
                   sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources
                   targetFolder: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)/NonShipping
+              - task: CopyFiles@2
+                displayName: Copy .vsix test packages to VS directory
+                inputs:
+                  sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources/
+                  targetFolder: $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)
+                  contents: '*.vsix'
               - script: eng/common/build.sh
                   --configuration $(_BuildConfig)
                   --restore
@@ -288,6 +300,12 @@ extends:
                 inputs:
                   sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources
                   targetFolder: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)/NonShipping
+              - task: CopyFiles@2
+                displayName: Copy .vsix test packages to VS directory
+                inputs:
+                  sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources/
+                  targetFolder: $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)
+                  contents: '*.vsix'
               - script: eng/common/build.sh
                   --configuration $(_BuildConfig)
                   --restore
