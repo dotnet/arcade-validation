@@ -141,12 +141,13 @@ extends:
               os: macOS
 
             variables:
-            # 4 minute timeout to diagnose https://github.com/dotnet/dnceng/issues/4798
+            # 4 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
                 /p:TeamName=$(_TeamName)
                 /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
                 /p:SignToolDotNetTimeout=240000
+                /p:SignToolMSBuildVerbosity=diagnostic
 
             strategy:
               matrix:
@@ -166,11 +167,13 @@ extends:
               env:
                 Token: $(dn-bot-dnceng-artifact-feeds-rw)
             # Remove --sign from the script command with https://github.com/dotnet/source-build/issues/4064
-            - script: eng/common/cibuild.sh
-                --configuration $(_BuildConfig)
-                --prepareMachine
-                --sign
-                $(_InternalBuildArgs)
+            - script: |
+                export MSBUILDTARGETOUTPUTLOGGING=1
+                eng/common/cibuild.sh \
+                    --configuration $(_BuildConfig) \
+                    --prepareMachine \
+                    --sign \
+                    $(_InternalBuildArgs)
               displayName: Unix Build / Publish
             - task: ComponentGovernanceComponentDetection@0
               displayName: Component Governance scan
@@ -280,11 +283,12 @@ extends:
               os: macOS
 
             variables:
-            # 4 minute timeout to diagnose https://github.com/dotnet/dnceng/issues/4798
+            # 4 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
                 /p:TeamName=$(_TeamName)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
                 /p:SignToolDotNetTimeout=240000
+                /p:SignToolMSBuildVerbosity=diagnostic
 
             strategy:
               matrix:
@@ -306,13 +310,15 @@ extends:
                   sourceFolder: $(Build.SourcesDirectory)/src/Validation/Resources/
                   targetFolder: $(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)
                   contents: '*.vsix'
-              - script: eng/common/build.sh
-                  --configuration $(_BuildConfig)
-                  --restore
-                  --prepareMachine
-                  --sign
-                  --ci
-                  $(_InternalBuildArgs)
+              - script: |
+                  export MSBUILDTARGETOUTPUTLOGGING=1
+                  eng/common/build.sh \
+                    --configuration $(_BuildConfig) \
+                    --restore \
+                    --prepareMachine \
+                    --sign \
+                    --ci \
+                    $(_InternalBuildArgs)
 
     - stage: Create_BAR_ID_Tag
       displayName: Create BAR ID Tag
