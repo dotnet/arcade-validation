@@ -61,6 +61,9 @@ extends:
           enableTelemetry: true
           enableSourceBuild: true
           helixRepo: dotnet/arcade-validation
+          preSteps:
+            - checkout: self
+              clean: true
           jobs:
           - job: Windows_NT
             variables:
@@ -75,8 +78,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-            - checkout: self
-              clean: true
             - task: PowerShell@2
               displayName: Setup Private Feeds Credentials
               condition: eq(variables['Agent.OS'], 'Windows_NT')
@@ -114,8 +115,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-            - checkout: self
-              clean: true
             - task: Bash@3
               displayName: Setup Private Feeds Credentials
               inputs:
@@ -156,8 +155,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-            - checkout: self
-              clean: true
             - task: Bash@3
               displayName: Setup Private Feeds Credentials
               inputs:
@@ -213,8 +210,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-              - checkout: self
-                clean: true
               - task: CopyFiles@2
                 displayName: Copy test packages to artifacts directory
                 inputs:
@@ -255,8 +250,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-              - checkout: self
-                clean: true
               - task: CopyFiles@2
                 displayName: Copy test packages to artifacts directory
                 inputs:
@@ -297,8 +290,6 @@ extends:
                   _BuildConfig: Release
                   _SignType: real
             steps:
-              - checkout: self
-                clean: true
               - task: CopyFiles@2
                 displayName: Copy test packages to artifacts directory
                 inputs:
@@ -330,9 +321,10 @@ extends:
           displayName: Create BAR ID Tag
           variables:
             - group: Publish-Build-Assets
-          steps:
+          preSteps:
             - checkout: self
               clean: true
+          steps:
             - task: AzureCLI@2
               displayName: Create BAR ID Tag
               inputs:
@@ -377,10 +369,11 @@ extends:
                 value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
               - name: skipComponentGovernanceDetection
                 value: true
-            steps:
-              - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
+            preSteps:
               - checkout: self
                 clean: true
+            steps:
+              - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
               
               - task: AzureCLI@2
                 displayName: Test Publishing
@@ -411,9 +404,10 @@ extends:
               - group: DotNetBot-GitHub
               - name: skipComponentGovernanceDetection
                 value: true
-            steps:
+            preSteps:
               - checkout: self
-                clean: True
+                clean: true
+            steps:
               - task: AzureCLI@2
                 displayName: Promote Arcade to 'Latest' channel
                 inputs:

@@ -46,9 +46,10 @@ stages:
             Build_Debug:
               _BuildConfig: Debug
               _SignType: test
-        steps:
+        preSteps:
         - checkout: self
           clean: true
+        steps:
         # Use utility script to run script command dependent on agent OS.
         - script: eng\common\cibuild.cmd
             -configuration $(_BuildConfig)
@@ -71,9 +72,10 @@ stages:
             Build_Release:
               _BuildConfig: Release
               _SignType: none # Test signing is not supported on Linux and macOS.
-        steps:
+        preSteps:
         - checkout: self
           clean: true
+        steps:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
@@ -94,9 +96,10 @@ stages:
             Build_Release:
               _BuildConfig: Release
               _SignType: none # Test signing is not supported on Linux and macOS.
-        steps:
+        preSteps:
         - checkout: self
           clean: true
+        steps:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
