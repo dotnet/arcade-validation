@@ -140,12 +140,12 @@ extends:
               os: macOS
 
             variables:
-            # 4 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
+            # 10 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
                 /p:TeamName=$(_TeamName)
                 /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                /p:SignToolDotNetTimeout=240000
+                /p:SignToolDotNetTimeout=600000
                 /p:SignToolMSBuildVerbosity=diagnostic
 
             strategy:
@@ -276,11 +276,11 @@ extends:
               os: macOS
 
             variables:
-            # 4 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
+            # 10 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
                 /p:TeamName=$(_TeamName)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                /p:SignToolDotNetTimeout=240000
+                /p:SignToolDotNetTimeout=600000
                 /p:SignToolMSBuildVerbosity=diagnostic
 
             strategy:
