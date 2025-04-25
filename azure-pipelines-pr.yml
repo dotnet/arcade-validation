@@ -61,7 +61,7 @@ stages:
         container: LinuxContainer
         pool:
           name: $(PoolProvider)  # This is a queue-time parameter; Public default is NetCore-Public; Internal default is NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64.Open
 
         strategy:
           matrix:
