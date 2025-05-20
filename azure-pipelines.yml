@@ -214,8 +214,5 @@ extends:
               - checkout: self
                 clean: True
               - pwsh: eng/validation/update-channel.ps1
-                      -maestroEndpoint https://maestro-prod.westus2.cloudapp.azure.com
-                      -barToken $(MaestroAccessToken)
                       -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
-                      -githubToken $(BotAccount-dotnet-bot-repo-PAT)
                 displayName: Promote Arcade to '.NET 6 Eng' channel
