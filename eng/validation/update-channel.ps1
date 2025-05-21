@@ -25,7 +25,7 @@ try {
         exit 1
     }
 
-    $buildId = $assets[0].'buildId'
+    $buildId = $assets[0].build.id
 
     & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --azdev-pat $azdoToken --ci --skip-assets-publishing
         

@@ -213,6 +213,11 @@ extends:
             steps:
               - checkout: self
                 clean: True
-              - pwsh: eng/validation/update-channel.ps1
-                      -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+              - task: AzureCLI@2
                 displayName: Promote Arcade to '.NET 6 Eng' channel
+                inputs:
+                  azureSubscription: "Darc: Maestro Production"
+                  scriptType: ps
+                  scriptLocation: scriptPath
+                  scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
+                  arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
