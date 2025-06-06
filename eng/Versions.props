@@ -2,7 +2,7 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
-    <FluentAssertionsVersion>5.10.3</FluentAssertionsVersion>
+    <AwesomeAssertionsVersion>9.0.0</AwesomeAssertionsVersion>
     <MicrosoftBuildVersion>17.7.0</MicrosoftBuildVersion>
     <MSBuildProjectCreationVersion>10.0.0</MSBuildProjectCreationVersion>
   </PropertyGroup>
