@@ -187,12 +187,8 @@ extends:
               parameters:
                 HelixType: test/product/
                 XUnitProjects: $(Build.SourcesDirectory)/src/Validation/tests/Validation.Tests.csproj
-                XUnitTargetFramework: netcoreapp2.0
-                XUnitRunnerVersion: 2.5.1
-                XUnitPublishTargetFramework: net10.0
                 IncludeDotNetCli: true
                 DotNetCliPackageType: sdk
-                DotNetCliVersion: 10.0.100-preview.6.25315.102
                 EnableXUnitReporter: true
                 WaitForWorkItemCompletion: true
                 HelixTargetQueues: Windows.Amd64.Server2022;(Debian.12.Amd64)Ubuntu.2204.Amd64@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64
