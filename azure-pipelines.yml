@@ -352,8 +352,6 @@ extends:
                   
       - stage: Promote_Arcade_To_Latest
         displayName: Promote Arcade to '.NET Eng - Latest' channel
-        dependsOn:
-          - Validate_Publishing
         jobs:
         - template: /eng/common/templates-official/job/job.yml@self
           parameters:
