@@ -1,0 +1,19 @@
+# schemaVersion is required
+schemaVersion: 0.0.1
+# isProduction (Classification) - Declares whether the code is production or non-production.
+# * isProduction is required.
+isProduction: true
+# accountableOwners (Ownership) specifies responsible owners via service ownership
+# * accountableOwners is required.
+accountableOwners:
+  # service is the unique identifier for a service. This is the service ID from Service Tree (aka.ms/servicetree).
+  service: 8835b1f3-0d22-4e28-bae0-65da04655ed4 #Helix
+# routing (Routing) provides area path information for work item routing (bugs, etc).
+# * routing is required.
+routing:
+  # * defaultAreaPath - An ADO AreaPath. This is the default area path for work item routing.
+  defaultAreaPath:
+    # * path (required) - e.g. `Some\Area\Path`
+    # * org (optional) - If not supplied, the org will be assumed from the repo. This enables routing to area paths in other orgs.
+    org: dnceng
+    path: internal\.NET Engineering Services
