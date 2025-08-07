@@ -350,28 +350,28 @@ extends:
           -TsaCodebaseName "Arcade-Validation"
           -TsaPublish $True'
                   
-      - stage: Promote_Arcade_To_Latest
-        displayName: Promote Arcade to '.NET Eng - Latest' channel
-        jobs:
-        - template: /eng/common/templates-official/job/job.yml@self
-          parameters:
-            name: Promote_Arcade_To_Latest
-            displayName: Promote Arcade to '.NET Eng - Latest' channel
-            timeoutInMinutes: 180
-            variables:
-              - group: Publish-Build-Assets
-              - group: DotNetBot-GitHub
-              - name: skipComponentGovernanceDetection
-                value: true
-            preSteps:
-              - checkout: self
-                clean: true
-            steps:
-              - task: AzureCLI@2
-                displayName: Promote Arcade to 'Latest' channel
-                inputs:
-                  azureSubscription: "Darc: Maestro Production"
-                  scriptType: ps
-                  scriptLocation: scriptPath
-                  scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
-                  arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+    - stage: Promote_Arcade_To_Latest
+      displayName: Promote Arcade to '.NET Eng - Latest' channel
+      jobs:
+      - template: /eng/common/templates-official/job/job.yml@self
+        parameters:
+          name: Promote_Arcade_To_Latest
+          displayName: Promote Arcade to '.NET Eng - Latest' channel
+          timeoutInMinutes: 180
+          variables:
+            - group: Publish-Build-Assets
+            - group: DotNetBot-GitHub
+            - name: skipComponentGovernanceDetection
+              value: true
+          preSteps:
+            - checkout: self
+              clean: true
+          steps:
+            - task: AzureCLI@2
+              displayName: Promote Arcade to 'Latest' channel
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: ps
+                scriptLocation: scriptPath
+                scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
+                arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
