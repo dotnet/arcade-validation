@@ -130,6 +130,8 @@ extends:
                 --sign
                 $(_InternalBuildArgs)
               displayName: Unix Build / Publish
+              env:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             - task: ComponentGovernanceComponentDetection@0
               displayName: Component Governance scan
 
@@ -172,6 +174,8 @@ extends:
                     --sign \
                     $(_InternalBuildArgs)
               displayName: Unix Build / Publish
+              env:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             - task: ComponentGovernanceComponentDetection@0
               displayName: Component Governance scan
 
@@ -264,6 +268,9 @@ extends:
                   --sign
                   --ci
                   $(_InternalBuildArgs)
+                displayName: Build
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
           - job: Validate_Signing_MacOS
             pool:
@@ -306,7 +313,9 @@ extends:
                     --sign \
                     --ci \
                     $(_InternalBuildArgs)
-
+                displayName: Build
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     - stage: Create_BAR_ID_Tag
       displayName: Create BAR ID Tag
       condition: succeededOrFailed()
