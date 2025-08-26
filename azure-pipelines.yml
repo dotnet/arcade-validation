@@ -360,12 +360,12 @@ extends:
           -TsaPublish $True'
                   
     - stage: Promote_Arcade_To_Latest
-      displayName: Promote Arcade to '.NET Eng - Latest' channel
+      displayName: Promote Arcade to '.NET 10 Eng' channel
       jobs:
       - template: /eng/common/templates-official/job/job.yml@self
         parameters:
           name: Promote_Arcade_To_Latest
-          displayName: Promote Arcade to '.NET Eng - Latest' channel
+          displayName: Promote Arcade to '.NET 10 Eng' channel
           timeoutInMinutes: 180
           variables:
             - group: Publish-Build-Assets
@@ -377,7 +377,7 @@ extends:
               clean: true
           steps:
             - task: AzureCLI@2
-              displayName: Promote Arcade to 'Latest' channel
+              displayName: Promote Arcade to '.NET 10 Eng' channel
               inputs:
                 azureSubscription: "Darc: Maestro Production"
                 scriptType: ps

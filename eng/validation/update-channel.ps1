@@ -1,5 +1,5 @@
 Param(
-  [string] $targetChannelName = ".NET Eng - Latest",
+  [string] $targetChannelName = ".NET 10 Eng",
   [string] $azdoToken
 )
 
