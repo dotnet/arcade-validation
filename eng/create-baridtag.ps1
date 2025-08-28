@@ -1,5 +1,5 @@
 Param(
-  [string] $sourceChannelName = '.NET Eng - Validation'
+  [string] $sourceChannelName = '.NET 10 Eng - Validation'
 )
 
 set-strictmode -version 2.0
