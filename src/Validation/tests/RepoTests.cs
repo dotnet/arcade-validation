@@ -44,7 +44,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true"),
@@ -89,7 +89,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true"),
@@ -141,7 +141,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true")
@@ -198,7 +198,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true")
@@ -264,7 +264,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true")
@@ -325,7 +325,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true")
@@ -385,7 +385,7 @@ namespace Validation.Tests
                 builder.AddProject(ProjectCreator
                         .Templates
                         .SdkCsproj(
-                            targetFramework: "net6.0",
+                            targetFramework: "net8.0",
                             outputType: "Exe")
                         .PropertyGroup()
                         .Property("IsPackable", "true")
