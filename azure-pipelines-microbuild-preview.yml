@@ -22,6 +22,8 @@ extends:
     containers:
       LinuxContainer:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
+    settings:
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
       
     stages:
     - template: /eng/build.yml@self
