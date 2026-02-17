@@ -185,6 +185,10 @@ extends:
           steps:
             - checkout: self
               clean: true
+            # Darc is targeting 8.0, so make sure it's installed
+            - task: UseDotNet@2
+              inputs:
+                version: 8.0.x
             - task: AzureCLI@2
               displayName: Create BAR ID Tag
               inputs:
@@ -221,6 +225,10 @@ extends:
             steps:
               - checkout: self
                 clean: True
+              # Darc is targeting 8.0, so make sure it's installed
+              - task: UseDotNet@2
+                inputs:
+                  version: 8.0.x
                 displayName: Promote Arcade to channel
               - task: AzureCLI@2
                 displayName: Promote Arcade to 'Latest' channel
