@@ -46,6 +46,8 @@ extends:
       name: $(PoolProvider)
       image: windows.vs2022.amd64
       os: windows
+      settings:
+        networkIsolationPolicy: Permissive, CFSClean, CFSClean2
 
     stages:
     - stage: build
