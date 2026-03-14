@@ -74,24 +74,10 @@ extends:
 
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
-        publishingInfraVersion: 3
         # Symbol validation isn't being very reliable lately. This should be enabled back
         # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
         enableSymbolValidation: false
         enableSourceLinkValidation: true
-        # This is to enable SDL runs part of Post-Build Validation Stage
-        SDLValidationParameters:
-          enable: true
-          params: ' -SourceToolsList @("policheck","credscan")
-          -TsaInstanceURL $(_TsaInstanceURL)
-          -TsaProjectName $(_TsaProjectName)
-          -TsaNotificationEmail $(_TsaNotificationEmail)
-          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-          -TsaBugAreaPath $(_TsaBugAreaPath)
-          -TsaIterationPath $(_TsaIterationPath)
-          -TsaRepositoryName "Arcade-Validation"
-          -TsaCodebaseName "Arcade-Validation"
-          -TsaPublish $True'
                   
     - stage: Promote_Arcade_To_Latest
       displayName: Promote Arcade to '.NET Eng - Latest' channel
