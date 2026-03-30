@@ -97,10 +97,22 @@ extends:
               clean: true
           steps:
             - task: AzureCLI@2
+              displayName: Get AzDO token (WIF)
+              name: GetAzDoToken
+              inputs:
+                azureSubscription: "dnceng-build-rw-code-rw-wif"
+                scriptType: ps
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $azdoToken = az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv
+                  if ($LASTEXITCODE -ne 0) { Write-Error "Failed to get AzDO token"; exit 1 }
+                  Write-Host "Successfully obtained AzDO token from WIF service connection"
+                  Write-Host "##vso[task.setvariable variable=WifAzDoToken;issecret=true]$azdoToken"
+            - task: AzureCLI@2
               displayName: Promote Arcade to 'Latest' channel
               inputs:
                 azureSubscription: "Darc: Maestro Production"
                 scriptType: ps
                 scriptLocation: scriptPath
                 scriptPath: $(Build.SourcesDirectory)/eng/validation/update-channel.ps1
-                arguments: -azdoToken $(dn-bot-dnceng-build-rw-code-rw)
+                arguments: -azdoToken $(WifAzDoToken)
