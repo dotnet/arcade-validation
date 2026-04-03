@@ -27,7 +27,6 @@ stages:
       enableMicrobuild: true
       enablePublishBuildArtifacts: true
       enablePublishBuildAssets: true
-      enablePublishUsingPipelines: true
       enableTelemetry: true
       enableSourceBuild: true
       helixRepo: dotnet/arcade-validation

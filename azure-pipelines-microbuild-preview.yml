@@ -32,5 +32,4 @@ extends:
         validateHelix: false
         enablePublishBuildArtifacts: false
         enablePublishBuildAssets: false
-        enablePublishUsingPipelines: false
 
