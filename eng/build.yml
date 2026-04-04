@@ -3,7 +3,6 @@ parameters:
   enableHelixValidation: true
   enablePublishBuildArtifacts: true
   enablePublishBuildAssets: true
-  enablePublishUsingPipelines: true
 
 stages:
 - stage: build
@@ -16,7 +15,7 @@ stages:
       enableMicrobuildForMacAndLinux: true
       enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
       enablePublishBuildAssets: ${{ parameters.enablePublishBuildAssets }}
-      enablePublishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
+      publishingVersion: 4
       enableTelemetry: true
       enableSourceBuild: ${{ parameters.enableSourceBuild }}
       helixRepo: dotnet/arcade-validation
@@ -25,10 +24,10 @@ stages:
           clean: true
       jobs:
       - job: Windows_NT
+        enablePublishing: true
         variables:
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
             /p:TeamName=$(_TeamName)
-            /p:DotNetPublishUsingPipelines=true
             /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
         strategy:
@@ -64,7 +63,6 @@ stages:
         variables:
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
             /p:TeamName=$(_TeamName)
-            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
             /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
         strategy:
@@ -104,7 +102,6 @@ stages:
         # 10 minute timeout and diagnostic logging needed to diagnose https://github.com/dotnet/dnceng/issues/4798
         - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
             /p:TeamName=$(_TeamName)
-            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
             /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
             /p:SignToolDotNetTimeout=600000
             /p:SignToolMSBuildVerbosity=diagnostic
