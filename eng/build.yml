@@ -54,10 +54,9 @@ stages:
           displayName: Component Governance scan
 
       - job: Linux
-        container: LinuxContainer
         pool:
           name: $(PoolProvider)
-          image: 1es-ubuntu-2204
+          image: build.azurelinux.3.amd64
           os: linux
 
         variables:
@@ -189,10 +188,9 @@ stages:
               /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
       - job: Validate_Signing_Linux
-        container: LinuxContainer
         pool:
           name: $(PoolProvider)
-          image: 1es-ubuntu-2204
+          image: build.azurelinux.3.amd64
           os: linux
 
         variables:
