@@ -19,6 +19,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\audit-logging.ps1
 . $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
@@ -159,6 +160,8 @@ $sha = Get-LatestBuildSha
 ## Clone the repo from git
 Write-Host "Cloning '${global:githubRepoName}' from GitHub"
 GitHub-Clone $global:githubRepoName $global:githubUser $global:githubUri
+Write-AuditLog -OperationName "GitCloneWithCredentials" -OperationCategory "ResourceManagement" -OperationType "Read" `
+    -OperationResult "Success" -TargetResourceType "GitRepository" -TargetResourceId "${global:githubOrg}/${global:githubRepoName}"
 
 ## Check to see if branch exists and clean it up if it does
 $branchExists = $false
@@ -180,13 +183,17 @@ if($null -ne $branchExists)
         if($true -eq $global:pushBranchToGithub)
         {
             & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
+            Write-AuditLog-ChannelDeletion -ChannelName "General Testing" -Repository $global:darcGitHubRepoName -Branch $global:darcBranchName -Result "Success"
             Git-Command $global:githubRepoName push origin --delete $global:targetBranch
+            Write-AuditLog-BranchOperation -Repository $global:darcGitHubRepoName -BranchName $global:targetBranch -OperationType "Delete" -Result "Success"
         }
         else
         {
             & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+            Write-AuditLog-ChannelDeletion -ChannelName "General Testing" -Repository $global:darcAzDORepoName -Branch $global:darcBranchName -Result "Success"
             Git-Command $global:githubRepoName remote add $remoteName $global:azdoUri
             Git-Command $global:githubRepoName push $remoteName --delete $global:targetBranch
+            Write-AuditLog-BranchOperation -Repository $global:darcAzDORepoName -BranchName $global:targetBranch -OperationType "Delete" -Result "Success"
         }
     }
     catch
@@ -222,6 +229,7 @@ if($true -eq $global:pushBranchToGithub)
 {
     ## Push branch to github
     Git-Command $global:githubRepoName push origin HEAD
+    Write-AuditLog-BranchOperation -Repository $global:darcGitHubRepoName -BranchName $global:targetBranch -OperationType "Create" -Result "Success"
 
     ## Assign darcRepoName value
     $global:darcRepoName = $global:darcGitHubRepoName
@@ -240,6 +248,7 @@ else
     }
     ## push to remote
     Git-Command $global:githubRepoName push $global:remoteName $global:targetBranch
+    Write-AuditLog-BranchOperation -Repository $global:darcAzDORepoName -BranchName $global:targetBranch -OperationType "Create" -Result "Success"
 
     ## Assign darcRepoName value
     $global:darcRepoName = $global:darcAzDORepoName
@@ -247,10 +256,12 @@ else
 
 ## Add default channel from that AzDO repo and branch to "General Testing"
 & $darc add-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcRepoName --azdev-pat $global:azdoToken --github-pat $global:githubPAT --password $global:bartoken
+Write-AuditLog-ChannelPromotion -ChannelName "General Testing" -BuildId "DefaultChannel" -Result "Success"
 
 ## Run an official build of the branch using the official pipeline
 Write-Host "Invoking build on Azure DevOps"
 $buildId = Invoke-AzDOBuild
+Write-AuditLog-BuildInvocation -Project $global:azdoProject -PipelineId $global:buildDefinitionId -SourceBranch $global:targetBranch -Result "Success"
 
 ## Output summary of references for investigations
 Write-Host "Arcade Version: ${global:arcadeSdkVersion}"
@@ -290,12 +301,16 @@ try
     if($true -eq $global:pushBranchToGithub)
     {
         & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcGitHubRepoName --github-pat $global:githubPAT --password $global:bartoken
+        Write-AuditLog-ChannelDeletion -ChannelName "General Testing" -Repository $global:darcGitHubRepoName -Branch $global:darcBranchName -Result "Success"
         Git-Command $global:githubRepoName push origin --delete $global:targetBranch
+        Write-AuditLog-BranchOperation -Repository $global:darcGitHubRepoName -BranchName $global:targetBranch -OperationType "Delete" -Result "Success"
     }
     else
     {
         & $darc delete-default-channel --channel "General Testing" --branch $global:darcBranchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+        Write-AuditLog-ChannelDeletion -ChannelName "General Testing" -Repository $global:darcAzDORepoName -Branch $global:darcBranchName -Result "Success"
         Git-Command $global:githubRepoName push $global:remoteName --delete $global:targetBranch
+        Write-AuditLog-BranchOperation -Repository $global:darcAzDORepoName -BranchName $global:targetBranch -OperationType "Delete" -Result "Success"
     }
 }
 catch
