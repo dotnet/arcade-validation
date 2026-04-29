@@ -1,6 +1,11 @@
 set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
+# Audit logging module is loaded by calling scripts; provide a no-op fallback if not loaded
+if (-not (Get-Command Write-AuditLog -ErrorAction SilentlyContinue)) {
+    . $PSScriptRoot\audit-logging.ps1
+}
+
 # Get a temporary directory for a test root. Use the agent work folder if running under azdo, use the temp path if not.
 $testRootBase = if ($env:AGENT_WORKFOLDER) { $env:AGENT_WORKFOLDER } else { $([System.IO.Path]::GetTempPath()) }
 $testRoot = Join-Path -Path $testRootBase -ChildPath $([System.IO.Path]::GetRandomFileName())
@@ -35,6 +40,8 @@ function GitHub-Clone(
     & git config user.email "${githubUser}@test.com"
     & git config user.name $githubUser
     Pop-Location
+    Write-AuditLog -OperationName "GitCloneWithCredentials" -OperationCategory "ResourceManagement" -OperationType "Read" `
+        -OperationResult "Success" -TargetResourceType "GitRepository" -TargetResourceId $repoName
 }
 
 function Cleanup-Branch(
@@ -45,9 +52,12 @@ function Cleanup-Branch(
 	try
 	{
 		Git-Command $githubRepoName push origin --delete $branch
+		Write-AuditLog-BranchOperation -Repository $githubRepoName -BranchName $branch -OperationType "Delete" -Result "Success"
 	}
 	catch
 	{
+		Write-AuditLog-BranchOperation -Repository $githubRepoName -BranchName $branch -OperationType "Delete" -Result "Failure" `
+			-ResultDescription "$_"
 		Write-Warning "Unable to delete branch when cleaning up:"
 		Write-Warning $_
 	}

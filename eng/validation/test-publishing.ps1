@@ -11,6 +11,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\audit-logging.ps1
 . $PSScriptRoot\validation-functions.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
@@ -51,6 +52,8 @@ $global:targetBranch = "val/arcade-" + $global:arcadeSdkVersion
 ## Clone the repo from git
 Write-Host "Cloning '${global:azdoRepoName}' from Azure Devops"
 GitHub-Clone $global:azdoRepoName $global:azdoUser $global:azdoRepoUri
+Write-AuditLog -OperationName "GitCloneWithCredentials" -OperationCategory "ResourceManagement" -OperationType "Read" `
+    -OperationResult "Success" -TargetResourceType "GitRepository" -TargetResourceId $global:azdoRepoName
 
 ## Create a branch from the repo with the given SHA.
 Git-Command $global:azdoRepoName checkout -b $global:targetBranch $sha
@@ -65,6 +68,7 @@ Set-Location $(Get-Repo-Location $global:azdoRepoName)
 Git-Command $global:azdoRepoName commit -am "Arcade branch - version ${global:arcadeSdkVersion}"
 
 Git-Command $global:azdoRepoName push origin HEAD
+Write-AuditLog-BranchOperation -Repository $global:azdoRepoName -BranchName $global:targetBranch -OperationType "Create" -Result "Success"
 
 # Verify that the build doesn't already exist in our target channel (otherwise we cannot verify that it was published correctly)
 Write-Host "Verifying that build '${global:buildId}' does not exist in channel '${global:targetChannel}'"
@@ -78,10 +82,14 @@ Write-Host "Adding build '${global:buildId}' to channel '${global:targetChannel}
 & $darc add-build-to-channel --id $global:buildId --channel $global:targetChannel --source-branch $global:targetBranch --azdev-pat $global:azdoToken --ci --publishing-infra-version 3
 
 if ($LastExitCode -ne 0) {
+    Write-AuditLog-ChannelPromotion -ChannelName $global:targetChannel -BuildId $global:buildId -Result "Failure" `
+        -ResultDescription "Darc add-build-to-channel failed with exit code $LastExitCode"
     Write-Host "Problems using Darc to promote build '${global:buildId}' to channel '${global:targetChannel}'. Stopping execution..."
 	Cleanup-Branch $global:azdoRepoName $global:targetBranch
     exit 1
 }
+
+Write-AuditLog-ChannelPromotion -ChannelName $global:targetChannel -BuildId $global:buildId -Result "Success"
 
 # Validate that the build was added to the target channel. 
 Write-Host "Verifying that build '${global:buildId}' was added in channel '${global:targetChannel}'"
@@ -91,4 +99,5 @@ if(-not $postCheck)
     Write-Error "Build was not added to '${global:targetChannel}'."
 }
 
+Write-AuditLog-BranchOperation -Repository $global:azdoRepoName -BranchName $global:targetBranch -OperationType "Delete" -Result "Success"
 Cleanup-Branch $global:azdoRepoName $global:targetBranch
