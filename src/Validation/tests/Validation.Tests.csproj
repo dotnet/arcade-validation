@@ -9,6 +9,11 @@
     <PackageReference Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
     <PackageReference Include="MSBuild.ProjectCreation" Version="$(MSBuildProjectCreationVersion)" />
+    <PackageReference Include="OpenTelemetry.Audit.Geneva" Version="$(OpenTelemetryAuditGenevaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
