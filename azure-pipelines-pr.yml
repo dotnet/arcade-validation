@@ -13,11 +13,6 @@ pr:
     include:
     - '*'
 
-resources:
-  containers:
-  - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
-
 stages:
 - stage: build
   displayName: Build
@@ -58,10 +53,9 @@ stages:
           displayName: Component Governance scan
 
       - job: Linux
-        container: LinuxContainer
         pool:
           name: $(PoolProvider)  # This is a queue-time parameter; Public default is NetCore-Public; Internal default is NetCore1ESPool-Internal
-          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64.Open
+          demands: ImageOverride -equals build.azurelinux.3.amd64.open
 
         strategy:
           matrix:
