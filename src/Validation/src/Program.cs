@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 ﻿using System;
+using ArcadeValidation.Audit;
 
 namespace HelloWorld
 {
@@ -10,7 +11,12 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+            // Initialize OTel Audit SDK with arcade-validation Service Tree ID
+            AuditHelper.Initialize();
+
             Console.WriteLine("Hello World!");
         }
     }
 }
+
+

@@ -6,6 +6,10 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Audit.Geneva" Version="$(OpenTelemetryAuditGenevaVersion)" />
+  </ItemGroup>
+
   <!-- Don't rely on the `$(OS)` properties as that returns Unix on non-Windows platforms
        which would cause duplicate assets during publishing. -->
   <PropertyGroup>

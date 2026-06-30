@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ArcadeValidation.Audit;
 
 namespace Validation.Tests
 {
@@ -39,6 +40,18 @@ namespace Validation.Tests
             while (Directory.Exists(repoRoot));
 
             Directory.CreateDirectory(repoRoot);
+            AuditHelper.LogDataPlane(
+                operationName: "CreateTempDirectory",
+                category: OpenTelemetry.Audit.Geneva.OperationCategory.ResourceManagement,
+                operationType: OpenTelemetry.Audit.Geneva.OperationType.Create,
+                result: OpenTelemetry.Audit.Geneva.OperationResult.Success,
+                callerIdentity: Environment.UserName,
+                callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                callerAgent: "ValidationTests",
+                operationAccessLevel: "FileSystem",
+                callerAccessLevels: new[] { "FileSystem" },
+                targetResourceType: "Directory",
+                targetResourceId: repoRoot);
             return repoRoot;
         }
 
@@ -60,6 +73,18 @@ namespace Validation.Tests
                     if (process.MainModule.FileName == fileName)
                     {
                         process.Kill(true);
+                        AuditHelper.LogDataPlane(
+                            operationName: "KillProcessByName",
+                            category: OpenTelemetry.Audit.Geneva.OperationCategory.Other,
+                            operationType: OpenTelemetry.Audit.Geneva.OperationType.Delete,
+                            result: OpenTelemetry.Audit.Geneva.OperationResult.Success,
+                            callerIdentity: Environment.UserName,
+                            callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                            callerAgent: "ValidationTests",
+                            operationAccessLevel: "ProcessControl",
+                            callerAccessLevels: new[] { "ProcessControl" },
+                            targetResourceType: "Process",
+                            targetResourceId: $"{justProcessName}:{process.Id}");
                     }
                 }
                 catch { } // Ignored
@@ -221,6 +246,19 @@ namespace Validation.Tests
             await AddDefaultLicenseFileAsync();
 
             CloneSubdirectoryFromTestResources("eng/common");
+
+            AuditHelper.LogDataPlane(
+                operationName: "GenerateBuildConfiguration",
+                category: OpenTelemetry.Audit.Geneva.OperationCategory.ResourceManagement,
+                operationType: OpenTelemetry.Audit.Geneva.OperationType.Create,
+                result: OpenTelemetry.Audit.Geneva.OperationResult.Success,
+                callerIdentity: Environment.UserName,
+                callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                callerAgent: "ValidationTests",
+                operationAccessLevel: "FileSystem",
+                callerAccessLevels: new[] { "FileSystem" },
+                targetResourceType: "BuildConfiguration",
+                targetResourceId: TestRepoRoot);
         }
 
         private async Task AddDefaultGlobalJsonAsync()
@@ -433,7 +471,23 @@ namespace HelloWorld
             allArgs.Add("/p:DeterministicTimestamp=false");
 
             // Invokes eng/common/build.ps1 with provided options
-            return () => Command.Create(executable, allArgs)
+            return () =>
+            {
+                AuditHelper.LogDataPlane(
+                    operationName: "ExecuteExternalProcess",
+                    category: OpenTelemetry.Audit.Geneva.OperationCategory.Other,
+                    operationType: OpenTelemetry.Audit.Geneva.OperationType.Create,
+                    result: OpenTelemetry.Audit.Geneva.OperationResult.Success,
+                    callerIdentity: Environment.UserName,
+                    callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                    callerAgent: "ValidationTests",
+                    operationAccessLevel: "BuildExecution",
+                    callerAccessLevels: new[] { "BuildExecution" },
+                    targetResourceType: "BuildProcess",
+                    targetResourceId: executable,
+                    customize: r => r.AddCustomData("Args", string.Join(" ", allArgs)));
+
+                Command.Create(executable, allArgs)
                     .EnvironmentVariable("DOTNET_INSTALL_DIR", RepoResources.CommonDotnetRoot)
                     .EnvironmentVariable("NUGET_PACKAGES", RepoResources.CommonPackagesRoot)
                     .EnvironmentVariable("BUILD_REPOSITORY_URI", "https://localhost")
@@ -446,6 +500,7 @@ namespace HelloWorld
                     .CaptureStdOut()
                     .Execute()
                     .EnsureSuccessful();
+            };
         }
 
         public void Cleanup()
@@ -460,6 +515,18 @@ namespace HelloWorld
 
             if (DeleteOnDispose)
             {
+                AuditHelper.LogDataPlane(
+                    operationName: "DeleteDirectoryRecursive",
+                    category: OpenTelemetry.Audit.Geneva.OperationCategory.ResourceManagement,
+                    operationType: OpenTelemetry.Audit.Geneva.OperationType.Delete,
+                    result: OpenTelemetry.Audit.Geneva.OperationResult.Success,
+                    callerIdentity: Environment.UserName,
+                    callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                    callerAgent: "ValidationTests",
+                    operationAccessLevel: "FileSystem",
+                    callerAccessLevels: new[] { "FileSystem" },
+                    targetResourceType: "Directory",
+                    targetResourceId: TestRepoRoot);
                 Directory.Delete(TestRepoRoot, true);
             }
         }

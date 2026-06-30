@@ -6,6 +6,7 @@ Param(
 $ci = $true
 . $PSScriptRoot\..\common\tools.ps1
 . $PSScriptRoot\..\common\pipeline-logging-functions.ps1
+. $PSScriptRoot\..\common\audit-logging.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
@@ -30,11 +31,17 @@ try {
     & $darc add-build-to-channel --id $buildId --channel "$targetChannelName" --azdev-pat $azdoToken --ci --skip-assets-publishing
     
     if ($LastExitCode -ne 0) {
+        Write-AuditLog-ChannelPromotion -ChannelName $targetChannelName -BuildId $buildId -Result "Failure" `
+            -ResultDescription "Darc add-build-to-channel failed with exit code $LastExitCode"
         Write-Host "Problems using Darc to promote build ${buildId} to channel ${targetChannelName}. Stopping execution..."
         exit 1
     }
+
+    Write-AuditLog-ChannelPromotion -ChannelName $targetChannelName -BuildId $buildId -Result "Success"
 }
 catch {
+    Write-AuditLog-ChannelPromotion -ChannelName $targetChannelName -BuildId "unknown" -Result "Failure" `
+        -ResultDescription "$_"
     Write-Host $_
     Write-Host $_.ScriptStackTrace
     exit 1

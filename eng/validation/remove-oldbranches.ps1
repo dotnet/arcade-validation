@@ -11,6 +11,7 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\..\common\tools.ps1
+. $PSScriptRoot\audit-logging.ps1
 $darc = & "$PSScriptRoot\get-darc.ps1"
 
 $global:arcadeSdkPackageName = 'Microsoft.DotNet.Arcade.Sdk'
@@ -88,12 +89,16 @@ if($null -ne $remotebranches)
             Write-Host "Preparing '${branchName}' to be deleted"
             Write-Host "Deleting default channel for branch named '${branchName}'"
             & $darc delete-default-channel --channel "General Testing" --branch $branchName --repo $global:darcAzDORepoName --azdev-pat $global:azdoToken --password $global:bartoken
+            Write-AuditLog-ChannelDeletion -ChannelName "General Testing" -Repository $global:darcAzDORepoName -Branch $branchName -Result "Success"
         }
     }
 
     if($jsonBodyArray.count -gt 0)
     {
         $results = Remove-AzDOBranches($jsonBodyArray)
+        Write-AuditLog -OperationName "DeleteRemoteBranches" -OperationCategory "ResourceManagement" -OperationType "Delete" `
+            -OperationResult "Success" -TargetResourceType "AzdoBranches" -TargetResourceId $global:azdoRepoName `
+            -CustomData @{ BranchCount = $jsonBodyArray.count }
 
         if($null -ne $results)
         {

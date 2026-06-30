@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements. 
+// Licensed to the .NET Foundation under one or more agreements. 
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using ArcadeValidation.Audit;
+using OpenTelemetry.Audit.Geneva;
 
 namespace Validation.Tests
 {
@@ -161,6 +163,18 @@ namespace Validation.Tests
                 string round0FilePath = Path.Combine(builder.TestRepoRoot, "artifacts", "tmp", "Release", "Signing", "Round0-Sign.proj");
                 string round0ProjectText = File.ReadAllText(round0FilePath);
                 string expectedCert = useDotNetCert.GetValueOrDefault() ? DotNetCertificate : MicrosoftCertificate;
+                AuditHelper.LogControlPlane(
+                    operationName: "SelectSigningCertificate",
+                    category: OperationCategory.KeyManagement,
+                    operationType: OperationType.Read,
+                    result: OperationResult.Success,
+                    callerIdentity: Environment.UserName,
+                    callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                    callerAgent: "ValidationTests",
+                    operationAccessLevel: "SigningValidation",
+                    callerAccessLevels: new[] { "SigningValidation" },
+                    targetResourceType: "SigningCertificate",
+                    targetResourceId: expectedCert);
 
                 Regex authenticodeRegex = new Regex("<Authenticode>(.*)</Authenticode>");
                 var matches = authenticodeRegex.Matches(round0ProjectText);
@@ -187,10 +201,34 @@ namespace Validation.Tests
                 // Update the .exe extension with a new cert.
                 // <StrongNameSignInfo Include="MsSharedLib72" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
                 const string certOverride = "Microsoft401";
+                AuditHelper.LogControlPlane(
+                    operationName: "OverrideSigningCertificate",
+                    category: OperationCategory.KeyManagement,
+                    operationType: OperationType.Update,
+                    result: OperationResult.Success,
+                    callerIdentity: Environment.UserName,
+                    callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                    callerAgent: "ValidationTests",
+                    operationAccessLevel: "SigningValidation",
+                    callerAccessLevels: new[] { "SigningValidation" },
+                    targetResourceType: "SigningCertificate",
+                    targetResourceId: certOverride);
 
                 signingProps.ItemGroup()
                     .ItemUpdate("StrongNameSignInfo", update: "MsSharedLib72",
                     metadata: new Dictionary<string, string> { { "PublicKeyToken", "31bf3856ad364e35" }, { "CertificateName", certOverride } } );
+                AuditHelper.LogControlPlane(
+                    operationName: "ConfigureStrongNameSigning",
+                    category: OperationCategory.KeyManagement,
+                    operationType: OperationType.Update,
+                    result: OperationResult.Success,
+                    callerIdentity: Environment.UserName,
+                    callerIpAddress: AuditHelper.GetLocalIpAddress(),
+                    callerAgent: "ValidationTests",
+                    operationAccessLevel: "SigningValidation",
+                    callerAccessLevels: new[] { "SigningValidation" },
+                    targetResourceType: "StrongNameSignInfo",
+                    targetResourceId: "MsSharedLib72/31bf3856ad364e35");
 
                 builder.AddProject(signingProps, "eng/Signing.props");
 
